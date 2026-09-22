@@ -1,5 +1,6 @@
 import account from '../../messages/en/account.json';
 import aiChat from '../../messages/en/aiChat.json';
+import allWork from '../../messages/en/allWork.json';
 import apiKeys from '../../messages/en/apiKeys.json';
 import auth from '../../messages/en/auth.json';
 import common from '../../messages/en/common.json';
@@ -37,6 +38,7 @@ import { DEFAULT_LOCALE, type Locale } from './locales';
 // `t('…')` keys are typed against.
 const defaultMessages = {
   meta,
+  allWork,
   auth,
   common,
   nav,

@@ -36,16 +36,6 @@ export function PriorityBadge({
   );
 }
 
-// A single label as a colored-dot pill.
-export function LabelBadge({ color, name }: { color: string; name: string }) {
-  return (
-    <Badge variant="outline" className={PILL}>
-      <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
-      {name}
-    </Badge>
-  );
-}
-
 // A date pill: a calendar icon (passed in, since start vs due use different
 // glyphs) plus the short date. `overdue` renders it red (used for a past due date).
 // `label` names which date it is, in a tooltip; the table column heading already

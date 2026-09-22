@@ -18,9 +18,9 @@ import {
   AssigneeAvatar,
   DateBadge,
   DelegateAvatar,
-  LabelBadge,
   PriorityBadge,
 } from '@/features/issue/components/shared/IssueBadges';
+import { LabelBadge } from '@/components/common/LabelBadge';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { StateIcon } from '@/features/issue/components/shared/IssueIcons';

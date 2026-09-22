@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import {
   BookOpenText,
   Inbox,
+  Layers,
   LayoutDashboard,
   RefreshCw,
   SquareKanban,
@@ -11,6 +12,7 @@ import {
   Target,
 } from 'lucide-react';
 import {
+  allWorkPath,
   cyclesPath,
   dashboardsPath,
   documentsPath,
@@ -116,6 +118,14 @@ export default function SidebarWorkNav({
               disabled={disabled}
             />
           )}
+          {/* Ungated: spans every project the member can read. */}
+          <SidebarNavItem
+            href={allWorkPath()}
+            icon={Layers}
+            label={t('allWork')}
+            active={pathname === allWorkPath()}
+            disabled={false}
+          />
           {features.initiatives && can('initiatives', 'read') && (
             <SidebarNavItem
               href={projectKey ? initiativesPath(projectKey) : '#'}

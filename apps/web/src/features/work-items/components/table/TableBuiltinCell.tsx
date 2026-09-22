@@ -8,8 +8,8 @@ import {
   AssigneeAvatar,
   DateBadge,
   DelegateAvatar,
-  LabelBadge,
 } from '@/features/issue/components/shared/IssueBadges';
+import { LabelBadge } from '@/components/common/LabelBadge';
 import { PriorityIcon, StateIcon } from '@/features/issue/components/shared/IssueIcons';
 import { type TableColumn } from '../../utils/table';
 

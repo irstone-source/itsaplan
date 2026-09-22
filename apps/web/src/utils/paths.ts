@@ -171,3 +171,6 @@ export const inviteLink = (origin: string, token: string) => `${origin}/invite/$
 
 // God mode: instance administration, outside the project shell (see GOD_SECTIONS).
 export const godPath = (section: string) => `/god/${section}`;
+
+// All Work: every project's issues on one page, outside the project shell.
+export const allWorkPath = () => '/all-work';
