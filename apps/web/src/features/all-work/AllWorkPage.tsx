@@ -98,7 +98,7 @@ export default function AllWorkPage() {
           issueId={openIssueId}
           onClose={() => setOpenIssueId(null)}
           onExpand={(seq) => {
-            if (seq != null) router.push(issuePath(openWork.project.key, seq));
+            if (seq != null) router.push(issuePath(openWork.project.ref, seq));
           }}
         />
       )}

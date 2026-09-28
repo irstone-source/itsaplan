@@ -20,14 +20,14 @@ export function useAllProjectsIssues(): { pending: boolean; work: ProjectWork[] 
 
   const scaffolds = useQueries({
     queries: visible.map((p) => ({
-      queryKey: qk.project(p.key),
-      queryFn: () => getProject(p.key),
+      queryKey: qk.project(p.ref),
+      queryFn: () => getProject(p.ref),
     })),
   });
   const boards = useQueries({
     queries: visible.map((p) => ({
-      queryKey: qk.boardIssues(p.key),
-      queryFn: () => getBoardIssues(p.key),
+      queryKey: qk.boardIssues(p.ref),
+      queryFn: () => getBoardIssues(p.ref),
     })),
   });
 
