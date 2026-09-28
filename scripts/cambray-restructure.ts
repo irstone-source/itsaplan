@@ -46,17 +46,27 @@ const APPLY = process.argv.includes('--apply');
 
 if (!KEY) throw new Error('Set ITSAPLAN_API_KEY (Account -> API keys, as the instance owner).');
 
+// The instance answers a burst of calls with the odd 500, so calls are spaced out and
+// a read is retried. A write is not: it may have been applied, and a rerun skips what
+// was already migrated.
 async function api<T = any>(method: string, path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${API}${path}`, {
-    method,
-    headers: {
-      'x-api-key': KEY!,
-      ...(body !== undefined && { 'content-type': 'application/json' }),
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status} ${await res.text()}`);
-  return (res.status === 204 ? undefined : await res.json()) as T;
+  for (let attempt = 1; ; attempt++) {
+    await Bun.sleep(150);
+    const res = await fetch(`${API}${path}`, {
+      method,
+      headers: {
+        'x-api-key': KEY!,
+        ...(body !== undefined && { 'content-type': 'application/json' }),
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    if (res.status >= 500 && method === 'GET' && attempt < 5) {
+      await Bun.sleep(2000 * attempt);
+      continue;
+    }
+    if (!res.ok) throw new Error(`${method} ${path} -> ${res.status} ${await res.text()}`);
+    return (res.status === 204 ? undefined : await res.json()) as T;
+  }
 }
 
 const enc = encodeURIComponent;
@@ -230,7 +240,9 @@ for (const s of sources) {
   for (const issue of ordered) {
     const done = alreadyMoved.get(issue.identifier);
     if (done) {
+      // Migrated by an earlier run that stopped before archiving.
       newIdByOldId.set(issue.id, done.id);
+      toArchive.push(issue);
       continue;
     }
     const column: any = columnById.get(issue.columnId);
