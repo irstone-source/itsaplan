@@ -173,8 +173,9 @@ async function labelId(name: string, color: string): Promise<number> {
   return created.id;
 }
 const initiatives: any[] = await api('GET', `/projects/${enc(ref)}/initiatives/options`);
+// A client's initiative is titled with its name, or "<name> — <commercial goal>".
 const initiativeByTitle = new Map<string, number>(
-  initiatives.map((i: any) => [i.title ?? i.name, i.id]),
+  initiatives.map((i: any) => [(i.title ?? i.name).split(' — ')[0], i.id]),
 );
 const clientLabel = new Map<string, number>();
 const clientInitiative = new Map<string, number>();
