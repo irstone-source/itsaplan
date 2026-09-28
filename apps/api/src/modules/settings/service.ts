@@ -79,3 +79,25 @@ export async function setHotkeySettings(combos: HotkeyCombos): Promise<HotkeyCom
   await setSetting(HOTKEYS_SETTING_KEY, combos);
   return combos;
 }
+
+// Instance branding (app_setting key 'branding'): the product name, accent colour and
+// logo every page shows. A null field falls back to the built-in It's a Plan brand.
+const BRANDING_SETTING_KEY = 'branding';
+
+export interface Branding {
+  appName: string | null;
+  accentColor: string | null;
+  logo: string | null;
+}
+
+const NO_BRANDING: Branding = { appName: null, accentColor: null, logo: null };
+
+export async function getBranding(): Promise<Branding> {
+  return { ...NO_BRANDING, ...(await getSetting<Branding>(BRANDING_SETTING_KEY)) };
+}
+
+export async function setBranding(branding: Branding): Promise<Branding> {
+  const value = { ...branding, appName: branding.appName?.trim() || null };
+  await setSetting(BRANDING_SETTING_KEY, value);
+  return value;
+}

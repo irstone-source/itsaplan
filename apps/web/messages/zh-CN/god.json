@@ -63,7 +63,14 @@
     "deleteWithProjectsOn": "同时删除项目中的所有内容。",
     "deleteWithProjectsOff": "或者先取消，再添加第二名所有者。",
     "deleted": "账户已删除",
-    "deletedWithProjects": "账户及其项目已删除"
+    "deletedWithProjects": "账户及其项目已删除",
+    "addToProjects": "添加到项目",
+    "addToProjectsTitle": "将 {name} 添加到项目",
+    "addToProjectsHint": "以成员身份加入每个所选项目，使用其团队的默认角色。如果此人尚未加入项目所属团队，会先加入该团队。",
+    "addToProjectsSubmit": "{count, plural, =0 {添加} other {添加到 # 个项目}}",
+    "addedToProjects": "已添加到 {count, plural, other {# 个项目}}",
+    "removeFromProject": "从 {project} 移除",
+    "removedFromProject": "已从 {project} 移除"
   },
   "projects": {
     "empty": "没有符合搜索条件的项目。",
@@ -313,5 +320,19 @@
       "remove": "移除项目",
       "saved": "群组权限已保存"
     }
+  },
+  "branding": {
+    "saved": "品牌已保存",
+    "identity": "标识",
+    "appName": "产品名称",
+    "appNameHint": "显示在侧边栏、登录页和浏览器标签中。留空则使用 It's a Plan。",
+    "accentColor": "强调色",
+    "accentColorHint": "用于主要按钮、焦点环和登录面板。",
+    "logo": "徽标",
+    "logoHint": "不超过 256 KB 的方形 PNG、JPEG、WebP 或 SVG，也用作浏览器标签图标。",
+    "upload": "上传",
+    "reset": "重置",
+    "logoTooLarge": "徽标必须不超过 256 KB",
+    "logoWrongType": "徽标必须是 PNG、JPEG、WebP 或 SVG 图片"
   }
 }

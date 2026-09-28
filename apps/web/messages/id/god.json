@@ -63,7 +63,14 @@
     "deleteWithProjectsOn": "Semua yang ada di dalamnya juga akan terhapus.",
     "deleteWithProjectsOff": "Atau batalkan dan tambahkan pemilik kedua terlebih dahulu.",
     "deleted": "Akun dihapus",
-    "deletedWithProjects": "Akun dan proyeknya telah dihapus"
+    "deletedWithProjects": "Akun dan proyeknya telah dihapus",
+    "addToProjects": "Tambahkan ke proyek",
+    "addToProjectsTitle": "Tambahkan {name} ke proyek",
+    "addToProjectsHint": "Bergabung ke setiap proyek yang dipilih sebagai anggota dengan peran default timnya. Orang tersebut bergabung ke tim proyek terlebih dahulu jika belum menjadi anggota.",
+    "addToProjectsSubmit": "{count, plural, =0 {Tambahkan} other {Tambahkan ke # proyek}}",
+    "addedToProjects": "Ditambahkan ke {count, plural, other {# proyek}}",
+    "removeFromProject": "Keluarkan dari {project}",
+    "removedFromProject": "Dikeluarkan dari {project}"
   },
   "projects": {
     "empty": "Tidak ada proyek yang cocok dengan pencarian ini.",
@@ -313,5 +320,19 @@
       "remove": "Hapus proyek",
       "saved": "Akses grup disimpan"
     }
+  },
+  "branding": {
+    "saved": "Branding disimpan",
+    "identity": "Identitas",
+    "appName": "Nama produk",
+    "appNameHint": "Ditampilkan di bilah samping, halaman masuk, dan tab browser. Kosongkan untuk It's a Plan.",
+    "accentColor": "Warna aksen",
+    "accentColorHint": "Dipakai untuk tombol utama, cincin fokus, dan panel masuk.",
+    "logo": "Logo",
+    "logoHint": "PNG, JPEG, WebP, atau SVG persegi hingga 256 KB. Juga dipakai sebagai ikon tab.",
+    "upload": "Unggah",
+    "reset": "Atur ulang",
+    "logoTooLarge": "Logo harus berukuran 256 KB atau lebih kecil",
+    "logoWrongType": "Logo harus berupa gambar PNG, JPEG, WebP, atau SVG"
   }
 }

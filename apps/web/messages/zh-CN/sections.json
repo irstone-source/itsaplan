@@ -27,6 +27,10 @@
       "label": "通用",
       "description": "新建项目的默认设置。"
     },
+    "branding": {
+      "label": "品牌",
+      "description": "此实例上所有人看到的产品名称、强调色和徽标。"
+    },
     "authentication": {
       "label": "身份验证",
       "description": "设置谁可以注册、如何验证账户以及可用的外部登录提供商。"

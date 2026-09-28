@@ -6,11 +6,18 @@ import { Providers } from '@/components/providers';
 import RuntimeEnvScript from '@/components/runtime-env-script';
 import WhatsNew from '@/features/whats-new/WhatsNew';
 import { localeDirection, type Locale } from '@/i18n/locales';
+import { BrandingProvider } from '@/components/brand/Branding';
+import { accentCss, loadBranding } from '@/utils/branding.server';
 import './globals.css';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('meta');
-  return { title: t('title'), description: t('description') };
+  const branding = await loadBranding();
+  return {
+    title: branding.appName ?? t('title'),
+    description: t('description'),
+    icons: { icon: branding.logo ?? '/icon.svg' },
+  };
 }
 
 export default async function RootLayout({
@@ -19,11 +26,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
+  const branding = await loadBranding();
+  const accent = accentCss(branding.accentColor);
 
   return (
     <html lang={locale} dir={localeDirection(locale as Locale)} suppressHydrationWarning>
       <body className="antialiased">
         <RuntimeEnvScript />
+        {accent && <style dangerouslySetInnerHTML={{ __html: accent }} />}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -35,10 +45,12 @@ export default async function RootLayout({
           storageKey="itsaplan-theme"
         >
           <NextIntlClientProvider>
-            <Providers>
-              {children}
-              <WhatsNew />
-            </Providers>
+            <BrandingProvider branding={branding}>
+              <Providers>
+                {children}
+                <WhatsNew />
+              </Providers>
+            </BrandingProvider>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

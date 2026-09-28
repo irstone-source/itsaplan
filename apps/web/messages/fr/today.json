@@ -1,1 +1,10 @@
-{}
+{
+  "empty": "Rien ne vous attend aujourd'hui : aucun travail assigné en retard, à rendre ou en cours.",
+  "buckets": {
+    "overdue": "En retard",
+    "due": "À rendre aujourd'hui",
+    "started": "En cours",
+    "cycle": "Dans le cycle en cours",
+    "scheduled": "Date de début atteinte"
+  }
+}

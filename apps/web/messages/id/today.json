@@ -1,1 +1,10 @@
-{}
+{
+  "empty": "Tidak ada yang perlu Anda kerjakan hari ini: tidak ada pekerjaan yang ditugaskan terlambat, jatuh tempo, atau sedang berjalan.",
+  "buckets": {
+    "overdue": "Terlambat",
+    "due": "Jatuh tempo hari ini",
+    "started": "Sedang berjalan",
+    "cycle": "Dalam siklus saat ini",
+    "scheduled": "Tanggal mulai tercapai"
+  }
+}

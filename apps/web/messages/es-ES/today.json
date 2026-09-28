@@ -1,1 +1,10 @@
-{}
+{
+  "empty": "Hoy no tienes nada pendiente: ningún trabajo asignado vencido, con vencimiento hoy o en curso.",
+  "buckets": {
+    "overdue": "Vencido",
+    "due": "Vence hoy",
+    "started": "En curso",
+    "cycle": "En el ciclo actual",
+    "scheduled": "Fecha de inicio alcanzada"
+  }
+}

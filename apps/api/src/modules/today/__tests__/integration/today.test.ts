@@ -42,14 +42,12 @@ describe('today', () => {
     const apiA = authedApi(a.cookie);
     await apiA.projects.post({ key: 'MKT', name: 'Marketing' });
     const columns = (await apiA.projects({ projectKey: 'MKT' }).get()).data!.columns;
-    await apiA
-      .projects({ projectKey: 'MKT' })
-      .issues.post({
-        columnId: columns[0].id,
-        title: 'mine',
-        assigneeUserId: a.userId,
-        dueDate: DATE,
-      });
+    await apiA.projects({ projectKey: 'MKT' }).issues.post({
+      columnId: columns[0].id,
+      title: 'mine',
+      assigneeUserId: a.userId,
+      dueDate: DATE,
+    });
 
     const res = await authedApi(b.cookie).today.get({ query: { date: DATE } });
     expect(res.data!.items).toHaveLength(0);

@@ -3,10 +3,11 @@ import { requireUser } from '#shared/access';
 import { authContext } from '#shared/auth-context';
 import { errors } from '#shared/responses';
 import { getStorageSettings } from '@repo/db';
-import { getHotkeySettings } from './service';
+import { getBranding, getHotkeySettings } from './service';
 import { getAppVersion } from './updates';
 import { getWhatsNew, markWhatsNewSeen } from './whats-new';
 import {
+  BrandingSchema,
   HotkeyCombosSchema,
   StorageSettingsSchema,
   VersionResponse,
@@ -28,6 +29,15 @@ export const settingsRoutes = new Elysia({
     detail: {
       summary: 'Get storage limits',
       description: 'Get the instance upload limits the UI shows before a file is picked.',
+    },
+  })
+
+  // Public: the sign-in page shows the brand before there is a session.
+  .get('/settings/branding', () => getBranding(), {
+    response: { 200: BrandingSchema },
+    detail: {
+      summary: 'Get instance branding',
+      description: 'Get the product name, accent colour and logo this instance shows.',
     },
   })
 

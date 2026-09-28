@@ -63,7 +63,14 @@
     "deleteWithProjectsOn": "Tudo dentro também vai.",
     "deleteWithProjectsOff": "Ou cancele e adicione um segundo dono primeiro.",
     "deleted": "Conta excluída",
-    "deletedWithProjects": "Conta e seus projetos excluídos"
+    "deletedWithProjects": "Conta e seus projetos excluídos",
+    "addToProjects": "Adicionar a projetos",
+    "addToProjectsTitle": "Adicionar {name} a projetos",
+    "addToProjectsHint": "Entra em cada projeto selecionado como membro com o papel padrão da equipe. Se ainda não estiver na equipe do projeto, entra primeiro na equipe.",
+    "addToProjectsSubmit": "{count, plural, =0 {Adicionar} one {Adicionar a # projeto} other {Adicionar a # projetos}}",
+    "addedToProjects": "Adicionado a {count, plural, one {# projeto} other {# projetos}}",
+    "removeFromProject": "Remover de {project}",
+    "removedFromProject": "Removido de {project}"
   },
   "projects": {
     "empty": "Nenhum projeto corresponde a esta busca.",
@@ -313,5 +320,19 @@
       "remove": "Remover projeto",
       "saved": "Acesso do grupo salvo"
     }
+  },
+  "branding": {
+    "saved": "Marca salva",
+    "identity": "Identidade",
+    "appName": "Nome do produto",
+    "appNameHint": "Exibido na barra lateral, na página de login e na aba do navegador. Deixe vazio para It's a Plan.",
+    "accentColor": "Cor de destaque",
+    "accentColorHint": "Usada nos botões principais, nos anéis de foco e no painel de login.",
+    "logo": "Logotipo",
+    "logoHint": "Um PNG, JPEG, WebP ou SVG quadrado de até 256 KB. Também usado como ícone da aba.",
+    "upload": "Enviar",
+    "reset": "Redefinir",
+    "logoTooLarge": "O logotipo deve ter 256 KB ou menos",
+    "logoWrongType": "O logotipo deve ser uma imagem PNG, JPEG, WebP ou SVG"
   }
 }

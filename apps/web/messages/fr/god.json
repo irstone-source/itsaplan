@@ -63,7 +63,14 @@
     "deleteWithProjectsOn": "Tout leur contenu est supprimé également.",
     "deleteWithProjectsOff": "Ou annulez et ajoutez d'abord un second propriétaire.",
     "deleted": "Compte supprimé",
-    "deletedWithProjects": "Compte et projets supprimés"
+    "deletedWithProjects": "Compte et projets supprimés",
+    "addToProjects": "Ajouter à des projets",
+    "addToProjectsTitle": "Ajouter {name} à des projets",
+    "addToProjectsHint": "Rejoint chaque projet sélectionné en tant que membre avec le rôle par défaut de son équipe. La personne rejoint d'abord l'équipe du projet si elle n'en fait pas partie.",
+    "addToProjectsSubmit": "{count, plural, =0 {Ajouter} one {Ajouter à # projet} other {Ajouter à # projets}}",
+    "addedToProjects": "Ajouté à {count, plural, one {# projet} other {# projets}}",
+    "removeFromProject": "Retirer de {project}",
+    "removedFromProject": "Retiré de {project}"
   },
   "projects": {
     "empty": "Aucun projet ne correspond à cette recherche.",
@@ -313,5 +320,19 @@
       "remove": "Retirer le projet",
       "saved": "Accès du groupe enregistré"
     }
+  },
+  "branding": {
+    "saved": "Image de marque enregistrée",
+    "identity": "Identité",
+    "appName": "Nom du produit",
+    "appNameHint": "Affiché dans la barre latérale, sur la page de connexion et dans l'onglet du navigateur. Laissez vide pour It's a Plan.",
+    "accentColor": "Couleur d'accent",
+    "accentColorHint": "Utilisée pour les boutons principaux, les contours de focus et le panneau de connexion.",
+    "logo": "Logo",
+    "logoHint": "Un PNG, JPEG, WebP ou SVG carré de 256 Ko maximum. Sert aussi d'icône d'onglet.",
+    "upload": "Importer",
+    "reset": "Réinitialiser",
+    "logoTooLarge": "Le logo doit faire 256 Ko ou moins",
+    "logoWrongType": "Le logo doit être une image PNG, JPEG, WebP ou SVG"
   }
 }

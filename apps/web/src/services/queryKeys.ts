@@ -274,6 +274,7 @@ export const qk = {
   instanceScimGroups: ['instanceScimGroups'] as const,
   instanceTelegramSettings: ['instanceTelegramSettings'] as const,
   instanceProjectDefaults: ['instanceProjectDefaults'] as const,
+  branding: ['branding'] as const,
   instanceStorageSettings: ['instanceStorageSettings'] as const,
   // The upload limits as read by the upload UI (open to any signed-in user).
   storageSettings: ['storageSettings'] as const,

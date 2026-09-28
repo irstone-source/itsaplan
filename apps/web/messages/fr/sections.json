@@ -27,6 +27,10 @@
       "label": "Général",
       "description": "Les valeurs par défaut des nouveaux projets."
     },
+    "branding": {
+      "label": "Image de marque",
+      "description": "Le nom du produit, la couleur d'accent et le logo que voient tous les utilisateurs de cette instance."
+    },
     "authentication": {
       "label": "Authentification",
       "description": "Qui peut s'inscrire sur cette instance, comment les comptes sont confirmés, et les fournisseurs par lesquels les utilisateurs se connectent."

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import ItsAPlanMark from '@/components/brand/ItsAPlanMark';
+import { BrandMark, BrandName } from '@/components/brand/Branding';
 import ReleaseHistory from '@/features/whats-new/components/ReleaseHistory';
 import { useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -35,10 +35,10 @@ export default function SidebarBrandFooter() {
 
   const content = (
     <>
-      <ItsAPlanMark className="size-9 shrink-0 text-sidebar-foreground" />
+      <BrandMark className="size-9 shrink-0 text-sidebar-foreground" />
       <div className="grid text-left leading-none group-data-[collapsible=icon]:hidden">
         <span className="text-base font-semibold tracking-tight text-sidebar-foreground">
-          It&apos;s a Plan
+          <BrandName />
         </span>
         {newerVersion ? (
           <span className="mt-1 flex items-center gap-1.5 text-[10px] font-medium tracking-wider text-primary uppercase">

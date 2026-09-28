@@ -63,7 +63,14 @@
     "deleteWithProjectsOn": "كل ما بداخلها يُحذف أيضًا.",
     "deleteWithProjectsOff": "أو ألغِ وأضف مالكًا ثانيًا أولًا.",
     "deleted": "تم حذف الحساب",
-    "deletedWithProjects": "تم حذف الحساب ومشاريعه"
+    "deletedWithProjects": "تم حذف الحساب ومشاريعه",
+    "addToProjects": "إضافة إلى مشاريع",
+    "addToProjectsTitle": "إضافة {name} إلى مشاريع",
+    "addToProjectsHint": "ينضم إلى كل مشروع محدد عضوًا بالدور الافتراضي لفريقه. ينضم الشخص أولًا إلى فريق المشروع إن لم يكن عضوًا فيه.",
+    "addToProjectsSubmit": "{count, plural, =0 {إضافة} one {إضافة إلى مشروع واحد} two {إضافة إلى مشروعين} few {إضافة إلى # مشاريع} many {إضافة إلى # مشروعًا} other {إضافة إلى # مشروع}}",
+    "addedToProjects": "تمت الإضافة إلى {count, plural, one {مشروع واحد} two {مشروعين} few {# مشاريع} many {# مشروعًا} other {# مشروع}}",
+    "removeFromProject": "إزالة من {project}",
+    "removedFromProject": "تمت الإزالة من {project}"
   },
   "projects": {
     "empty": "لا توجد مشاريع مطابقة لهذا البحث.",
@@ -313,5 +320,19 @@
       "remove": "إزالة المشروع",
       "saved": "تم حفظ وصول المجموعة"
     }
+  },
+  "branding": {
+    "saved": "تم حفظ العلامة التجارية",
+    "identity": "الهوية",
+    "appName": "اسم المنتج",
+    "appNameHint": "يظهر في الشريط الجانبي وصفحة تسجيل الدخول وعلامة تبويب المتصفح. اتركه فارغًا لاستخدام It's a Plan.",
+    "accentColor": "لون التمييز",
+    "accentColorHint": "يُستخدم للأزرار الرئيسية وحلقات التركيز ولوحة تسجيل الدخول.",
+    "logo": "الشعار",
+    "logoHint": "صورة مربعة بصيغة PNG أو JPEG أو WebP أو SVG حتى 256 كيلوبايت. تُستخدم أيضًا أيقونةً لعلامة التبويب.",
+    "upload": "رفع",
+    "reset": "إعادة تعيين",
+    "logoTooLarge": "يجب ألا يتجاوز حجم الشعار 256 كيلوبايت",
+    "logoWrongType": "يجب أن يكون الشعار صورة PNG أو JPEG أو WebP أو SVG"
   }
 }

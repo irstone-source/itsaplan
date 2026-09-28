@@ -87,11 +87,13 @@ import {
   setStorageSettings,
   getHotkeySettings,
   setHotkeySettings,
+  setBranding,
   getProjectDefaults,
   setProjectDefaults,
 } from '#modules/settings/service';
 import { getUpdateStatus } from '#modules/settings/updates';
 import {
+  BrandingSchema,
   HotkeyCombosSchema,
   ProjectDefaultsSchema,
   StorageSettingsSchema,
@@ -436,6 +438,16 @@ export const godRoutes = new Elysia({ name: 'god', detail: { tags: ['God'] } })
       summary: 'Update instance keyboard shortcuts',
       description:
         'Replace the instance keyboard shortcut overrides. Each user may still rebind a shortcut for their own account.',
+    },
+  })
+
+  .put('/god/branding', ({ body }) => setBranding(body), {
+    body: BrandingSchema,
+    response: { 200: BrandingSchema, ...commonErrors },
+    detail: {
+      summary: 'Set instance branding',
+      description:
+        'Replace the product name, accent colour (#rrggbb) and logo (an image data URL). A null field restores the default.',
     },
   })
 

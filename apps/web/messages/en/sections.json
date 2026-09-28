@@ -27,6 +27,10 @@
       "label": "General",
       "description": "Defaults for new projects."
     },
+    "branding": {
+      "label": "Branding",
+      "description": "The product name, accent colour and logo everyone on this instance sees."
+    },
     "authentication": {
       "label": "Authentication",
       "description": "Who may register on this instance, how accounts are confirmed, and the providers people sign in with."

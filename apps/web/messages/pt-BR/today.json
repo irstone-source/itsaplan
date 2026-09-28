@@ -1,1 +1,10 @@
-{}
+{
+  "empty": "Nada precisa de você hoje: nenhum trabalho atribuído atrasado, com vencimento hoje ou em andamento.",
+  "buckets": {
+    "overdue": "Atrasado",
+    "due": "Vence hoje",
+    "started": "Em andamento",
+    "cycle": "No ciclo atual",
+    "scheduled": "Data de início atingida"
+  }
+}

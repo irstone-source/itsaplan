@@ -320,5 +320,19 @@
       "remove": "Remove project",
       "saved": "Group access saved"
     }
+  },
+  "branding": {
+    "saved": "Branding saved",
+    "identity": "Identity",
+    "appName": "Product name",
+    "appNameHint": "Shown in the sidebar, on the sign-in page and in the browser tab. Leave empty for It's a Plan.",
+    "accentColor": "Accent colour",
+    "accentColorHint": "Used for primary buttons, focus rings and the sign-in panel.",
+    "logo": "Logo",
+    "logoHint": "A square PNG, JPEG, WebP or SVG up to 256 KB. Also used as the browser tab icon.",
+    "upload": "Upload",
+    "reset": "Reset",
+    "logoTooLarge": "The logo must be 256 KB or smaller",
+    "logoWrongType": "The logo must be a PNG, JPEG, WebP or SVG image"
   }
 }
