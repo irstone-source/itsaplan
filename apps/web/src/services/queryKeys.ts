@@ -246,6 +246,8 @@ export const qk = {
   worklogs: (id: number) => ['worklogs', id] as const,
   // A project's inbox notifications (the list, scoped by the active filters) and the
   // project's unread count (the sidebar badge + live-refresh target).
+  // The viewer's cross-project work for one local date.
+  today: (date: string) => ['today', date] as const,
   notifications: (projectKey: string, filters?: unknown) =>
     ['notifications', projectKey, filters ?? {}] as const,
   notificationsUnread: (projectKey: string) => ['notificationsUnread', projectKey] as const,

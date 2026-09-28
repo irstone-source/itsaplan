@@ -10,9 +10,11 @@ import {
   SquareKanban,
   StickyNote,
   Target,
+  CalendarCheck,
 } from 'lucide-react';
 import {
   allWorkPath,
+  todayPath,
   cyclesPath,
   dashboardsPath,
   documentsPath,
@@ -118,7 +120,14 @@ export default function SidebarWorkNav({
               disabled={disabled}
             />
           )}
-          {/* Ungated: spans every project the member can read. */}
+          {/* Ungated: span every project the member can read. */}
+          <SidebarNavItem
+            href={todayPath()}
+            icon={CalendarCheck}
+            label={t('today')}
+            active={pathname === todayPath()}
+            disabled={false}
+          />
           <SidebarNavItem
             href={allWorkPath()}
             icon={Layers}

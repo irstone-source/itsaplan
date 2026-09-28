@@ -9,6 +9,7 @@ export const TEAM_SLUG_PATTERN = '^[a-z][a-z0-9-]{0,38}[a-z0-9]$';
 
 const RESERVED_SLUGS = new Set([
   'account',
+  'all-work',
   'api',
   'docs',
   'forgot-password',
@@ -24,6 +25,7 @@ const RESERVED_SLUGS = new Set([
   'reset-password',
   'settings',
   'share',
+  'today',
 ]);
 
 export function isReservedSlug(slug: string): boolean {

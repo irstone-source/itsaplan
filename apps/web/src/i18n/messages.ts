@@ -10,6 +10,7 @@ import display from '../../messages/en/display.json';
 import documents from '../../messages/en/documents.json';
 import filters from '../../messages/en/filters.json';
 import god from '../../messages/en/god.json';
+import today from '../../messages/en/today.json';
 import inbox from '../../messages/en/inbox.json';
 import initiatives from '../../messages/en/initiatives.json';
 import invite from '../../messages/en/invite.json';
@@ -39,6 +40,7 @@ import { DEFAULT_LOCALE, type Locale } from './locales';
 const defaultMessages = {
   meta,
   allWork,
+  today,
   auth,
   common,
   nav,

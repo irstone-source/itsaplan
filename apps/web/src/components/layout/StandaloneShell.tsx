@@ -10,9 +10,16 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { LocaleToggle } from '@/components/locale-toggle';
 import UserMenu from '@/components/layout/UserMenu';
 
-// The shell for All Work: a slim header with no project loaded. The back link goes
-// to the root redirector, which lands on the last-used project.
-export default function AllWorkShell({ children }: { children: ReactNode }) {
+// The shell for pages that span every project (All Work, Today): a slim header with
+// no project loaded. The back link goes to the root redirector, which lands on the
+// last-used project.
+export default function StandaloneShell({
+  title,
+  children,
+}: {
+  title: 'allWork' | 'today';
+  children: ReactNode;
+}) {
   const t = useTranslations('nav');
 
   return (
@@ -24,7 +31,7 @@ export default function AllWorkShell({ children }: { children: ReactNode }) {
           </Link>
         </Button>
         <Separator orientation="vertical" className="me-1 h-4" />
-        <div className="min-w-0 truncate text-sm font-medium">{t('allWork')}</div>
+        <div className="min-w-0 truncate text-sm font-medium">{t(title)}</div>
         <div className="ms-auto flex items-center gap-2">
           <LocaleToggle />
           <ThemeToggle />
