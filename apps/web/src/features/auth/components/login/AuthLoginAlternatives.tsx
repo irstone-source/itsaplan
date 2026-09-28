@@ -56,10 +56,14 @@ export default function AuthLoginAlternatives({
           {t('withGoogle')}
         </Button>
       )}
-      <Button type="button" variant="outline" onClick={onPasskey} disabled={pending}>
-        <KeyRound />
-        {t('withPasskey')}
-      </Button>
+      {/* With the password form off the instance is single sign-on only, and the
+          passkey button would be a second way in. */}
+      {passwordEnabled && (
+        <Button type="button" variant="outline" onClick={onPasskey} disabled={pending}>
+          <KeyRound />
+          {t('withPasskey')}
+        </Button>
+      )}
     </Field>
   );
 }
