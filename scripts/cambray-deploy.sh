@@ -151,11 +151,24 @@ echo "rollback file: $ROLLBACK"
 # ── backup ──────────────────────────────────────────────────────────────────
 log "Backing up the production database"
 DUMP="$BACKUP_DIR/prod-$STAMP.sql.gz"
-# base64 keeps the gzip stream intact through the ssh terminal; \r is what a
-# pseudo-terminal may add to each line.
-railway ssh -s postgres -- sh -c \
-  'pg_dump --clean --if-exists --no-owner -U "$PGUSER" -d "$PGDATABASE" | gzip | base64' \
-  | tr -d '\r' | base64 -d > "$DUMP"
+RAW="$BACKUP_DIR/prod-$STAMP.raw"
+# base64 keeps the gzip stream intact through the ssh terminal. The terminal also
+# carries prompts and a pseudo-terminal's \r, so only the lines between the markers
+# are decoded, and the end marker is printed only when pg_dump succeeded.
+# The script holds no single quotes, so it can be wrapped in them for either form.
+REMOTE='set -o pipefail; echo __DUMP_BEGIN__; pg_dump --clean --if-exists --no-owner -U "$PGUSER" -d "$PGDATABASE" | gzip | base64 -w 76 && echo __DUMP_END__'
+# ssh may join the command words and have the remote shell parse them again, or
+# pass them through as they are. The probe prints "__probe__ ok" only in the first case.
+if railway ssh -s postgres -- "sh -c 'echo __probe__ ok'" 2>/dev/null | tr -d '\r' | grep -q '^__probe__ ok$'; then
+  railway ssh -s postgres -- "bash -c '$REMOTE'" | tr -d '\r' > "$RAW" || true
+else
+  railway ssh -s postgres -- bash -c "$REMOTE" | tr -d '\r' > "$RAW" || true
+fi
+grep -q '^__DUMP_END__$' "$RAW" \
+  || die "pg_dump did not finish; remote output kept in $RAW"
+sed -n '/^__DUMP_BEGIN__$/,/^__DUMP_END__$/p' "$RAW" | sed '1d;$d' | base64 -d > "$DUMP" \
+  || die "could not decode the dump; remote output kept in $RAW"
+rm -f "$RAW"
 gzip -t "$DUMP" || die "backup is not a valid gzip stream: $DUMP"
 gunzip -c "$DUMP" | tail -n 5 | grep -q 'PostgreSQL database dump complete' \
   || die "backup is truncated: $DUMP"
