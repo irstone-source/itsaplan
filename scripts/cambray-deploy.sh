@@ -4,6 +4,7 @@
 #
 #   scripts/cambray-deploy.sh                 print the plan, change nothing
 #   scripts/cambray-deploy.sh --apply         back up, build, deploy
+#   scripts/cambray-deploy.sh --backup        only dump the production database
 #   scripts/cambray-deploy.sh --rollback FILE point every service back at the
 #                                             images recorded in FILE
 #
@@ -36,9 +37,10 @@ MODE=plan
 ROLLBACK_FILE=""
 case "${1:-}" in
   --apply) MODE=apply ;;
+  --backup) MODE=backup ;;
   --rollback) MODE=rollback; ROLLBACK_FILE="${2:?--rollback needs the rollback file}" ;;
   "") ;;
-  *) echo "usage: $0 [--apply | --rollback FILE]" >&2; exit 2 ;;
+  *) echo "usage: $0 [--apply | --backup | --rollback FILE]" >&2; exit 2 ;;
 esac
 
 cd "$(git rev-parse --show-toplevel)"
@@ -115,16 +117,18 @@ fi
 # ── preflight ───────────────────────────────────────────────────────────────
 log "Preflight"
 command -v railway >/dev/null || die "railway CLI not installed"
-command -v gh >/dev/null || die "gh CLI not installed"
-[[ -z "$(git status --porcelain)" ]] || die "working tree not clean"
-BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-SHA="$(git rev-parse HEAD)"
-git fetch -q origin "$BRANCH" || die "branch $BRANCH is not on origin"
-[[ "$(git rev-parse "origin/$BRANCH")" == "$SHA" ]] || die "push $BRANCH to origin first"
 railway whoami >/dev/null || die "railway login"
 railway status --json | grep -q '"name": *"itsaplan"' || die "run: railway link -p itsaplan -e production"
-gh auth status >/dev/null 2>&1 || die "gh auth login"
-echo "branch $BRANCH @ ${SHA:0:8}, tag $TAG, images ${IMAGE_PREFIX}-<service>:$VERSION"
+if [[ "$MODE" != backup ]]; then
+  command -v gh >/dev/null || die "gh CLI not installed"
+  [[ -z "$(git status --porcelain)" ]] || die "working tree not clean"
+  BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+  SHA="$(git rev-parse HEAD)"
+  git fetch -q origin "$BRANCH" || die "branch $BRANCH is not on origin"
+  [[ "$(git rev-parse "origin/$BRANCH")" == "$SHA" ]] || die "push $BRANCH to origin first"
+  gh auth status >/dev/null 2>&1 || die "gh auth login"
+  echo "branch $BRANCH @ ${SHA:0:8}, tag $TAG, images ${IMAGE_PREFIX}-<service>:$VERSION"
+fi
 
 log "Running images"
 current_images
@@ -144,9 +148,11 @@ EOF
 fi
 
 mkdir -p "$BACKUP_DIR"
-ROLLBACK="$BACKUP_DIR/rollback-$STAMP.txt"
-current_images > "$ROLLBACK"
-echo "rollback file: $ROLLBACK"
+if [[ "$MODE" == apply ]]; then
+  ROLLBACK="$BACKUP_DIR/rollback-$STAMP.txt"
+  current_images > "$ROLLBACK"
+  echo "rollback file: $ROLLBACK"
+fi
 
 # ── backup ──────────────────────────────────────────────────────────────────
 log "Backing up the production database"
@@ -173,6 +179,7 @@ gzip -t "$DUMP" || die "backup is not a valid gzip stream: $DUMP"
 gunzip -c "$DUMP" | tail -n 5 | grep -q 'PostgreSQL database dump complete' \
   || die "backup is truncated: $DUMP"
 echo "backup: $DUMP ($(du -h "$DUMP" | cut -f1))"
+[[ "$MODE" == backup ]] && exit 0
 
 # ── build ───────────────────────────────────────────────────────────────────
 log "Building images for $TAG"
