@@ -11,7 +11,7 @@
 //   API_URL   default https://plan-api.cambray.co
 //   CLIENTS   comma-separated project keys to fold in (default GSG,FGE,WSD,SGOLF,LANO,BIKEV)
 //   TARGET    key of the consulting project (default CON)
-//   LOGO      logo file (default ~/cambray-website/web/public/logos/cambray-mark-teal.svg)
+//   LOGO      logo file (default scripts/cambray-mark-tile.svg: the teal mark on a dark tile)
 //
 // With --apply, each client issue is recreated in the consulting project with its
 // state, priority, dates, assignee, labels, parent and comments, and a "Migrated from
@@ -30,8 +30,7 @@ const CLIENTS = (process.env.CLIENTS ?? 'GSG,FGE,WSD,SGOLF,LANO,BIKEV')
   .split(',')
   .map((s) => s.trim());
 const TARGET = process.env.TARGET ?? 'CON';
-const LOGO =
-  process.env.LOGO ?? `${homedir()}/cambray-website/web/public/logos/cambray-mark-teal.svg`;
+const LOGO = process.env.LOGO ?? new URL('./cambray-mark-tile.svg', import.meta.url).pathname;
 const BRANDING = { appName: 'Cambray', accentColor: '#00E5CC' };
 const LABEL_COLORS = [
   '#00E5CC',
