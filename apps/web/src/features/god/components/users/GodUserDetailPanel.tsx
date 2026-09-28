@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { Bot, FolderOpen, MailWarning, Shield, Trash2, TriangleAlert, X } from 'lucide-react';
+import { Bot, FolderOpen, MailWarning, Plus, Shield, Trash2, TriangleAlert, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { formatDate, formatDateTime } from '@/utils/dates';
@@ -16,6 +16,7 @@ import { usePermissionCatalogQuery } from '@/services/roles.service';
 import { useDeleteInstanceUser, useInstanceUserQuery } from '../../services/god.service';
 import { useProviderList } from '../../hooks/useProviderList';
 import GodUserProjectCard from './GodUserProjectCard';
+import GodUserProjectsDialog from './GodUserProjectsDialog';
 import GodUserVerifyButton from './GodUserVerifyButton';
 
 // One fact in the account grid: a quiet label with the value under it. Reading down
@@ -47,6 +48,7 @@ export default function GodUserDetailPanel({
   const deleteUser = useDeleteInstanceUser();
   const [confirming, setConfirming] = useState(false);
   const [withProjects, setWithProjects] = useState(false);
+  const [assigning, setAssigning] = useState(false);
   const user = userQuery.data;
 
   // Projects this user owns alone. Deleting the account leaves them without anyone
@@ -175,6 +177,17 @@ export default function GodUserDetailPanel({
                   {user.projects.length > 0 && (
                     <span className="text-xs text-muted-foreground">{user.projects.length}</span>
                   )}
+                  {!user.isAgent && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ms-auto h-7"
+                      onClick={() => setAssigning(true)}
+                    >
+                      <Plus />
+                      {t('addToProjects')}
+                    </Button>
+                  )}
                 </div>
                 {user.projects.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 rounded-lg bg-muted/30 px-6 py-10 text-center">
@@ -189,6 +202,7 @@ export default function GodUserDetailPanel({
                     {user.projects.map((p) => (
                       <GodUserProjectCard
                         key={p.projectId}
+                        userId={user.id}
                         project={p}
                         catalog={catalogQuery.data}
                       />
@@ -218,6 +232,10 @@ export default function GodUserDetailPanel({
           </div>
         )}
       </div>
+
+      {assigning && user && (
+        <GodUserProjectsDialog user={user} onClose={() => setAssigning(false)} />
+      )}
 
       {confirming && user && (
         <ConfirmDialog

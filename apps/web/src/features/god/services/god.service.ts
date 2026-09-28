@@ -38,6 +38,8 @@ import {
   deleteInstanceUser,
   listInstanceProjects,
   listInstanceProjectOptions,
+  assignInstanceUserProjects,
+  removeInstanceUserProject,
   getInstanceProject,
   listInstanceTeams,
   getInstanceTeam,
@@ -312,6 +314,32 @@ export function useInstanceProjectQuery(projectId: number) {
   return useQuery({
     queryKey: qk.instanceProject(projectId),
     queryFn: () => getInstanceProject(projectId),
+  });
+}
+
+// Membership changes made from the account panel. The response is the updated
+// account, and the list's project counts move with it.
+export function useAssignInstanceUserProjects() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { userId: string; projectIds: number[] }) =>
+      assignInstanceUserProjects(input.userId, input.projectIds),
+    onSuccess: (data) => {
+      qc.setQueryData(qk.instanceUser(data.id), data);
+      void qc.invalidateQueries({ queryKey: qk.anyInstanceUsers });
+    },
+  });
+}
+
+export function useRemoveInstanceUserProject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { userId: string; projectId: number }) =>
+      removeInstanceUserProject(input.userId, input.projectId),
+    onSuccess: (data) => {
+      qc.setQueryData(qk.instanceUser(data.id), data);
+      void qc.invalidateQueries({ queryKey: qk.anyInstanceUsers });
+    },
   });
 }
 

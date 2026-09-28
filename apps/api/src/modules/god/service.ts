@@ -38,6 +38,8 @@ import type { AnyPgColumn, PgTable } from 'drizzle-orm/pg-core';
 import { HttpError, iso } from '#shared/lib';
 import { deleteAccount } from '#shared/account-deletion';
 import { mappedProjectIds, reconcileProjects } from '#modules/scim/reconcile';
+import { assertTeamSeatFree } from '#modules/teams/service';
+import { countOwners, removeMember } from '#modules/members/service';
 import {
   defaultMemberPermissions,
   fullPermissions,
@@ -274,6 +276,79 @@ export async function getInstanceUser(userId: string): Promise<InstanceUserDetai
   });
 
   return { ...toRow(row, facts), projects };
+}
+
+// Puts a person into each of the given projects as a member on their team's default
+// role, joining them to a team as a member first when they are not in it. Projects
+// they are already in keep the role they hold. An agent joins with its AI Agent
+// config instead.
+export async function assignInstanceUserProjects(
+  userId: string,
+  projectIds: number[],
+): Promise<void> {
+  const [target] = await db
+    .select({ id: user.id, agentId: aiAgent.id })
+    .from(user)
+    .leftJoin(aiAgent, eq(aiAgent.userId, user.id))
+    .where(eq(user.id, userId));
+  if (!target) throw new HttpError(404, 'User not found');
+  if (target.agentId != null) throw new HttpError(400, 'An agent joins projects from its config');
+
+  const projects = await db
+    .select({ id: project.id, teamId: project.teamId })
+    .from(project)
+    .where(inArray(project.id, projectIds));
+  if (projects.length !== new Set(projectIds).size) {
+    throw new HttpError(400, 'Unknown project id');
+  }
+
+  const teamIds = [...new Set(projects.map((p) => p.teamId))];
+  const joined = await db
+    .select({ teamId: teamMember.teamId })
+    .from(teamMember)
+    .where(and(eq(teamMember.userId, userId), inArray(teamMember.teamId, teamIds)));
+  const newTeamIds = teamIds.filter((id) => !joined.some((j) => j.teamId === id));
+  for (const teamId of newTeamIds) await assertTeamSeatFree(teamId);
+
+  const defaultRoles = await db
+    .select({ teamId: teamRole.teamId, id: teamRole.id })
+    .from(teamRole)
+    .where(and(inArray(teamRole.teamId, teamIds), eq(teamRole.isDefault, true)));
+  const defaultRoleOf = new Map(defaultRoles.map((r) => [r.teamId, r.id]));
+
+  await db.transaction(async (tx) => {
+    if (newTeamIds.length > 0) {
+      await tx
+        .insert(teamMember)
+        .values(newTeamIds.map((teamId) => ({ teamId, userId, role: 'member' as const })))
+        .onConflictDoNothing();
+    }
+    await tx
+      .insert(projectMember)
+      .values(
+        projects.map((p) => ({
+          projectId: p.id,
+          userId,
+          role: 'member' as const,
+          roleId: defaultRoleOf.get(p.teamId) ?? null,
+        })),
+      )
+      .onConflictDoNothing();
+  });
+}
+
+// Takes a person out of one project. The team membership stays, so they can be put
+// back without a new seat. The last owner cannot be removed.
+export async function removeInstanceUserProject(userId: string, projectId: number): Promise<void> {
+  const [membership] = await db
+    .select({ role: projectMember.role })
+    .from(projectMember)
+    .where(and(eq(projectMember.projectId, projectId), eq(projectMember.userId, userId)));
+  if (!membership) throw new HttpError(404, 'Not a member of this project');
+  if (membership.role === 'owner' && (await countOwners(projectId)) <= 1) {
+    throw new HttpError(400, 'The last owner cannot be removed; add another owner first');
+  }
+  await removeMember(projectId, userId);
 }
 
 // How many owners each of the given projects has, keyed by project id.
@@ -520,12 +595,13 @@ export async function listInstanceProjects(options: {
 // Every project on the instance as a picker entry, by key. What the SCIM group
 // mapping form fills its project select from.
 export async function listInstanceProjectOptions(): Promise<
-  { id: number; key: string; name: string }[]
+  { id: number; key: string; name: string; teamName: string }[]
 > {
   return db
-    .select({ id: project.id, key: project.key, name: project.name })
+    .select({ id: project.id, key: project.key, name: project.name, teamName: team.name })
     .from(project)
-    .orderBy(project.key);
+    .innerJoin(team, eq(team.id, project.teamId))
+    .orderBy(team.name, project.name);
 }
 
 // One project with its members and the access each membership resolves to. Returns

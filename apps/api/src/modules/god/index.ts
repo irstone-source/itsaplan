@@ -31,6 +31,8 @@ import {
   getInstanceProject,
   getInstanceTeam,
   getInstanceUser,
+  assignInstanceUserProjects,
+  removeInstanceUserProject,
   listInstanceProjects,
   listInstanceProjectOptions,
   listInstanceTeams,
@@ -75,6 +77,8 @@ import {
   searchPageQuery,
   teamParams,
   userParams,
+  assignProjectsBody,
+  userProjectParams,
 } from './model';
 import { emailTestError } from './email-test';
 import { getInstanceBotSettings, setInstanceBotSettings } from '#modules/telegram/service';
@@ -525,6 +529,42 @@ export const godRoutes = new Elysia({ name: 'god', detail: { tags: ['God'] } })
         summary: 'Get an instance user',
         description:
           'Get one account with the projects it can reach and the permissions its membership resolves to.',
+      },
+    },
+  )
+
+  .post(
+    '/god/users/:userId/projects',
+    async ({ params, body }) => {
+      await assignInstanceUserProjects(params.userId, body.projectIds);
+      return (await getInstanceUser(params.userId))!;
+    },
+    {
+      params: userParams,
+      body: assignProjectsBody,
+      response: { 200: InstanceUserDetailResponse, ...accessErrors, ...errors(400, 409) },
+      detail: {
+        summary: 'Add a user to projects',
+        description:
+          "Add an account to several projects at once, as a member on each team's default role. " +
+          "The account joins a project's team as a member first when it is not in it. Projects it " +
+          'is already in are left as they are.',
+      },
+    },
+  )
+
+  .delete(
+    '/god/users/:userId/projects/:projectId',
+    async ({ params }) => {
+      await removeInstanceUserProject(params.userId, params.projectId);
+      return (await getInstanceUser(params.userId))!;
+    },
+    {
+      params: userProjectParams,
+      response: { 200: InstanceUserDetailResponse, ...accessErrors, ...errors(400) },
+      detail: {
+        summary: 'Remove a user from a project',
+        description: 'Take an account out of one project. Its team membership stays.',
       },
     },
   )

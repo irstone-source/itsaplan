@@ -271,8 +271,14 @@ export const InstanceProjectDetailResponse = t.Composite([
 export const InstanceProjectPageResponse = pageResponse(InstanceProjectResponse);
 
 export const InstanceProjectOptionListResponse = t.Array(
-  t.Object({ id: t.Number(), key: t.String(), name: t.String() }),
+  t.Object({ id: t.Number(), key: t.String(), name: t.String(), teamName: t.String() }),
 );
+
+export const assignProjectsBody = t.Object({
+  projectIds: t.Array(t.Number(), { minItems: 1, maxItems: 500 }),
+});
+
+export const userProjectParams = t.Object({ userId: t.String(), projectId: t.Numeric() });
 
 export const teamParams = t.Object({ teamId: t.Numeric() });
 

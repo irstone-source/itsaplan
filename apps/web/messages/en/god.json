@@ -63,7 +63,14 @@
     "deleteWithProjectsOn": "Everything inside goes too.",
     "deleteWithProjectsOff": "Or cancel and add a second owner first.",
     "deleted": "Account deleted",
-    "deletedWithProjects": "Account and its projects deleted"
+    "deletedWithProjects": "Account and its projects deleted",
+    "addToProjects": "Add to projects",
+    "addToProjectsTitle": "Add {name} to projects",
+    "addToProjectsHint": "Joins each selected project as a member on its team's default role. The person joins the project's team first when they are not in it.",
+    "addToProjectsSubmit": "{count, plural, =0 {Add} one {Add to # project} other {Add to # projects}}",
+    "addedToProjects": "Added to {count, plural, one {# project} other {# projects}}",
+    "removeFromProject": "Remove from {project}",
+    "removedFromProject": "Removed from {project}"
   },
   "projects": {
     "empty": "No projects match this search.",

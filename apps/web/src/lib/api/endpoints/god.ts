@@ -219,6 +219,7 @@ export interface InstanceProjectOption {
   id: number;
   key: string;
   name: string;
+  teamName: string;
 }
 
 // Instance administration (god mode). Every route below is owner-only; a plain
@@ -306,6 +307,15 @@ export const listInstanceUsers = (
 
 export const getInstanceUser = (userId: string) =>
   request<InstanceUserDetail>(`/god/users/${userId}`);
+
+export const assignInstanceUserProjects = (userId: string, projectIds: number[]) =>
+  request<InstanceUserDetail>(`/god/users/${userId}/projects`, {
+    method: 'POST',
+    body: JSON.stringify({ projectIds }),
+  });
+
+export const removeInstanceUserProject = (userId: string, projectId: number) =>
+  request<InstanceUserDetail>(`/god/users/${userId}/projects/${projectId}`, { method: 'DELETE' });
 
 export const verifyInstanceUserEmail = (userId: string) =>
   request<InstanceUserDetail>(`/god/users/${userId}/verify-email`, { method: 'POST' });
