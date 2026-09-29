@@ -1198,7 +1198,7 @@ export const initiative = pgTable(
   (t) => [
     check(
       'initiative_billing_model_check',
-      sql`${t.billingModel} IN ('day_rate', 'retainer', 'rev_share')`,
+      sql`${t.billingModel} IN ('day_rate', 'retainer', 'rev_share', 'internal')`,
     ),
     check('initiative_day_rate_check', sql`${t.dayRatePence} >= 0`),
     check(
@@ -1263,6 +1263,8 @@ export const cycle = pgTable(
     goal: text('goal').notNull().default(''),
     startDate: date('start_date').notNull(),
     endDate: date('end_date').notNull(),
+    // What the cycle's work should be worth (pence), for planning against.
+    targetPence: integer('target_pence'),
     // When the cycle was finished before its planned end date. NULL while it still
     // runs on its dates; once set it is never cleared, and end_date keeps the date
     // the cycle was planned to run until.
@@ -1324,6 +1326,8 @@ export const issue = pgTable(
     // Time is held in minutes; the UI enters and shows it as hours and minutes.
     estimatePoints: numeric('estimate_points'),
     estimateMinutes: integer('estimate_minutes'),
+    // A value set by hand (pence), in place of estimate × day rate.
+    valueOverridePence: integer('value_override_pence'),
     startDate: date('start_date'),
     dueDate: date('due_date'),
     position: doublePrecision('position').notNull().default(0),

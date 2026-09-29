@@ -97,7 +97,13 @@ export interface IssueRow {
   // The initiative this issue is linked to, expanded to id + title for rendering
   // and status for ordering the lanes of a board grouped by initiative, or null.
   // Filled by attachGroupings; mapIssue alone leaves it null.
-  initiative: { id: number; title: string; status: string } | null;
+  initiative: {
+    id: number;
+    title: string;
+    status: string;
+    billingModel: string | null;
+    dayRatePence: number | null;
+  } | null;
   // The cycle this issue is planned into, expanded to id + name for rendering and
   // status for filtering by the running or the upcoming ones, or null. Filled by
   // attachGroupings; mapIssue alone leaves it null.
@@ -114,6 +120,7 @@ export interface IssueRow {
   // Time is in minutes; the UI enters and shows it as hours and minutes.
   estimatePoints: number | null;
   estimateMinutes: number | null;
+  valueOverridePence: number | null;
   // The time logged against the issue: the sum of its worklog entries, 0 when
   // nothing was logged. Carried here so a board reads it without a request per
   // issue. Populated by attachLoggedMinutes; mapIssue alone leaves it at 0.
@@ -164,6 +171,7 @@ function mapIssue(row: typeof issue.$inferSelect, projectKey: string): IssueRow 
     priority: row.priority,
     estimatePoints: numOrNull(row.estimatePoints),
     estimateMinutes: row.estimateMinutes,
+    valueOverridePence: row.valueOverridePence,
     loggedMinutes: 0,
     startDate: row.startDate,
     dueDate: row.dueDate,
@@ -487,6 +495,8 @@ async function attachGroupings(issues: IssueRow[]): Promise<void> {
       initiativeId: initiative.id,
       initiativeTitle: initiative.title,
       initiativeStatus: initiative.status,
+      initiativeBillingModel: initiative.billingModel,
+      initiativeDayRatePence: initiative.dayRatePence,
       cycleId: cycle.id,
       cycleName: cycle.name,
       cycleStart: cycle.startDate,
@@ -510,7 +520,13 @@ async function attachGroupings(issues: IssueRow[]): Promise<void> {
     const r = byIssue.get(i.id);
     i.initiative =
       r && r.initiativeId != null
-        ? { id: r.initiativeId, title: r.initiativeTitle!, status: r.initiativeStatus! }
+        ? {
+            id: r.initiativeId,
+            title: r.initiativeTitle!,
+            status: r.initiativeStatus!,
+            billingModel: r.initiativeBillingModel,
+            dayRatePence: r.initiativeDayRatePence,
+          }
         : null;
     i.cycle =
       r && r.cycleId != null
@@ -699,6 +715,7 @@ export interface NewIssueInput {
   priority?: string | null;
   estimatePoints?: number | null;
   estimateMinutes?: number | null;
+  valueOverridePence?: number | null;
   startDate?: string | null;
   dueDate?: string | null;
   labelIds?: number[];
@@ -882,6 +899,7 @@ export async function createIssue(
         priority: input.priority ?? null,
         estimatePoints: input.estimatePoints == null ? null : String(input.estimatePoints),
         estimateMinutes: input.estimateMinutes ?? null,
+        valueOverridePence: input.valueOverridePence ?? null,
         startDate: input.startDate ?? null,
         dueDate: input.dueDate ?? null,
         position: Number(posRow.pos),
@@ -991,6 +1009,7 @@ export interface IssuePatch {
   priority?: string | null;
   estimatePoints?: number | null;
   estimateMinutes?: number | null;
+  valueOverridePence?: number | null;
   startDate?: string | null;
   dueDate?: string | null;
 }
@@ -1057,6 +1076,7 @@ export async function updateIssue(
   if (patch.estimatePoints !== undefined)
     set.estimatePoints = patch.estimatePoints == null ? null : String(patch.estimatePoints);
   if (patch.estimateMinutes !== undefined) set.estimateMinutes = patch.estimateMinutes;
+  if (patch.valueOverridePence !== undefined) set.valueOverridePence = patch.valueOverridePence;
   if (patch.startDate !== undefined) set.startDate = patch.startDate;
   if (patch.dueDate !== undefined) set.dueDate = patch.dueDate;
 

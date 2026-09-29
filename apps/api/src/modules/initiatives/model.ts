@@ -120,9 +120,15 @@ export const createInitiativeBody = t.Object({
   targetDate: t.Optional(t.Nullable(isoDate("Target date 'YYYY-MM-DD', or null."))),
   billingModel: t.Optional(
     t.Nullable(
-      t.UnionEnum(['day_rate', 'retainer', 'rev_share'], {
-        description: 'How the work is charged, or null.',
-      }),
+      t.Union(
+        [
+          t.Literal('day_rate'),
+          t.Literal('retainer'),
+          t.Literal('rev_share'),
+          t.Literal('internal'),
+        ],
+        { description: 'How the work is charged, or null.' },
+      ),
     ),
   ),
   dayRatePence: t.Optional(

@@ -96,6 +96,8 @@ describe('issues', () => {
         id: initiative.id,
         title: 'Q3 Launch',
         status: 'active',
+        billingModel: null,
+        dayRatePence: null,
       });
 
       // The board payload carries the same expanded shape.
@@ -104,6 +106,8 @@ describe('issues', () => {
         id: initiative.id,
         title: 'Q3 Launch',
         status: 'active',
+        billingModel: null,
+        dayRatePence: null,
       });
     });
 

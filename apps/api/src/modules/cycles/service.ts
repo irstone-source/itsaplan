@@ -23,6 +23,7 @@ export interface CycleRow {
   goal: string;
   startDate: string;
   endDate: string;
+  targetPence: number | null;
   // When the cycle was finished ahead of its planned end date, or null.
   completedAt: string | null;
   status: CycleStatus;
@@ -54,6 +55,7 @@ function toCycle(row: typeof cycle.$inferSelect, progress: CycleProgress): Cycle
     goal: row.goal,
     startDate: row.startDate,
     endDate: row.endDate,
+    targetPence: row.targetPence,
     completedAt: row.completedAt ? iso(row.completedAt) : null,
     status: cycleStatus(row.startDate, row.endDate, row.completedAt),
     createdAt: iso(row.createdAt),
@@ -212,6 +214,7 @@ export interface NewCycleInput {
   goal?: string;
   startDate: string;
   endDate: string;
+  targetPence?: number | null;
 }
 
 export async function createCycle(projectId: number, input: NewCycleInput): Promise<CycleRow> {
@@ -224,6 +227,7 @@ export async function createCycle(projectId: number, input: NewCycleInput): Prom
       goal: input.goal ?? '',
       startDate: input.startDate,
       endDate: input.endDate,
+      targetPence: input.targetPence ?? null,
     })
     .returning();
   // A cycle nothing can point at yet, so its progress needs no reading back.
@@ -233,6 +237,7 @@ export async function createCycle(projectId: number, input: NewCycleInput): Prom
 export interface CyclePatch {
   name?: string;
   goal?: string;
+  targetPence?: number | null;
   startDate?: string;
   endDate?: string;
 }
@@ -273,6 +278,7 @@ export async function updateCycle(id: number, patch: CyclePatch): Promise<CycleR
   const set: Partial<typeof cycle.$inferInsert> = {};
   if (patch.name !== undefined) set.name = patch.name;
   if (patch.goal !== undefined) set.goal = patch.goal;
+  if (patch.targetPence !== undefined) set.targetPence = patch.targetPence;
   if (patch.startDate !== undefined) set.startDate = patch.startDate;
   if (patch.endDate !== undefined) set.endDate = patch.endDate;
   if (Object.keys(set).length > 0) {

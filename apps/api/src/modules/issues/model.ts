@@ -90,7 +90,15 @@ export const IssueResponse = t.Object({
   // The linked initiative, or null. It carries id + title for rendering, and status
   // to order the lanes of a board grouped by initiative. Create and update set it
   // through initiativeId.
-  initiative: t.Nullable(t.Object({ id: t.Number(), title: t.String(), status: t.String() })),
+  initiative: t.Nullable(
+    t.Object({
+      id: t.Number(),
+      title: t.String(),
+      status: t.String(),
+      billingModel: t.Nullable(t.String()),
+      dayRatePence: t.Nullable(t.Number()),
+    }),
+  ),
   // The cycle this issue is planned into, or null. It carries id + name for rendering,
   // and status to filter by the running or the upcoming ones. Create and update set it
   // through cycleId.
@@ -106,6 +114,8 @@ export const IssueResponse = t.Object({
   // Time is in minutes; the UI enters and shows it as hours and minutes.
   estimatePoints: t.Nullable(t.Number()),
   estimateMinutes: t.Nullable(t.Number()),
+  // A value set by hand (pence), in place of estimate × day rate.
+  valueOverridePence: t.Nullable(t.Number()),
   // The sum of the issue's logged time entries, 0 when nothing was logged.
   loggedMinutes: t.Number(),
   startDate: t.Nullable(t.String()),
@@ -202,6 +212,13 @@ export const NewParentIdSchema = t.Integer({
 // hours-and-minutes field is the UI's, and it sends what it parsed.
 export const EstimatePointsSchema = t.Nullable(
   t.Number({ minimum: 0, description: 'Story point estimate, or null to clear it.' }),
+);
+
+export const ValueOverrideSchema = t.Nullable(
+  t.Integer({
+    minimum: 0,
+    description: 'Value in pence set by hand in place of estimate × day rate, or null to clear it.',
+  }),
 );
 
 export const EstimateMinutesSchema = t.Nullable(
@@ -476,6 +493,7 @@ export const createIssueBody = t.Object({
   ),
   estimatePoints: t.Optional(EstimatePointsSchema),
   estimateMinutes: t.Optional(EstimateMinutesSchema),
+  valueOverridePence: t.Optional(ValueOverrideSchema),
   startDate: t.Optional(t.Nullable(isoDate("Start date 'YYYY-MM-DD', or null."))),
   dueDate: t.Optional(t.Nullable(isoDate("Due date 'YYYY-MM-DD', or null."))),
   labelIds: t.Optional(
@@ -595,6 +613,7 @@ export const updateIssueBody = t.Object({
   ),
   estimatePoints: t.Optional(EstimatePointsSchema),
   estimateMinutes: t.Optional(EstimateMinutesSchema),
+  valueOverridePence: t.Optional(ValueOverrideSchema),
   startDate: t.Optional(t.Nullable(isoDate("Start date 'YYYY-MM-DD', or null."))),
   dueDate: t.Optional(t.Nullable(isoDate("Due date 'YYYY-MM-DD', or null."))),
   labelIds: t.Optional(

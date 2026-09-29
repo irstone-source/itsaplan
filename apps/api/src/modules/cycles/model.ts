@@ -26,6 +26,7 @@ export const CycleResponse = t.Object({
   goal: t.String(),
   startDate: t.String(),
   endDate: t.String(),
+  targetPence: t.Nullable(t.Number()),
   completedAt: t.Nullable(t.String()),
   status: t.String(),
   createdAt: t.String(),
@@ -46,6 +47,14 @@ export const createCycleBody = t.Object({
   goal: t.Optional(t.String({ description: 'What the team commits to in this cycle.' })),
   startDate: IsoDate,
   endDate: IsoDate,
+  targetPence: t.Optional(
+    t.Nullable(
+      t.Integer({
+        minimum: 0,
+        description: "What the cycle's work should be worth, in pence, or null.",
+      }),
+    ),
+  ),
 });
 
 export const updateCycleBody = t.Partial(createCycleBody);
@@ -68,12 +77,14 @@ const BillableKind = t.UnionEnum(['billable', 'internal']);
 
 export const CycleBillablesResponse = t.Object({
   hoursPerDay: t.Number(),
+  targetPence: t.Nullable(t.Number()),
   internalDayRatePence: t.Nullable(t.Number()),
   totals: t.Object({
     billablePence: t.Number(),
     billableDonePence: t.Number(),
     internalPence: t.Number(),
     internalDonePence: t.Number(),
+    netPence: t.Number(),
     estimatedMinutes: t.Number(),
     unestimated: t.Number(),
     unpriced: t.Number(),
@@ -99,6 +110,7 @@ export const CycleBillablesResponse = t.Object({
       initiativeId: t.Nullable(t.Number()),
       estimateMinutes: t.Nullable(t.Number()),
       valuePence: t.Nullable(t.Number()),
+      overridden: t.Boolean(),
       kind: BillableKind,
     }),
   ),

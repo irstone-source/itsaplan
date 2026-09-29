@@ -57,6 +57,7 @@ describe('cycle billables', () => {
       billableDonePence: 60000,
       internalPence: 0,
       internalDonePence: 0,
+      netPence: 90000,
       estimatedMinutes: 780,
       unestimated: 1,
       unpriced: 1,
@@ -79,6 +80,48 @@ describe('cycle billables', () => {
     expect(res.data!.totals.internalPence).toBe(30000);
     expect(res.data!.totals.billablePence).toBe(0);
     expect(res.data!.groups[0]).toMatchObject({ kind: 'internal', title: 'Internal work' });
+  });
+
+  it('uses a value set by hand, costs internal work off the net, and reports the target', async () => {
+    const { god } = await setup();
+    await god.api.god.billing.put({ hoursPerDay: 6, internalDayRatePence: 30000 });
+    const { col, cycleId } = await project(god.api, 'CON');
+    await god.api.cycles({ cycleId }).patch({ targetPence: 500000 });
+    const initiatives = god.api.projects({ projectKey: 'CON' }).initiatives;
+    const client = (
+      await initiatives.post({
+        title: 'LANO — goal',
+        billingModel: 'retainer',
+        dayRatePence: 100000,
+      })
+    ).data!;
+    const internal = (await initiatives.post({ title: 'Cambray — ops', billingModel: 'internal' }))
+      .data!;
+    const issues = god.api.projects({ projectKey: 'CON' }).issues;
+    const make = (title: string, patch: Record<string, unknown>) =>
+      issues.post({ columnId: col('unstarted'), title, cycleId, ...patch });
+
+    await make('by rate', { estimateMinutes: 360, initiativeId: client.id });
+    const fixed = (
+      await make('fixed price', { valueOverridePence: 250000, initiativeId: client.id })
+    ).data!;
+    await make('ops', { estimateMinutes: 180, initiativeId: internal.id });
+
+    const res = await god.api.cycles({ cycleId }).billables.get();
+    expect(res.data!.targetPence).toBe(500000);
+    expect(res.data!.totals).toMatchObject({
+      billablePence: 350000,
+      internalPence: 15000,
+      netPence: 335000,
+      unestimated: 0,
+      unpriced: 0,
+    });
+    expect(res.data!.issues.find((i) => i.id === fixed.id)).toMatchObject({
+      valuePence: 250000,
+      overridden: true,
+    });
+    expect(fixed.valueOverridePence).toBe(250000);
+    expect(fixed.initiative).toMatchObject({ billingModel: 'retainer', dayRatePence: 100000 });
   });
 
   it('keeps billing settings owner-only and readable by members', async () => {

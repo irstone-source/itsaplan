@@ -1,4 +1,4 @@
-import { db, initiative, issue, project, projectColumn } from '@repo/db';
+import { cycle, db, initiative, issue, project, projectColumn } from '@repo/db';
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import { getBillingSettings } from '#modules/settings/service';
 
@@ -12,6 +12,8 @@ export interface BillableIssue {
   initiativeId: number | null;
   estimateMinutes: number | null;
   valuePence: number | null;
+  // Whether valuePence was set by hand rather than worked out from the estimate.
+  overridden: boolean;
   kind: BillableKind;
 }
 
@@ -28,12 +30,15 @@ export interface BillableGroup {
 
 export interface CycleBillables {
   hoursPerDay: number;
+  targetPence: number | null;
   internalDayRatePence: number | null;
   totals: {
     billablePence: number;
     billableDonePence: number;
     internalPence: number;
     internalDonePence: number;
+    // Billable value less internal cost.
+    netPence: number;
     estimatedMinutes: number;
     // Issues that add nothing to the totals: no estimate, or an estimate with no rate.
     unestimated: number;
@@ -48,11 +53,16 @@ export function valueOf(minutes: number, hoursPerDay: number, dayRatePence: numb
   return Math.round((minutes / 60 / hoursPerDay) * dayRatePence);
 }
 
-// What the cycle's work is worth once done. An issue on an internal project is
-// costed at the internal day rate; any other issue is valued at its initiative's
-// day rate. Canceled and archived issues are left out.
+// What the cycle's work is worth once done. An issue on an internal project, or
+// under an initiative billed as internal, is costed at the internal day rate and
+// comes off the net; any other issue is valued at its initiative's day rate. A value
+// set by hand replaces estimate × rate. Canceled and archived issues are left out.
 export async function getCycleBillables(cycleId: number): Promise<CycleBillables> {
   const { hoursPerDay, internalDayRatePence } = await getBillingSettings();
+  const [target] = await db
+    .select({ targetPence: cycle.targetPence })
+    .from(cycle)
+    .where(eq(cycle.id, cycleId));
   const rows = await db
     .select({
       id: issue.id,
@@ -61,6 +71,7 @@ export async function getCycleBillables(cycleId: number): Promise<CycleBillables
       title: issue.title,
       stateType: projectColumn.stateType,
       estimateMinutes: issue.estimateMinutes,
+      valueOverridePence: issue.valueOverridePence,
       internal: project.internal,
       initiativeId: initiative.id,
       initiativeTitle: initiative.title,
@@ -79,6 +90,7 @@ export async function getCycleBillables(cycleId: number): Promise<CycleBillables
     billableDonePence: 0,
     internalPence: 0,
     internalDonePence: 0,
+    netPence: 0,
     estimatedMinutes: 0,
     unestimated: 0,
     unpriced: 0,
@@ -88,17 +100,20 @@ export async function getCycleBillables(cycleId: number): Promise<CycleBillables
 
   for (const r of rows) {
     if (r.stateType === 'canceled') continue;
-    const kind: BillableKind = r.internal ? 'internal' : 'billable';
-    const rate = r.internal ? internalDayRatePence : r.dayRatePence;
-    const valuePence =
-      r.estimateMinutes && rate != null ? valueOf(r.estimateMinutes, hoursPerDay, rate) : null;
+    const kind: BillableKind =
+      r.internal || r.billingModel === 'internal' ? 'internal' : 'billable';
+    const rate = kind === 'internal' ? internalDayRatePence : r.dayRatePence;
+    const overridden = r.valueOverridePence != null;
+    const valuePence = overridden
+      ? r.valueOverridePence
+      : r.estimateMinutes && rate != null
+        ? valueOf(r.estimateMinutes, hoursPerDay, rate)
+        : null;
     const done = r.stateType === 'completed';
 
-    if (!r.estimateMinutes) totals.unestimated++;
-    else {
-      totals.estimatedMinutes += r.estimateMinutes;
-      if (valuePence == null) totals.unpriced++;
-    }
+    if (r.estimateMinutes) totals.estimatedMinutes += r.estimateMinutes;
+    if (!overridden && !r.estimateMinutes) totals.unestimated++;
+    else if (valuePence == null) totals.unpriced++;
 
     const key = kind === 'internal' ? 'internal' : String(r.initiativeId ?? 'none');
     let group = groups.get(key);
@@ -136,12 +151,15 @@ export async function getCycleBillables(cycleId: number): Promise<CycleBillables
       initiativeId: r.initiativeId,
       estimateMinutes: r.estimateMinutes,
       valuePence,
+      overridden,
       kind,
     });
   }
+  totals.netPence = totals.billablePence - totals.internalPence;
 
   return {
     hoursPerDay,
+    targetPence: target?.targetPence ?? null,
     internalDayRatePence,
     totals,
     groups: [...groups.values()].sort((a, b) => b.valuePence - a.valuePence),
