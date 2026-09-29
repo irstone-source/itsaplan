@@ -39,3 +39,11 @@ export function issueValue(
 // "£450", or "−£150" for internal cost.
 export const formatValue = (value: IssueValue) =>
   `${value.internal ? '−' : ''}${formatPence(value.pence)}`;
+
+// How strongly a value shows on a card, 0.25 to 1: the square root of the value
+// against £2,000 (about two days at £1,000), so small tickets stay visible and the
+// large ones stand out.
+export function valueIntensity(pence: number): number {
+  const share = Math.min(1, Math.sqrt(Math.max(0, pence) / 200_000));
+  return 0.25 + 0.75 * share;
+}
