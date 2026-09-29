@@ -9,6 +9,7 @@ import { accessErrors, commonErrors } from '#shared/responses';
 import { paginate } from '#shared/pagination';
 import { transferCycleIssues } from '#modules/issues/service';
 import {
+  CycleBillablesResponse,
   CycleListResponse,
   CycleOptionListResponse,
   CyclePageResponse,
@@ -34,6 +35,7 @@ import {
   finishCycle,
   startNextCycle,
 } from './service';
+import { getCycleBillables } from './billables';
 
 export const cycleRoutes = new Elysia({
   name: 'cycles',
@@ -142,6 +144,21 @@ export const cycleRoutes = new Elysia({
       },
     },
   )
+
+  .get('/cycles/:cycleId/billables', ({ params }) => getCycleBillables(params.cycleId), {
+    params: cycleParams,
+    cycle: 'read',
+    response: { 200: CycleBillablesResponse, ...commonErrors },
+    detail: {
+      summary: "Get a cycle's billables",
+      description:
+        "What the cycle's issues are worth once done: each estimate in days times its " +
+        "initiative's day rate, or the internal day rate on an internal project. Totals " +
+        'for billable and internal work, the part already completed, a breakdown per ' +
+        'initiative, and counts of issues without an estimate or a rate.',
+      ...mcpTool('get_cycle_billables'),
+    },
+  })
 
   .patch(
     '/cycles/:cycleId',

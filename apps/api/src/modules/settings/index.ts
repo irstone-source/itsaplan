@@ -3,10 +3,11 @@ import { requireUser } from '#shared/access';
 import { authContext } from '#shared/auth-context';
 import { errors } from '#shared/responses';
 import { getStorageSettings } from '@repo/db';
-import { getBranding, getHotkeySettings } from './service';
+import { getBillingSettings, getBranding, getHotkeySettings } from './service';
 import { getAppVersion } from './updates';
 import { getWhatsNew, markWhatsNewSeen } from './whats-new';
 import {
+  BillingSettingsSchema,
   BrandingSchema,
   HotkeyCombosSchema,
   StorageSettingsSchema,
@@ -38,6 +39,15 @@ export const settingsRoutes = new Elysia({
     detail: {
       summary: 'Get instance branding',
       description: 'Get the product name, accent colour and logo this instance shows.',
+    },
+  })
+
+  // The rates the billing totals are computed with, read by everyone who sees them.
+  .get('/settings/billing', () => getBillingSettings(), {
+    response: { 200: BillingSettingsSchema, ...errors(401) },
+    detail: {
+      summary: 'Get billing settings',
+      description: 'Get the hours in a day of estimate and the internal day rate.',
     },
   })
 

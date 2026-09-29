@@ -83,3 +83,10 @@ export const BrandingSchema = t.Object({
     }),
   ),
 });
+
+export const BillingSettingsSchema = t.Object({
+  hoursPerDay: t.Number({ minimum: 1, maximum: 24, description: 'Hours in a day of estimate.' }),
+  internalDayRatePence: t.Nullable(
+    t.Integer({ minimum: 0, description: 'Day rate in pence internal work is costed at.' }),
+  ),
+});

@@ -101,3 +101,23 @@ export async function setBranding(branding: Branding): Promise<Branding> {
   await setSetting(BRANDING_SETTING_KEY, value);
   return value;
 }
+
+// Instance billing (app_setting key 'billing'): how many hours make a day of an
+// estimate, and the day rate internal work is costed at.
+const BILLING_SETTING_KEY = 'billing';
+
+export interface BillingSettings {
+  hoursPerDay: number;
+  internalDayRatePence: number | null;
+}
+
+const DEFAULT_BILLING: BillingSettings = { hoursPerDay: 8, internalDayRatePence: null };
+
+export async function getBillingSettings(): Promise<BillingSettings> {
+  return { ...DEFAULT_BILLING, ...(await getSetting<BillingSettings>(BILLING_SETTING_KEY)) };
+}
+
+export async function setBillingSettings(settings: BillingSettings): Promise<BillingSettings> {
+  await setSetting(BILLING_SETTING_KEY, settings);
+  return settings;
+}

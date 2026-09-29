@@ -60,6 +60,8 @@ export const InitiativeResponse = t.Object({
   priority: t.Nullable(t.String()),
   startDate: t.Nullable(t.String()),
   targetDate: t.Nullable(t.String()),
+  billingModel: t.Nullable(t.String()),
+  dayRatePence: t.Nullable(t.Number()),
   position: t.Number(),
   createdAt: t.String(),
   updatedAt: t.String(),
@@ -116,6 +118,21 @@ export const createInitiativeBody = t.Object({
   ),
   startDate: t.Optional(t.Nullable(isoDate("Start date 'YYYY-MM-DD', or null."))),
   targetDate: t.Optional(t.Nullable(isoDate("Target date 'YYYY-MM-DD', or null."))),
+  billingModel: t.Optional(
+    t.Nullable(
+      t.UnionEnum(['day_rate', 'retainer', 'rev_share'], {
+        description: 'How the work is charged, or null.',
+      }),
+    ),
+  ),
+  dayRatePence: t.Optional(
+    t.Nullable(
+      t.Integer({
+        minimum: 0,
+        description: 'Day rate in pence the linked issues are valued at, or null.',
+      }),
+    ),
+  ),
   labelIds: t.Optional(
     t.Array(t.Integer(), { description: 'Label ids to attach. From get_project.labels.' }),
   ),

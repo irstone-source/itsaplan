@@ -396,6 +396,13 @@ export const ALWAYS_ON_ACTIONS: ToolMeta[] = [
     description: 'View one cycle with its dates and progress.',
     always: true,
   },
+  {
+    key: 'get_cycle_billables',
+    group: 'cycles',
+    label: "Read a cycle's billables",
+    description: "See what a cycle's issues are worth once done, per initiative.",
+    always: true,
+  },
 ];
 
 const ACTION_KEYS = new Set(AGENT_ACTIONS.map((t) => t.key));

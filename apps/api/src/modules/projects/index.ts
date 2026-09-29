@@ -200,7 +200,7 @@ export const projectRoutes = new Elysia({ name: 'projects', detail: { tags: ['Pr
       detail: {
         summary: 'Update a project',
         description:
-          "Update a project's name and/or description. The description is given to the " +
+          "Update a project's name, description and internal flag. The description is given to the " +
           `agents of the project in their system prompt; up to ${PROJECT_DESCRIPTION_LIMIT} ` +
           'characters. The key changes only when it does not match the key pattern: a key ' +
           'created before the pattern existed, for example one that starts with a digit. ' +

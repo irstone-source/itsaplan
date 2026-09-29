@@ -88,11 +88,13 @@ import {
   getHotkeySettings,
   setHotkeySettings,
   setBranding,
+  setBillingSettings,
   getProjectDefaults,
   setProjectDefaults,
 } from '#modules/settings/service';
 import { getUpdateStatus } from '#modules/settings/updates';
 import {
+  BillingSettingsSchema,
   BrandingSchema,
   HotkeyCombosSchema,
   ProjectDefaultsSchema,
@@ -438,6 +440,15 @@ export const godRoutes = new Elysia({ name: 'god', detail: { tags: ['God'] } })
       summary: 'Update instance keyboard shortcuts',
       description:
         'Replace the instance keyboard shortcut overrides. Each user may still rebind a shortcut for their own account.',
+    },
+  })
+
+  .put('/god/billing', ({ body }) => setBillingSettings(body), {
+    body: BillingSettingsSchema,
+    response: { 200: BillingSettingsSchema, ...commonErrors },
+    detail: {
+      summary: 'Set billing settings',
+      description: 'Replace the hours in a day of estimate and the internal day rate (pence).',
     },
   })
 

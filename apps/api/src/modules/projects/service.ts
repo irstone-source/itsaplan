@@ -80,6 +80,7 @@ export interface ProjectRow {
   pointsEstimateEnabled: boolean;
   timeEstimateEnabled: boolean;
   timeLoggingEnabled: boolean;
+  internal: boolean;
   // The sections this project may use at all. A section missing here is blocked for
   // the team that owns the project: its flag above reads as off and the settings page
   // does not offer it.
@@ -155,6 +156,7 @@ export async function mapProject(row: ProjectWithTeam): Promise<ProjectRow> {
     pointsEstimateEnabled: row.pointsEstimateEnabled,
     timeEstimateEnabled: row.timeEstimateEnabled,
     timeLoggingEnabled: row.timeLoggingEnabled,
+    internal: row.internal,
     availableFeatures: PROJECT_FEATURES.filter((feature) => !blockedFeatures.includes(feature)),
     createdAt: iso(row.createdAt),
   };
@@ -524,7 +526,7 @@ export async function createProject(
 // identifier, so it may be replaced once. A valid key does not change.
 export async function updateProject(
   projectId: number,
-  patch: { key?: string; name?: string; description?: string },
+  patch: { key?: string; name?: string; description?: string; internal?: boolean },
 ): Promise<ProjectRow | null> {
   const values: Partial<typeof project.$inferInsert> = {};
   if (patch.key !== undefined) {
@@ -539,6 +541,7 @@ export async function updateProject(
   }
   if (patch.name !== undefined) values.name = patch.name;
   if (patch.description !== undefined) values.description = patch.description;
+  if (patch.internal !== undefined) values.internal = patch.internal;
   if (Object.keys(values).length === 0) return getProjectById(projectId);
   await db.update(project).set(values).where(eq(project.id, projectId));
   return getProjectById(projectId);

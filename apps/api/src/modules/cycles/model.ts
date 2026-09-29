@@ -63,3 +63,43 @@ export const TransferCycleResponse = t.Object({ moved: t.Number() });
 // The cycle that was started, with how many issues came over from the one that was
 // finished to start it.
 export const StartNextCycleResponse = t.Object({ cycle: CycleResponse, moved: t.Number() });
+
+const BillableKind = t.UnionEnum(['billable', 'internal']);
+
+export const CycleBillablesResponse = t.Object({
+  hoursPerDay: t.Number(),
+  internalDayRatePence: t.Nullable(t.Number()),
+  totals: t.Object({
+    billablePence: t.Number(),
+    billableDonePence: t.Number(),
+    internalPence: t.Number(),
+    internalDonePence: t.Number(),
+    estimatedMinutes: t.Number(),
+    unestimated: t.Number(),
+    unpriced: t.Number(),
+  }),
+  groups: t.Array(
+    t.Object({
+      initiativeId: t.Nullable(t.Number()),
+      title: t.String(),
+      kind: BillableKind,
+      billingModel: t.Nullable(t.String()),
+      dayRatePence: t.Nullable(t.Number()),
+      valuePence: t.Number(),
+      donePence: t.Number(),
+      issueCount: t.Number(),
+    }),
+  ),
+  issues: t.Array(
+    t.Object({
+      id: t.Number(),
+      identifier: t.String(),
+      title: t.String(),
+      stateType: t.String(),
+      initiativeId: t.Nullable(t.Number()),
+      estimateMinutes: t.Nullable(t.Number()),
+      valuePence: t.Nullable(t.Number()),
+      kind: BillableKind,
+    }),
+  ),
+});

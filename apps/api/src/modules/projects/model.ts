@@ -57,6 +57,11 @@ export const updateProjectBody = t.Object({
   key: t.Optional(projectKey),
   name: t.Optional(t.String({ minLength: 1 })),
   description: t.Optional(t.String({ maxLength: PROJECT_DESCRIPTION_LIMIT })),
+  internal: t.Optional(
+    t.Boolean({
+      description: 'Work on the company itself: its issues are valued at the internal day rate.',
+    }),
+  ),
 });
 
 export const ProjectPreferencesResponse = t.Object({
@@ -124,6 +129,7 @@ export const ProjectResponse = t.Object({
   pointsEstimateEnabled: t.Boolean(),
   timeEstimateEnabled: t.Boolean(),
   timeLoggingEnabled: t.Boolean(),
+  internal: t.Boolean(),
   availableFeatures: t.Array(t.UnionEnum([...PROJECT_FEATURES])),
   createdAt: t.String(),
 });

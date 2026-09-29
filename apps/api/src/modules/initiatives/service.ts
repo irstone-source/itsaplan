@@ -27,6 +27,8 @@ export interface InitiativeRow {
   priority: string | null;
   startDate: string | null;
   targetDate: string | null;
+  billingModel: string | null;
+  dayRatePence: number | null;
   position: number;
   createdAt: string;
   updatedAt: string;
@@ -93,6 +95,8 @@ function mapInitiative(
     priority: row.priority,
     startDate: row.startDate,
     targetDate: row.targetDate,
+    billingModel: row.billingModel,
+    dayRatePence: row.dayRatePence,
     position: num(row.position),
     createdAt: iso(row.createdAt),
     updatedAt: iso(row.updatedAt),
@@ -290,6 +294,8 @@ export interface NewInitiativeInput {
   priority?: string | null;
   startDate?: string | null;
   targetDate?: string | null;
+  billingModel?: string | null;
+  dayRatePence?: number | null;
   labelIds?: number[];
 }
 
@@ -354,6 +360,8 @@ export async function createInitiative(
       priority: input.priority ?? null,
       startDate: input.startDate ?? null,
       targetDate: input.targetDate ?? null,
+      billingModel: input.billingModel ?? null,
+      dayRatePence: input.dayRatePence ?? null,
       position: Number(posRow.pos),
     })
     .returning({ id: initiative.id });
@@ -371,6 +379,8 @@ export interface InitiativePatch {
   priority?: string | null;
   startDate?: string | null;
   targetDate?: string | null;
+  billingModel?: string | null;
+  dayRatePence?: number | null;
   labelIds?: number[];
 }
 
@@ -414,6 +424,8 @@ export async function updateInitiative(
   if (patch.priority !== undefined) set.priority = patch.priority;
   if (patch.startDate !== undefined) set.startDate = patch.startDate;
   if (patch.targetDate !== undefined) set.targetDate = patch.targetDate;
+  if (patch.billingModel !== undefined) set.billingModel = patch.billingModel;
+  if (patch.dayRatePence !== undefined) set.dayRatePence = patch.dayRatePence;
 
   if (Object.keys(set).length > 0) {
     set.updatedAt = sql`now()` as unknown as Date;

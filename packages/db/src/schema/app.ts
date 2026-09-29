@@ -131,6 +131,9 @@ export const project = pgTable(
     // values, which show again when it is turned back on.
     pointsEstimateEnabled: boolean('points_estimate_enabled').notNull().default(false),
     timeEstimateEnabled: boolean('time_estimate_enabled').notNull().default(false),
+    // Work on the company itself rather than for a client: valued at the instance's
+    // internal day rate, as a cost.
+    internal: boolean('internal').notNull().default(false),
     // Whether members log the time they spend on the issues of this project, set in
     // the same place. Independent of the time estimate: a team can log time without
     // estimating first. Turning it off hides the entries and keeps them.
@@ -1185,10 +1188,19 @@ export const initiative = pgTable(
     startDate: date('start_date'),
     targetDate: date('target_date'),
     position: doublePrecision('position').notNull().default(0),
+    // How the work is charged, and the day rate it is valued at. An issue's value is
+    // its time estimate in days times this rate. NULL rate: the work is not valued.
+    billingModel: text('billing_model'),
+    dayRatePence: integer('day_rate_pence'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    check(
+      'initiative_billing_model_check',
+      sql`${t.billingModel} IN ('day_rate', 'retainer', 'rev_share')`,
+    ),
+    check('initiative_day_rate_check', sql`${t.dayRatePence} >= 0`),
     check(
       'initiative_status_check',
       sql`${t.status} IN ('proposed', 'planned', 'active', 'completed', 'canceled')`,
