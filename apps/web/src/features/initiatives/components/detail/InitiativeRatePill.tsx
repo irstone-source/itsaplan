@@ -43,6 +43,11 @@ export default function InitiativeRatePill({
   }
 
   function save() {
+    if (model === 'internal') {
+      onPatch({ dayRatePence: null, billingModel: 'internal' });
+      setOpen(false);
+      return;
+    }
     const value = pounds.trim() === '' ? null : Math.round(Number(pounds) * 100);
     if (value != null && (!Number.isFinite(value) || value < 0)) return;
     onPatch({ dayRatePence: value, billingModel: value == null ? null : model });
@@ -54,14 +59,18 @@ export default function InitiativeRatePill({
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs font-normal">
           <PoundSterling className="size-3.5" />
-          {initiative.dayRatePence != null
-            ? t('perDay', { rate: formatPence(initiative.dayRatePence) })
-            : t('setRate')}
-          {initiative.billingModel && initiative.billingModel !== 'day_rate' && (
-            <span className="text-muted-foreground">
-              · {t(`models.${initiative.billingModel}`)}
-            </span>
-          )}
+          {initiative.billingModel === 'internal'
+            ? t('models.internal')
+            : initiative.dayRatePence != null
+              ? t('perDay', { rate: formatPence(initiative.dayRatePence) })
+              : t('setRate')}
+          {initiative.billingModel &&
+            initiative.billingModel !== 'day_rate' &&
+            initiative.billingModel !== 'internal' && (
+              <span className="text-muted-foreground">
+                · {t(`models.${initiative.billingModel}`)}
+              </span>
+            )}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-64 space-y-3">
@@ -71,6 +80,7 @@ export default function InitiativeRatePill({
           </label>
           <Input
             id="initiative-day-rate"
+            disabled={model === 'internal'}
             inputMode="decimal"
             placeholder="600"
             value={pounds}

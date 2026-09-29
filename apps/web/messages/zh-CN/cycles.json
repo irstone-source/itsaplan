@@ -74,7 +74,6 @@
   "defaultName": "迭代 {n}",
   "issuesDone": "已完成工作项",
   "billables": {
-    "ifAllDone": "全部完成可计费",
     "done": "已完成",
     "internalCost": "内部成本",
     "estimated": "已估算",
@@ -84,6 +83,15 @@
     "dayRate": "日费率",
     "value": "金额",
     "noRate": "无费率",
-    "noEstimate": "无估算"
+    "noEstimate": "无估算",
+    "net": "净额",
+    "billable": "可计费",
+    "target": "目标",
+    "setTarget": "设置目标",
+    "targetHint": "本周期工作应达到的价值。净额为可计费工作减去内部成本。",
+    "toGo": "还差 {amount}",
+    "targetMet": "已达成目标",
+    "breakdown": "明细",
+    "save": "保存"
   }
 }

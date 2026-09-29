@@ -173,7 +173,8 @@
     "models": {
       "day_rate": "Tarif harian",
       "retainer": "Retainer",
-      "rev_share": "Bagi hasil"
+      "rev_share": "Bagi hasil",
+      "internal": "Internal"
     },
     "hint": "Setiap tugas bernilai estimasi waktunya dalam hari dikali tarif ini. Kosongkan agar pekerjaan ini tidak dinilai.",
     "save": "Simpan"

@@ -173,7 +173,8 @@
     "models": {
       "day_rate": "Diária",
       "retainer": "Mensalidade fixa",
-      "rev_share": "Participação na receita"
+      "rev_share": "Participação na receita",
+      "internal": "Interno"
     },
     "hint": "Cada item vale sua estimativa de tempo em dias vezes esta diária. Deixe vazio para não valorar este trabalho.",
     "save": "Salvar"

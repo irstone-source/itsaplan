@@ -173,7 +173,8 @@
     "models": {
       "day_rate": "Tarifa diaria",
       "retainer": "Cuota fija",
-      "rev_share": "Reparto de ingresos"
+      "rev_share": "Reparto de ingresos",
+      "internal": "Interno"
     },
     "hint": "Cada tarea vale su estimación de tiempo en días por esta tarifa. Déjalo vacío para no valorar este trabajo.",
     "save": "Guardar"

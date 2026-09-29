@@ -13,6 +13,8 @@ import { type Maps } from '@/utils/project';
 import { cn } from '@/lib/utils';
 import { formatDurationShort, formatShortDate, isDueOverdue } from '@/utils/dates';
 import { formatMinutes } from '@/utils/estimate';
+import { formatValue } from '@/utils/money';
+import { useIssueValue } from '@/services/billing.service';
 import type { DisplayProperty, PropertyKey } from '@/utils/viewSettings';
 import {
   AssigneeAvatar,
@@ -48,6 +50,7 @@ export function IssueCardBody({
     issue.assigneeUserId != null ? maps.assigneeById.get(issue.assigneeUserId) : undefined;
   const delegate =
     issue.delegateUserId != null ? maps.assigneeById.get(issue.delegateUserId) : undefined;
+  const value = useIssueValue(issue);
   const initiative = issue.initiative ?? undefined;
   const cycle = issue.cycle ?? undefined;
   const column = maps.columnById.get(issue.columnId);
@@ -59,7 +62,7 @@ export function IssueCardBody({
     (has('initiative') && initiative) ||
     (has('cycle') && cycle) ||
     (has('estimatePoints') && issue.estimatePoints != null) ||
-    (has('estimateTime') && issue.estimateMinutes != null) ||
+    (has('estimateTime') && (issue.estimateMinutes != null || value != null)) ||
     (has('labels') && issue.labelIds.length > 0);
   const footerShown =
     has('created') ||
@@ -179,6 +182,14 @@ export function IssueCardBody({
             >
               <Clock className="size-2.5" />
               {formatMinutes(issue.estimateMinutes)}
+            </Badge>
+          )}
+          {has('estimateTime') && value && (
+            <Badge
+              variant="outline"
+              className={`rounded-full px-1.5 py-0.5 text-[10px] tabular-nums ${value.internal ? 'text-muted-foreground' : 'text-foreground'}`}
+            >
+              {formatValue(value)}
             </Badge>
           )}
           {has('labels') &&

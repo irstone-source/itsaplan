@@ -36,7 +36,8 @@
     "groupLabels": "标签",
     "groupCustom": "自定义字段",
     "empty": "空",
-    "openInNewTab": "在新标签页中打开"
+    "openInNewTab": "在新标签页中打开",
+    "value": "金额"
   },
   "menu": {
     "preview": "预览",
@@ -463,5 +464,13 @@
     "noAssignee": "无负责人",
     "noType": "无类型",
     "noLabels": "无标签"
+  },
+  "value": {
+    "none": "—",
+    "manual": "手动设置",
+    "hint": "估算天数 × 客户日费率。输入金额可手动设置价值。",
+    "amount": "金额（£）",
+    "useEstimate": "按估算 × 费率计算",
+    "set": "设置"
   }
 }

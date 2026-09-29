@@ -36,7 +36,8 @@
     "groupLabels": "Etiquetas",
     "groupCustom": "Campos personalizados",
     "empty": "Vazio",
-    "openInNewTab": "Abrir em nova aba"
+    "openInNewTab": "Abrir em nova aba",
+    "value": "Valor"
   },
   "menu": {
     "preview": "Visualizar",
@@ -463,5 +464,13 @@
     "noAssignee": "Sem responsável",
     "noType": "Sem tipo",
     "noLabels": "Nenhum"
+  },
+  "value": {
+    "none": "—",
+    "manual": "definido à mão",
+    "hint": "Estimativa em dias × a diária do cliente. Digite um valor para defini-lo à mão.",
+    "amount": "Valor (£)",
+    "useEstimate": "Usar estimativa × diária",
+    "set": "Definir"
   }
 }

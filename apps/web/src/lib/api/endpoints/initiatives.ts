@@ -12,7 +12,7 @@ export interface InitiativeProgress {
   total: number;
 }
 
-export const BILLING_MODELS = ['day_rate', 'retainer', 'rev_share'] as const;
+export const BILLING_MODELS = ['day_rate', 'retainer', 'rev_share', 'internal'] as const;
 export type BillingModel = (typeof BILLING_MODELS)[number];
 
 export interface Initiative {

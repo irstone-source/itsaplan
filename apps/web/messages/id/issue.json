@@ -36,7 +36,8 @@
     "groupLabels": "Label",
     "groupCustom": "Bidang kustom",
     "empty": "Kosong",
-    "openInNewTab": "Buka di tab baru"
+    "openInNewTab": "Buka di tab baru",
+    "value": "Nilai"
   },
   "menu": {
     "preview": "Pratinjau",
@@ -463,5 +464,13 @@
     "noAssignee": "Tanpa penerima tugas",
     "noType": "Tanpa tipe",
     "noLabels": "Tidak ada"
+  },
+  "value": {
+    "none": "—",
+    "manual": "diatur manual",
+    "hint": "Estimasi dalam hari × tarif harian klien. Ketik jumlah untuk mengatur nilai secara manual.",
+    "amount": "Jumlah (£)",
+    "useEstimate": "Gunakan estimasi × tarif",
+    "set": "Atur"
   }
 }

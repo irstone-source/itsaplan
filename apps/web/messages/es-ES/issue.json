@@ -36,7 +36,8 @@
     "groupLabels": "Etiquetas",
     "groupCustom": "Campos personalizados",
     "empty": "Vacío",
-    "openInNewTab": "Abrir en una pestaña nueva"
+    "openInNewTab": "Abrir en una pestaña nueva",
+    "value": "Valor"
   },
   "menu": {
     "preview": "Previsualizar",
@@ -463,5 +464,13 @@
     "noAssignee": "Sin asignar",
     "noType": "Sin tipo",
     "noLabels": "Ninguna"
+  },
+  "value": {
+    "none": "—",
+    "manual": "fijado a mano",
+    "hint": "Estimación en días × la tarifa diaria del cliente. Escribe un importe para fijar el valor a mano.",
+    "amount": "Importe (£)",
+    "useEstimate": "Usar estimación × tarifa",
+    "set": "Fijar"
   }
 }

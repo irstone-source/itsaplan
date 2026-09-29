@@ -27,6 +27,8 @@ export interface Cycle {
   goal: string;
   startDate: string;
   endDate: string;
+  // What the cycle's work should be worth (pence), for planning against.
+  targetPence: number | null;
   // When the cycle was finished ahead of its planned end date, or null. endDate
   // keeps the date it was planned to run until either way.
   completedAt: string | null;
@@ -46,6 +48,7 @@ export interface NewCycleInput {
 export interface CyclePatch {
   name?: string;
   goal?: string;
+  targetPence?: number | null;
   startDate?: string;
   endDate?: string;
 }
@@ -71,12 +74,15 @@ export type BillableKind = 'billable' | 'internal';
 // What the cycle's work is worth once done (all amounts in pence).
 export interface CycleBillables {
   hoursPerDay: number;
+  targetPence: number | null;
   internalDayRatePence: number | null;
   totals: {
     billablePence: number;
     billableDonePence: number;
     internalPence: number;
     internalDonePence: number;
+    // Billable value less internal cost.
+    netPence: number;
     estimatedMinutes: number;
     unestimated: number;
     unpriced: number;
@@ -99,6 +105,7 @@ export interface CycleBillables {
     initiativeId: number | null;
     estimateMinutes: number | null;
     valuePence: number | null;
+    overridden: boolean;
     kind: BillableKind;
   }[];
 }

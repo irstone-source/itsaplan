@@ -21,6 +21,9 @@ import InitiativeSelect from '../fields/InitiativeSelect';
 import CycleSelect from '../fields/CycleSelect';
 import CycleHistoryBadge from '../fields/CycleHistoryBadge';
 import EstimatePill from '../fields/EstimatePill';
+import ValuePill from '../fields/ValuePill';
+import { issueValue } from '@/utils/money';
+import { useBillingSettingsQuery } from '@/services/billing.service';
 import IssueTimeTracking from '../fields/IssueTimeTracking';
 import IssueCustomFieldControl from '../fields/IssueCustomFieldControl';
 import IssueCustomFieldBody from '../fields/IssueCustomFieldBody';
@@ -79,6 +82,8 @@ export default function IssueProperties({
   groupsOpen: { isOpen: (key: string) => boolean; toggle: (key: string) => void };
 }) {
   const t = useTranslations('issue.fields');
+  const { data: billing } = useBillingSettingsQuery();
+  const value = issueValue(issue, billing, project.project.internal);
   const hasMembers = project.assignees.some((a) => a.kind === 'member');
   const hasAgents = project.assignees.some((a) => a.kind === 'agent');
   // The calendars grey out days that would put one date on the wrong side of the
@@ -226,6 +231,17 @@ export default function IssueProperties({
               kind="time"
               value={issue.estimateMinutes}
               onChange={(v) => onPatch({ estimateMinutes: v })}
+              readOnly={readOnly}
+            />
+          </IssuePropertyRow>
+        ),
+
+        (project.project.timeEstimateEnabled || value != null) && (
+          <IssuePropertyRow key="value" label={t('value')}>
+            <ValuePill
+              value={value}
+              overridePence={issue.valueOverridePence}
+              onChange={(v) => onPatch({ valueOverridePence: v })}
               readOnly={readOnly}
             />
           </IssuePropertyRow>

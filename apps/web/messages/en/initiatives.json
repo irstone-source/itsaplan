@@ -173,7 +173,8 @@
     "models": {
       "day_rate": "Day rate",
       "retainer": "Retainer",
-      "rev_share": "Revenue share"
+      "rev_share": "Revenue share",
+      "internal": "Internal"
     },
     "hint": "Each issue is valued at its time estimate in days times this rate. Leave empty to not value this work.",
     "save": "Save"

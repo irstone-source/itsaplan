@@ -74,7 +74,6 @@
   "defaultName": "Sprint {n}",
   "issuesDone": "Issue selesai",
   "billables": {
-    "ifAllDone": "Dapat ditagih jika semua selesai",
     "done": "Selesai",
     "internalCost": "Biaya internal",
     "estimated": "Estimasi",
@@ -84,6 +83,15 @@
     "dayRate": "Tarif harian",
     "value": "Nilai",
     "noRate": "tanpa tarif",
-    "noEstimate": "tanpa estimasi"
+    "noEstimate": "tanpa estimasi",
+    "net": "Bersih",
+    "billable": "Dapat ditagih",
+    "target": "Target",
+    "setTarget": "Atur target",
+    "targetHint": "Nilai yang seharusnya dihasilkan pekerjaan siklus ini. Nilai bersih adalah pekerjaan yang dapat ditagih dikurangi biaya internal.",
+    "toGo": "Kurang {amount}",
+    "targetMet": "Target tercapai",
+    "breakdown": "Rincian",
+    "save": "Simpan"
   }
 }

@@ -173,7 +173,8 @@
     "models": {
       "day_rate": "按日计费",
       "retainer": "固定月费",
-      "rev_share": "收入分成"
+      "rev_share": "收入分成",
+      "internal": "内部"
     },
     "hint": "每个事项的价值等于其时间估算（天）乘以此费率。留空则不为这项工作计价。",
     "save": "保存"

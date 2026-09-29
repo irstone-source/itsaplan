@@ -74,7 +74,6 @@
   "defaultName": "Sprint {n}",
   "issuesDone": "Issues done",
   "billables": {
-    "ifAllDone": "Billable if all done",
     "done": "Done",
     "internalCost": "Internal cost",
     "estimated": "Estimated",
@@ -84,6 +83,15 @@
     "dayRate": "Day rate",
     "value": "Value",
     "noRate": "no rate",
-    "noEstimate": "no estimate"
+    "noEstimate": "no estimate",
+    "net": "Net",
+    "billable": "Billable",
+    "target": "Target",
+    "setTarget": "Set target",
+    "targetHint": "What this cycle's work should be worth. Net value is billable work less internal cost.",
+    "toGo": "{amount} to go",
+    "targetMet": "Target met",
+    "breakdown": "Breakdown",
+    "save": "Save"
   }
 }

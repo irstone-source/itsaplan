@@ -74,7 +74,6 @@
   "defaultName": "Sprint {n}",
   "issuesDone": "Issues concluídas",
   "billables": {
-    "ifAllDone": "Faturável se tudo for concluído",
     "done": "Concluído",
     "internalCost": "Custo interno",
     "estimated": "Estimado",
@@ -84,6 +83,15 @@
     "dayRate": "Diária",
     "value": "Valor",
     "noRate": "sem tarifa",
-    "noEstimate": "sem estimativa"
+    "noEstimate": "sem estimativa",
+    "net": "Líquido",
+    "billable": "Faturável",
+    "target": "Meta",
+    "setTarget": "Definir meta",
+    "targetHint": "Quanto o trabalho deste ciclo deve valer. O valor líquido é o trabalho faturável menos o custo interno.",
+    "toGo": "Faltam {amount}",
+    "targetMet": "Meta atingida",
+    "breakdown": "Detalhamento",
+    "save": "Salvar"
   }
 }

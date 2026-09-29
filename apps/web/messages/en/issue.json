@@ -36,7 +36,8 @@
     "groupLabels": "Labels",
     "groupCustom": "Custom fields",
     "empty": "Empty",
-    "openInNewTab": "Open in new tab"
+    "openInNewTab": "Open in new tab",
+    "value": "Value"
   },
   "menu": {
     "preview": "Preview",
@@ -463,5 +464,13 @@
     "noAssignee": "No assignee",
     "noType": "No type",
     "noLabels": "None"
+  },
+  "value": {
+    "none": "—",
+    "manual": "set by hand",
+    "hint": "Estimate in days × the client's day rate. Type an amount to set the value by hand instead.",
+    "amount": "Amount (£)",
+    "useEstimate": "Use estimate × rate",
+    "set": "Set"
   }
 }

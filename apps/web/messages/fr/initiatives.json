@@ -173,7 +173,8 @@
     "models": {
       "day_rate": "Tarif journalier",
       "retainer": "Forfait mensuel",
-      "rev_share": "Partage de revenus"
+      "rev_share": "Partage de revenus",
+      "internal": "Interne"
     },
     "hint": "Chaque ticket vaut son estimation en jours multipliée par ce tarif. Laissez vide pour ne pas valoriser ce travail.",
     "save": "Enregistrer"

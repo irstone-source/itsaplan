@@ -74,7 +74,6 @@
   "defaultName": "Sprint {n}",
   "issuesDone": "Tickets completados",
   "billables": {
-    "ifAllDone": "Facturable si se completa todo",
     "done": "Completado",
     "internalCost": "Coste interno",
     "estimated": "Estimado",
@@ -84,6 +83,15 @@
     "dayRate": "Tarifa diaria",
     "value": "Valor",
     "noRate": "sin tarifa",
-    "noEstimate": "sin estimación"
+    "noEstimate": "sin estimación",
+    "net": "Neto",
+    "billable": "Facturable",
+    "target": "Objetivo",
+    "setTarget": "Fijar objetivo",
+    "targetHint": "Lo que debería valer el trabajo de este ciclo. El valor neto es el trabajo facturable menos el coste interno.",
+    "toGo": "Faltan {amount}",
+    "targetMet": "Objetivo alcanzado",
+    "breakdown": "Desglose",
+    "save": "Guardar"
   }
 }

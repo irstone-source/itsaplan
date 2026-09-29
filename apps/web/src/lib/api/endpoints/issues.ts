@@ -52,6 +52,8 @@ export interface Issue {
   // Time is in minutes; the UI enters and shows it as hours and minutes.
   estimatePoints: number | null;
   estimateMinutes: number | null;
+  // A value in pence set by hand, in place of estimate × day rate.
+  valueOverridePence: number | null;
   // The sum of the issue's logged time entries, 0 when nothing was logged. The
   // entries themselves are read separately (listWorklogs).
   loggedMinutes: number;
@@ -121,6 +123,9 @@ export interface InitiativeRef {
   id: number;
   title: string;
   status: InitiativeStatus;
+  billingModel: string | null;
+  // Pence per day of estimate; null when the initiative's work is not valued.
+  dayRatePence: number | null;
 }
 
 // One cycle an issue was in. The cycle history of an issue is a list of these,
@@ -250,6 +255,7 @@ export interface NewIssueInput {
   priority?: string | null;
   estimatePoints?: number | null;
   estimateMinutes?: number | null;
+  valueOverridePence?: number | null;
   startDate?: string | null;
   dueDate?: string | null;
   labelIds?: number[];
@@ -267,6 +273,7 @@ export interface BulkIssuePatch {
   priority?: string | null;
   estimatePoints?: number | null;
   estimateMinutes?: number | null;
+  valueOverridePence?: number | null;
   startDate?: string | null;
   dueDate?: string | null;
 }
@@ -285,6 +292,7 @@ export interface IssuePatch {
   priority?: string | null;
   estimatePoints?: number | null;
   estimateMinutes?: number | null;
+  valueOverridePence?: number | null;
   startDate?: string | null;
   dueDate?: string | null;
   labelIds?: number[];

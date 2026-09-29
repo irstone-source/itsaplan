@@ -36,7 +36,8 @@
     "groupLabels": "Étiquettes",
     "groupCustom": "Champs personnalisés",
     "empty": "Vide",
-    "openInNewTab": "Ouvrir dans un nouvel onglet"
+    "openInNewTab": "Ouvrir dans un nouvel onglet",
+    "value": "Valeur"
   },
   "menu": {
     "preview": "Aperçu",
@@ -463,5 +464,13 @@
     "noAssignee": "Aucun responsable",
     "noType": "Aucun type",
     "noLabels": "Aucune"
+  },
+  "value": {
+    "none": "—",
+    "manual": "saisie à la main",
+    "hint": "Estimation en jours × le tarif journalier du client. Saisissez un montant pour fixer la valeur à la main.",
+    "amount": "Montant (£)",
+    "useEstimate": "Utiliser estimation × tarif",
+    "set": "Définir"
   }
 }
