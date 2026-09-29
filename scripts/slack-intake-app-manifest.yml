@@ -1,0 +1,24 @@
+# Slack app for the daily It's a Plan intake routine: read-only access to channel
+# lists and history in the Cambray workspace. Create it at
+# https://api.slack.com/apps -> Create New App -> From a manifest -> Cambray -> paste this.
+display_information:
+  name: Cambray Intake
+  description: Reads channel messages for the daily It's a Plan intake. Never posts.
+  background_color: '#0a0a0a'
+features:
+  bot_user:
+    display_name: cambray-intake
+    always_online: false
+oauth_config:
+  scopes:
+    bot:
+      - channels:read # list public channels
+      - channels:history # read public channel messages
+      - channels:join # join public channels, so history is readable without an invite
+      - groups:read # list private channels the bot is invited to
+      - groups:history # read those private channels
+      - users:read # resolve user ids to names
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
