@@ -99,7 +99,8 @@ const list = await api('GET', `/projects/${con}/initiatives`);
 const initiatives: any[] = Array.isArray(list) ? list : (list.items ?? list.initiatives);
 for (const i of initiatives) {
   const client = i.title.split(' — ')[0];
-  const rate = RATES[client];
+  // The ads initiative shares the WSD name and carries its own rate (WSD_ADS).
+  const rate = i.title === WSD_ADS.title ? undefined : RATES[client];
   if (rate && (i.dayRatePence !== rate.pence || i.billingModel !== rate.model)) {
     await write(
       `${client}: £${rate.pence / 100}/day ${rate.model}`,
