@@ -164,5 +164,18 @@
     "loadFailed": "Não foi possível carregar os documentos vinculados. Tente novamente.",
     "untitled": "Sem título",
     "remove": "Desvincular {title}"
+  },
+  "billing": {
+    "perDay": "{rate}/dia",
+    "setRate": "Definir diária",
+    "dayRate": "Diária (£)",
+    "model": "Modelo de cobrança",
+    "models": {
+      "day_rate": "Diária",
+      "retainer": "Mensalidade fixa",
+      "rev_share": "Participação na receita"
+    },
+    "hint": "Cada item vale sua estimativa de tempo em dias vezes esta diária. Deixe vazio para não valorar este trabalho.",
+    "save": "Salvar"
   }
 }

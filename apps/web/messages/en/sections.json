@@ -31,6 +31,10 @@
       "label": "Branding",
       "description": "The product name, accent colour and logo everyone on this instance sees."
     },
+    "billing": {
+      "label": "Billing",
+      "description": "How time estimates become money: hours per day and the internal day rate."
+    },
     "authentication": {
       "label": "Authentication",
       "description": "Who may register on this instance, how accounts are confirmed, and the providers people sign in with."

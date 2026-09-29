@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useShell } from '@/context/shellContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCycleQuery } from '@/services/cycles.service';
+import CycleBillables from './components/detail/CycleBillables';
 import CycleHeader from './components/detail/CycleHeader';
 import CycleIssuesBoard from './components/detail/CycleIssuesBoard';
 
@@ -26,6 +27,7 @@ export default function CycleDetailPage({ cycleId }: { cycleId: number }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <CycleHeader cycle={cycle} projectKey={projectKey} />
+      <CycleBillables cycleId={cycle.id} projectKey={projectKey} />
       <CycleIssuesBoard cycle={cycle} />
     </div>
   );

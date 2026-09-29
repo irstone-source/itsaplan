@@ -120,7 +120,7 @@ export function useUpdateProject() {
       patch,
     }: {
       projectKey: string;
-      patch: { name?: string; description?: string };
+      patch: { name?: string; description?: string; internal?: boolean };
     }) => updateProject(projectKey, patch),
     onSuccess: (updated, { projectKey }) => {
       // Reflect the new name/description in the cached list immediately, then

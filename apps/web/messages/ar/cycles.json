@@ -72,5 +72,18 @@
   "dragFailed": "تعذّر نقل الدورة",
   "notFound": "الدورة غير موجودة.",
   "defaultName": "سبرنت {n}",
-  "issuesDone": "المهام المنجزة"
+  "issuesDone": "المهام المنجزة",
+  "billables": {
+    "ifAllDone": "قابل للفوترة عند إنجاز الكل",
+    "done": "منجز",
+    "internalCost": "التكلفة الداخلية",
+    "estimated": "المقدَّر",
+    "gaps": "{unestimated} بلا تقدير · {unpriced} بلا سعر",
+    "gapsTitle": "غير محسوبة في الإجماليات",
+    "client": "العميل",
+    "dayRate": "السعر اليومي",
+    "value": "القيمة",
+    "noRate": "بلا سعر",
+    "noEstimate": "بلا تقدير"
+  }
 }

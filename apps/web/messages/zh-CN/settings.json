@@ -117,7 +117,11 @@
       "documents": "组织和共享项目文档。"
     },
     "featureOn": "已启用{feature}",
-    "featureOff": "已停用{feature}"
+    "featureOff": "已停用{feature}",
+    "billing": "计费",
+    "billingHint": "此项目的工作在周期总额中如何计价。",
+    "internal": "内部工作",
+    "internalHint": "为 Cambray 自身而非客户所做的工作。其事项按内部日费率计算成本，而不是客户费率。"
   },
   "configuration": {
     "saved": "更改已保存",

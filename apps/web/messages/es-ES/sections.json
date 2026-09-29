@@ -31,6 +31,10 @@
       "label": "Marca",
       "description": "El nombre del producto, el color de acento y el logotipo que ven todos en esta instancia."
     },
+    "billing": {
+      "label": "Facturación",
+      "description": "Cómo las estimaciones se convierten en dinero: horas por día y tarifa diaria interna."
+    },
     "authentication": {
       "label": "Autenticación",
       "description": "Quién se puede registrar en esta instancia, cómo se confirman las cuentas, y los proveedores con los que la gente inicia sesión."

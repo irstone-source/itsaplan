@@ -72,5 +72,18 @@
   "dragFailed": "Gagal memindahkan cycle",
   "notFound": "Cycle tidak ditemukan.",
   "defaultName": "Sprint {n}",
-  "issuesDone": "Issue selesai"
+  "issuesDone": "Issue selesai",
+  "billables": {
+    "ifAllDone": "Dapat ditagih jika semua selesai",
+    "done": "Selesai",
+    "internalCost": "Biaya internal",
+    "estimated": "Estimasi",
+    "gaps": "{unestimated} tanpa estimasi · {unpriced} tanpa tarif",
+    "gapsTitle": "Tidak dihitung dalam total",
+    "client": "Klien",
+    "dayRate": "Tarif harian",
+    "value": "Nilai",
+    "noRate": "tanpa tarif",
+    "noEstimate": "tanpa estimasi"
+  }
 }

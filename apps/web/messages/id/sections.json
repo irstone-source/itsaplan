@@ -31,6 +31,10 @@
       "label": "Branding",
       "description": "Nama produk, warna aksen, dan logo yang dilihat semua orang di instans ini."
     },
+    "billing": {
+      "label": "Penagihan",
+      "description": "Cara estimasi menjadi uang: jam per hari dan tarif harian internal."
+    },
     "authentication": {
       "label": "Autentikasi",
       "description": "Siapa yang boleh mendaftar di instance ini, cara akun dikonfirmasi, dan penyedia yang digunakan untuk masuk."

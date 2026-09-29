@@ -66,6 +66,45 @@ export const listCompletedCycles = (projectKey: string, params: PageParams) =>
 
 export const getCycle = (id: number) => request<Cycle>(`/cycles/${id}`);
 
+export type BillableKind = 'billable' | 'internal';
+
+// What the cycle's work is worth once done (all amounts in pence).
+export interface CycleBillables {
+  hoursPerDay: number;
+  internalDayRatePence: number | null;
+  totals: {
+    billablePence: number;
+    billableDonePence: number;
+    internalPence: number;
+    internalDonePence: number;
+    estimatedMinutes: number;
+    unestimated: number;
+    unpriced: number;
+  };
+  groups: {
+    initiativeId: number | null;
+    title: string;
+    kind: BillableKind;
+    billingModel: string | null;
+    dayRatePence: number | null;
+    valuePence: number;
+    donePence: number;
+    issueCount: number;
+  }[];
+  issues: {
+    id: number;
+    identifier: string;
+    title: string;
+    stateType: string;
+    initiativeId: number | null;
+    estimateMinutes: number | null;
+    valuePence: number | null;
+    kind: BillableKind;
+  }[];
+}
+
+export const getCycleBillables = (id: number) => request<CycleBillables>(`/cycles/${id}/billables`);
+
 export const createCycle = (projectKey: string, input: NewCycleInput) =>
   request<Cycle>(`/projects/${projectKey}/cycles`, {
     method: 'POST',

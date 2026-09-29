@@ -117,7 +117,11 @@
       "documents": "Documentação compartilhada do projeto organizada em páginas."
     },
     "featureOn": "{feature} ativado",
-    "featureOff": "{feature} desativado"
+    "featureOff": "{feature} desativado",
+    "billing": "Cobrança",
+    "billingHint": "Como o trabalho deste projeto é valorado nos totais do ciclo.",
+    "internal": "Trabalho interno",
+    "internalHint": "Trabalho para a própria Cambray, não para um cliente. Seus itens são custeados pela diária interna em vez da diária de um cliente."
   },
   "configuration": {
     "saved": "Alterações salvas",

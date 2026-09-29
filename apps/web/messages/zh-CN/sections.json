@@ -31,6 +31,10 @@
       "label": "品牌",
       "description": "此实例上所有人看到的产品名称、强调色和徽标。"
     },
+    "billing": {
+      "label": "计费",
+      "description": "估算如何换算为金额：每天小时数和内部日费率。"
+    },
     "authentication": {
       "label": "身份验证",
       "description": "设置谁可以注册、如何验证账户以及可用的外部登录提供商。"

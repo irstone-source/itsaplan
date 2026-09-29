@@ -5,6 +5,7 @@ import {
   Keyboard,
   KeyRound,
   Palette,
+  PoundSterling,
   Mail,
   Send,
   SlidersHorizontal,
@@ -56,6 +57,11 @@ export const GOD_SECTIONS: GodSection[] = [
     slug: 'branding',
     group: 'instance',
     icon: Palette,
+  },
+  {
+    slug: 'billing',
+    group: 'instance',
+    icon: PoundSterling,
   },
   {
     slug: 'authentication',

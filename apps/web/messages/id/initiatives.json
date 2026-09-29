@@ -164,5 +164,18 @@
     "loadFailed": "Gagal memuat Dokumen yang ditautkan. Coba lagi.",
     "untitled": "Tanpa judul",
     "remove": "Putuskan tautan {title}"
+  },
+  "billing": {
+    "perDay": "{rate}/hari",
+    "setRate": "Atur tarif harian",
+    "dayRate": "Tarif harian (£)",
+    "model": "Model penagihan",
+    "models": {
+      "day_rate": "Tarif harian",
+      "retainer": "Retainer",
+      "rev_share": "Bagi hasil"
+    },
+    "hint": "Setiap tugas bernilai estimasi waktunya dalam hari dikali tarif ini. Kosongkan agar pekerjaan ini tidak dinilai.",
+    "save": "Simpan"
   }
 }

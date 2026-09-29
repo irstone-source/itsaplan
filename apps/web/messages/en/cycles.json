@@ -72,5 +72,18 @@
   "dragFailed": "Could not move the cycle",
   "notFound": "Cycle not found.",
   "defaultName": "Sprint {n}",
-  "issuesDone": "Issues done"
+  "issuesDone": "Issues done",
+  "billables": {
+    "ifAllDone": "Billable if all done",
+    "done": "Done",
+    "internalCost": "Internal cost",
+    "estimated": "Estimated",
+    "gaps": "{unestimated} without estimate · {unpriced} without rate",
+    "gapsTitle": "Not counted in the totals",
+    "client": "Client",
+    "dayRate": "Day rate",
+    "value": "Value",
+    "noRate": "no rate",
+    "noEstimate": "no estimate"
+  }
 }

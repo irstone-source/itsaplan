@@ -164,5 +164,18 @@
     "loadFailed": "Impossible de charger les docs liés. Réessayer.",
     "untitled": "Sans titre",
     "remove": "Dissocier {title}"
+  },
+  "billing": {
+    "perDay": "{rate}/jour",
+    "setRate": "Définir le tarif journalier",
+    "dayRate": "Tarif journalier (£)",
+    "model": "Mode de facturation",
+    "models": {
+      "day_rate": "Tarif journalier",
+      "retainer": "Forfait mensuel",
+      "rev_share": "Partage de revenus"
+    },
+    "hint": "Chaque ticket vaut son estimation en jours multipliée par ce tarif. Laissez vide pour ne pas valoriser ce travail.",
+    "save": "Enregistrer"
   }
 }

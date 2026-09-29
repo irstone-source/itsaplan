@@ -334,5 +334,14 @@
     "reset": "Reset",
     "logoTooLarge": "The logo must be 256 KB or smaller",
     "logoWrongType": "The logo must be a PNG, JPEG, WebP or SVG image"
+  },
+  "billing": {
+    "saved": "Billing settings saved",
+    "rates": "Rates",
+    "ratesHint": "How time estimates become money in cycle totals. Client day rates are set on each initiative.",
+    "hoursPerDay": "Hours per day",
+    "hoursPerDayHint": "How many hours of estimate make one billable day.",
+    "internalDayRate": "Internal day rate (£)",
+    "internalDayRateHint": "The cost of a day of work on internal projects. Leave empty to not cost internal work."
   }
 }

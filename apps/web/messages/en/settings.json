@@ -117,7 +117,11 @@
       "documents": "Shared project documentation organized into pages."
     },
     "featureOn": "{feature} turned on",
-    "featureOff": "{feature} turned off"
+    "featureOff": "{feature} turned off",
+    "billing": "Billing",
+    "billingHint": "How this project's work is valued in cycle totals.",
+    "internal": "Internal work",
+    "internalHint": "Work on Cambray itself rather than for a client. Its issues are costed at the internal day rate instead of a client rate."
   },
   "configuration": {
     "saved": "Changes saved",

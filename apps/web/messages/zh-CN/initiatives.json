@@ -164,5 +164,18 @@
     "loadFailed": "无法加载关联的文档，请重试。",
     "untitled": "未命名",
     "remove": "取消关联 {title}"
+  },
+  "billing": {
+    "perDay": "{rate}/天",
+    "setRate": "设置日费率",
+    "dayRate": "日费率（£）",
+    "model": "计费方式",
+    "models": {
+      "day_rate": "按日计费",
+      "retainer": "固定月费",
+      "rev_share": "收入分成"
+    },
+    "hint": "每个事项的价值等于其时间估算（天）乘以此费率。留空则不为这项工作计价。",
+    "save": "保存"
   }
 }

@@ -334,5 +334,14 @@
     "reset": "重置",
     "logoTooLarge": "徽标必须不超过 256 KB",
     "logoWrongType": "徽标必须是 PNG、JPEG、WebP 或 SVG 图片"
+  },
+  "billing": {
+    "saved": "计费设置已保存",
+    "rates": "费率",
+    "ratesHint": "时间估算如何在周期总额中换算为金额。客户日费率在各个计划上设置。",
+    "hoursPerDay": "每天小时数",
+    "hoursPerDayHint": "多少小时的估算构成一个计费日。",
+    "internalDayRate": "内部日费率（£）",
+    "internalDayRateHint": "内部项目一天工作的成本。留空则不计算内部工作的成本。"
   }
 }

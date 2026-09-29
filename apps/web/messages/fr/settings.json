@@ -117,7 +117,11 @@
       "documents": "Documentation partagée du projet, organisée en pages."
     },
     "featureOn": "Section {feature} activée",
-    "featureOff": "Section {feature} désactivée"
+    "featureOff": "Section {feature} désactivée",
+    "billing": "Facturation",
+    "billingHint": "Comment le travail de ce projet est valorisé dans les totaux du cycle.",
+    "internal": "Travail interne",
+    "internalHint": "Travail pour Cambray et non pour un client. Ses tickets sont chiffrés au tarif journalier interne au lieu d'un tarif client."
   },
   "configuration": {
     "saved": "Modifications enregistrées",

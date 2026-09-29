@@ -47,6 +47,8 @@ export interface Project {
   // properties while a kind is off.
   pointsEstimateEnabled: boolean;
   timeEstimateEnabled: boolean;
+  // Work on the company itself: valued at the internal day rate, as a cost.
+  internal: boolean;
   // Whether members log the time they spend on the issues, set in the same place.
   // Independent of the time estimate.
   timeLoggingEnabled: boolean;
@@ -130,8 +132,10 @@ export const updateProjectPreferences = (projectKey: string, patch: ProjectPrefe
   });
 
 // Update a project's name/description. The key is immutable, so it is not sent.
-export const updateProject = (projectKey: string, patch: { name?: string; description?: string }) =>
-  request<Project>(`/projects/${projectKey}`, { method: 'PATCH', body: JSON.stringify(patch) });
+export const updateProject = (
+  projectKey: string,
+  patch: { name?: string; description?: string; internal?: boolean },
+) => request<Project>(`/projects/${projectKey}`, { method: 'PATCH', body: JSON.stringify(patch) });
 
 // The board scaffold (no issues). The issues come from getBoardIssues.
 export const getProject = (projectKey: string, signal?: AbortSignal) =>

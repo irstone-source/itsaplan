@@ -72,5 +72,18 @@
   "dragFailed": "Não foi possível mover o ciclo",
   "notFound": "Ciclo não encontrado.",
   "defaultName": "Sprint {n}",
-  "issuesDone": "Issues concluídas"
+  "issuesDone": "Issues concluídas",
+  "billables": {
+    "ifAllDone": "Faturável se tudo for concluído",
+    "done": "Concluído",
+    "internalCost": "Custo interno",
+    "estimated": "Estimado",
+    "gaps": "{unestimated} sem estimativa · {unpriced} sem tarifa",
+    "gapsTitle": "Não contados nos totais",
+    "client": "Cliente",
+    "dayRate": "Diária",
+    "value": "Valor",
+    "noRate": "sem tarifa",
+    "noEstimate": "sem estimativa"
+  }
 }

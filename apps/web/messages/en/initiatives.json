@@ -164,5 +164,18 @@
     "loadFailed": "Could not load the linked Docs. Retry.",
     "untitled": "Untitled",
     "remove": "Unlink {title}"
+  },
+  "billing": {
+    "perDay": "{rate}/day",
+    "setRate": "Set day rate",
+    "dayRate": "Day rate (£)",
+    "model": "Billing model",
+    "models": {
+      "day_rate": "Day rate",
+      "retainer": "Retainer",
+      "rev_share": "Revenue share"
+    },
+    "hint": "Each issue is valued at its time estimate in days times this rate. Leave empty to not value this work.",
+    "save": "Save"
   }
 }

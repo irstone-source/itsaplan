@@ -72,5 +72,18 @@
   "dragFailed": "Impossible de déplacer le cycle",
   "notFound": "Cycle introuvable.",
   "defaultName": "Sprint {n}",
-  "issuesDone": "Tickets terminés"
+  "issuesDone": "Tickets terminés",
+  "billables": {
+    "ifAllDone": "Facturable si tout est fait",
+    "done": "Terminé",
+    "internalCost": "Coût interne",
+    "estimated": "Estimé",
+    "gaps": "{unestimated} sans estimation · {unpriced} sans tarif",
+    "gapsTitle": "Non comptés dans les totaux",
+    "client": "Client",
+    "dayRate": "Tarif journalier",
+    "value": "Valeur",
+    "noRate": "sans tarif",
+    "noEstimate": "sans estimation"
+  }
 }

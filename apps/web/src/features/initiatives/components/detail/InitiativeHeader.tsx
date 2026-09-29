@@ -16,6 +16,7 @@ import HealthBadge from '../shared/HealthBadge';
 import HealthInfoPopover from '../shared/HealthInfoPopover';
 import ProgressBar from '@/components/common/ProgressBar';
 import InitiativeActions from './InitiativeActions';
+import InitiativeRatePill from './InitiativeRatePill';
 
 // The initiative detail header. The pills patch the initiative inline; title and
 // description are read-only here and edited from the overflow menu dialog, which
@@ -109,6 +110,7 @@ export default function InitiativeHeader({
             value={initiative.labelIds}
             onToggle={toggleLabel}
           />
+          <InitiativeRatePill initiative={initiative} onPatch={patch} />
         </div>
       </div>
 

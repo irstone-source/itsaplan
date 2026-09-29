@@ -334,5 +334,14 @@
     "reset": "Atur ulang",
     "logoTooLarge": "Logo harus berukuran 256 KB atau lebih kecil",
     "logoWrongType": "Logo harus berupa gambar PNG, JPEG, WebP, atau SVG"
+  },
+  "billing": {
+    "saved": "Pengaturan penagihan disimpan",
+    "rates": "Tarif",
+    "ratesHint": "Cara estimasi waktu menjadi uang dalam total siklus. Tarif harian klien diatur di setiap inisiatif.",
+    "hoursPerDay": "Jam per hari",
+    "hoursPerDayHint": "Berapa jam estimasi yang membentuk satu hari yang dapat ditagih.",
+    "internalDayRate": "Tarif harian internal (£)",
+    "internalDayRateHint": "Biaya satu hari kerja pada proyek internal. Kosongkan agar pekerjaan internal tidak dihitung biayanya."
   }
 }

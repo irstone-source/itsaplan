@@ -334,5 +334,14 @@
     "reset": "Restablecer",
     "logoTooLarge": "El logotipo debe ocupar 256 KB o menos",
     "logoWrongType": "El logotipo debe ser una imagen PNG, JPEG, WebP o SVG"
+  },
+  "billing": {
+    "saved": "Ajustes de facturación guardados",
+    "rates": "Tarifas",
+    "ratesHint": "Cómo las estimaciones de tiempo se convierten en dinero en los totales del ciclo. Las tarifas de cliente se fijan en cada iniciativa.",
+    "hoursPerDay": "Horas por día",
+    "hoursPerDayHint": "Cuántas horas de estimación forman un día facturable.",
+    "internalDayRate": "Tarifa diaria interna (£)",
+    "internalDayRateHint": "El coste de un día de trabajo en proyectos internos. Déjalo vacío para no costear el trabajo interno."
   }
 }

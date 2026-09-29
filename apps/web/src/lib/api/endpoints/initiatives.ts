@@ -12,6 +12,9 @@ export interface InitiativeProgress {
   total: number;
 }
 
+export const BILLING_MODELS = ['day_rate', 'retainer', 'rev_share'] as const;
+export type BillingModel = (typeof BILLING_MODELS)[number];
+
 export interface Initiative {
   id: number;
   projectId: number;
@@ -22,6 +25,9 @@ export interface Initiative {
   priority: string | null;
   startDate: string | null;
   targetDate: string | null;
+  billingModel: BillingModel | null;
+  // Pence. An issue's value is its estimate in days times this rate.
+  dayRatePence: number | null;
   position: number;
   createdAt: string;
   updatedAt: string;
@@ -68,6 +74,8 @@ export interface NewInitiativeInput {
   priority?: string | null;
   startDate?: string | null;
   targetDate?: string | null;
+  billingModel?: BillingModel | null;
+  dayRatePence?: number | null;
   labelIds?: number[];
 }
 
@@ -79,6 +87,8 @@ export interface InitiativePatch {
   priority?: string | null;
   startDate?: string | null;
   targetDate?: string | null;
+  billingModel?: BillingModel | null;
+  dayRatePence?: number | null;
   labelIds?: number[];
 }
 

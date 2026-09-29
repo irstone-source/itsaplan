@@ -39,6 +39,7 @@ const MERGED_PROJECT: Project = {
   pointsEstimateEnabled: false,
   timeEstimateEnabled: false,
   timeLoggingEnabled: false,
+  internal: false,
   createdAt: '',
 };
 

@@ -11,6 +11,7 @@ import RequirePermission from '@/components/common/permissions/RequirePermission
 import { SettingsResourceProvider } from './context/settingsPermission';
 import SettingsGeneral from './components/general/SettingsGeneral';
 import SettingsFeatures from './components/general/SettingsFeatures';
+import SettingsBilling from './components/general/SettingsBilling';
 import { useGeneralForm } from './hooks/useGeneralForm';
 import { useFeatureToggles } from './hooks/useFeatureToggles';
 
@@ -47,6 +48,7 @@ function GeneralPage({ project }: { project: ProjectDetail }) {
           <div className="space-y-10">
             <SettingsGeneral form={form} />
             <SettingsFeatures form={features} />
+            <SettingsBilling project={project} editable={features.editable} />
           </div>
         </RequirePermission>
       </SettingsResourceProvider>

@@ -72,5 +72,18 @@
   "dragFailed": "Не вдалося перемістити цикл",
   "notFound": "Цикл не знайдено.",
   "defaultName": "Спринт {n}",
-  "issuesDone": "Задач виконано"
+  "issuesDone": "Задач виконано",
+  "billables": {
+    "ifAllDone": "До оплати, якщо все виконано",
+    "done": "Виконано",
+    "internalCost": "Внутрішні витрати",
+    "estimated": "Оцінка",
+    "gaps": "{unestimated} без оцінки · {unpriced} без ставки",
+    "gapsTitle": "Не враховано в підсумках",
+    "client": "Клієнт",
+    "dayRate": "Денна ставка",
+    "value": "Сума",
+    "noRate": "немає ставки",
+    "noEstimate": "немає оцінки"
+  }
 }

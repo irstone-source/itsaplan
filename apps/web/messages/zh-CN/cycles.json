@@ -72,5 +72,18 @@
   "dragFailed": "无法移动周期",
   "notFound": "未找到周期。",
   "defaultName": "迭代 {n}",
-  "issuesDone": "已完成工作项"
+  "issuesDone": "已完成工作项",
+  "billables": {
+    "ifAllDone": "全部完成可计费",
+    "done": "已完成",
+    "internalCost": "内部成本",
+    "estimated": "已估算",
+    "gaps": "{unestimated} 项无估算 · {unpriced} 项无费率",
+    "gapsTitle": "未计入总额",
+    "client": "客户",
+    "dayRate": "日费率",
+    "value": "金额",
+    "noRate": "无费率",
+    "noEstimate": "无估算"
+  }
 }

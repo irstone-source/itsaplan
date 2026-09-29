@@ -134,3 +134,15 @@ export const getHotkeySettings = () => request<HotkeyOverrides>('/settings/hotke
 // The instance's own sign-in policy, readable without a session: the sign-up
 // screen needs it before an account exists.
 export const getAuthConfig = () => request<PublicAuthConfig>('/auth-config');
+
+// How estimates become money: hours in a day of estimate, and the day rate (pence)
+// internal work is costed at.
+export interface BillingSettings {
+  hoursPerDay: number;
+  internalDayRatePence: number | null;
+}
+
+export const getBillingSettings = () => request<BillingSettings>('/settings/billing');
+
+export const updateBillingSettings = (settings: BillingSettings) =>
+  request<BillingSettings>('/god/billing', { method: 'PUT', body: JSON.stringify(settings) });
