@@ -24,5 +24,20 @@
   "person": "Person",
   "tickets": "Tickets",
   "previous": "Previous month",
-  "next": "Next month"
+  "next": "Next month",
+  "locked": "Locked",
+  "lockedHint": "Unlocks when the team reaches break-even",
+  "unlock": {
+    "lockedTitle": "Bonus locked",
+    "toGo": "{amount} to go",
+    "needed": "~{hours} h · ~{tickets, plural, one {# ticket} other {# tickets}}",
+    "neededHint": "Client work the team still has to complete this month to open the bonus pool, estimated from this month's open tickets.",
+    "noOpenWork": "No estimated client work is planned into this month's cycle yet, so the hours to unlock can't be worked out.",
+    "mine": "You have {tickets, plural, one {# open ticket} other {# open tickets}} ({hours} h) in this month's cycle.",
+    "mineNone": "You have no open client tickets in this month's cycle.",
+    "shortfall": "This month's planned work does not reach break-even yet: more client work needs planning.",
+    "shortfallAmount": "This month's planned work falls {amount} short of break-even: more client work needs planning.",
+    "unlockedTitle": "Bonus unlocked",
+    "unlockedBody": "The team is past break-even: every completed client ticket now adds to the pool."
+  }
 }

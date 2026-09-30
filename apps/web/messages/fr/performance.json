@@ -24,5 +24,20 @@
   "person": "Personne",
   "tickets": "Tickets",
   "previous": "Mois précédent",
-  "next": "Mois suivant"
+  "next": "Mois suivant",
+  "locked": "Verrouillé",
+  "lockedHint": "Se débloque quand l'équipe atteint le seuil de rentabilité",
+  "unlock": {
+    "lockedTitle": "Prime verrouillée",
+    "toGo": "Encore {amount}",
+    "needed": "~{hours} h · ~{tickets, plural, one {# ticket} other {# tickets}}",
+    "neededHint": "Travail client que l'équipe doit encore terminer ce mois-ci pour ouvrir la cagnotte, estimé à partir des tickets ouverts du mois.",
+    "noOpenWork": "Aucun travail client estimé n'est encore prévu dans le cycle du mois : impossible de calculer les heures pour débloquer.",
+    "mine": "Vous avez {tickets, plural, one {# ticket ouvert} other {# tickets ouverts}} ({hours} h) dans le cycle du mois.",
+    "mineNone": "Vous n'avez aucun ticket client ouvert dans le cycle du mois.",
+    "shortfall": "Le travail prévu ce mois-ci n'atteint pas encore le seuil de rentabilité : il faut prévoir plus de travail client.",
+    "shortfallAmount": "Il manque {amount} au travail prévu ce mois-ci pour atteindre le seuil de rentabilité : il faut prévoir plus de travail client.",
+    "unlockedTitle": "Prime débloquée",
+    "unlockedBody": "L'équipe a dépassé le seuil de rentabilité : chaque ticket client terminé alimente la cagnotte."
+  }
 }

@@ -1,5 +1,15 @@
-import { db, initiative, issue, issueStatus, performanceMonth, project, user } from '@repo/db';
-import { and, eq, gte, isNull, lt, sql } from 'drizzle-orm';
+import {
+  cycle,
+  db,
+  initiative,
+  issue,
+  issueStatus,
+  performanceMonth,
+  project,
+  projectColumn,
+  user,
+} from '@repo/db';
+import { and, eq, gte, inArray, isNull, lt, sql } from 'drizzle-orm';
 import { getBillingSettings } from '#modules/settings/service';
 import { valueOf } from '#modules/cycles/billables';
 
@@ -21,6 +31,93 @@ export interface PersonPerformance {
   tickets: PerformanceTicket[];
 }
 
+// Open billable work planned into the cycles that start in the month.
+async function openWork(start: Date, end: Date, hoursPerDay: number) {
+  const ymd = (d: Date) => d.toISOString().slice(0, 10);
+  const rows = await db
+    .select({
+      assigneeUserId: issue.assigneeUserId,
+      estimateMinutes: issue.estimateMinutes,
+      valueOverridePence: issue.valueOverridePence,
+      internal: project.internal,
+      billingModel: initiative.billingModel,
+      dayRatePence: initiative.dayRatePence,
+    })
+    .from(issue)
+    .innerJoin(cycle, eq(cycle.id, issue.cycleId))
+    .innerJoin(project, eq(project.id, issue.projectId))
+    .innerJoin(projectColumn, eq(projectColumn.id, issue.columnId))
+    .leftJoin(initiative, eq(initiative.id, issue.initiativeId))
+    .where(
+      and(
+        isNull(issue.archivedAt),
+        gte(cycle.startDate, ymd(start)),
+        lt(cycle.startDate, ymd(end)),
+        inArray(projectColumn.stateType, ['backlog', 'unstarted', 'started']),
+      ),
+    );
+  return rows.flatMap((r) => {
+    if (r.internal || r.billingModel === 'internal') return [];
+    const valuePence = ticketValue(r, hoursPerDay);
+    return valuePence > 0 ? [{ ...r, valuePence }] : [];
+  });
+}
+
+function ticketValue(
+  r: {
+    valueOverridePence: number | null;
+    estimateMinutes: number | null;
+    dayRatePence: number | null;
+  },
+  hoursPerDay: number,
+): number {
+  return (
+    r.valueOverridePence ??
+    (r.estimateMinutes && r.dayRatePence != null
+      ? valueOf(r.estimateMinutes, hoursPerDay, r.dayRatePence)
+      : 0)
+  );
+}
+
+export function unlockFor(
+  gapPence: number | null,
+  open: { valuePence: number; estimateMinutes: number | null }[],
+): Unlock {
+  const valuePence = open.reduce((sum, o) => sum + o.valuePence, 0);
+  const estimated = open.filter((o) => o.estimateMinutes);
+  const minutes = estimated.reduce((sum, o) => sum + o.estimateMinutes!, 0);
+  const estimatedValue = estimated.reduce((sum, o) => sum + o.valuePence, 0);
+  const gap = gapPence != null && gapPence > 0 ? gapPence : null;
+  return {
+    unlocked: gapPence != null && gapPence <= 0,
+    gapPence: gap,
+    // Rounded up to the half hour.
+    hoursNeeded: gap && minutes > 0 ? Math.ceil(((gap / estimatedValue) * minutes) / 30) / 2 : null,
+    ticketsNeeded: gap && open.length > 0 ? Math.ceil(gap / (valuePence / open.length)) : null,
+    open: { tickets: open.length, minutes, valuePence },
+    shortfallPence: gap ? Math.max(0, gap - valuePence) : 0,
+  };
+}
+
+export interface OpenWork {
+  tickets: number;
+  minutes: number;
+}
+
+// What the team still has to bill before the bonus pool opens, and how much of the
+// month's planned work that is.
+export interface Unlock {
+  unlocked: boolean;
+  gapPence: number | null;
+  // Estimates from the month's open billable tickets: their value per hour, and their
+  // average value. Null when there is no gap or no open work to estimate from.
+  hoursNeeded: number | null;
+  ticketsNeeded: number | null;
+  open: OpenWork & { valuePence: number };
+  // How much of the gap the open work does not cover.
+  shortfallPence: number;
+}
+
 export interface MonthPerformance {
   month: string;
   breakEvenPence: number | null;
@@ -33,6 +130,9 @@ export interface MonthPerformance {
     progress: number | null;
   };
   people: PersonPerformance[];
+  unlock: Unlock;
+  // Each person's open billable tickets in the month's cycles, by user id.
+  openByUser: Record<string, OpenWork>;
 }
 
 function monthRange(month: string): [Date, Date] {
@@ -101,11 +201,7 @@ export async function computeMonth(month: string): Promise<MonthPerformance> {
   const people = new Map<string, PersonPerformance>();
   for (const r of rows) {
     if (r.internal || r.billingModel === 'internal') continue;
-    const valuePence =
-      r.valueOverridePence ??
-      (r.estimateMinutes && r.dayRatePence != null
-        ? valueOf(r.estimateMinutes, hoursPerDay, r.dayRatePence)
-        : 0);
+    const valuePence = ticketValue(r, hoursPerDay);
     if (valuePence <= 0) continue;
     teamPence += valuePence;
     if (!r.assigneeUserId) continue;
@@ -139,6 +235,15 @@ export async function computeMonth(month: string): Promise<MonthPerformance> {
     p.bonusPence = teamPence > 0 ? Math.round((poolPence * p.billingsPence) / teamPence) : 0;
   }
 
+  const open = await openWork(start, end, hoursPerDay);
+  const openByUser: Record<string, OpenWork> = {};
+  for (const o of open) {
+    if (!o.assigneeUserId) continue;
+    const mine = (openByUser[o.assigneeUserId] ??= { tickets: 0, minutes: 0 });
+    mine.tickets++;
+    mine.minutes += o.estimateMinutes ?? 0;
+  }
+
   return {
     month,
     breakEvenPence,
@@ -150,5 +255,7 @@ export async function computeMonth(month: string): Promise<MonthPerformance> {
       progress: breakEvenPence ? teamPence / breakEvenPence : null,
     },
     people: [...people.values()].sort((a, b) => b.billingsPence - a.billingsPence),
+    unlock: unlockFor(breakEvenPence != null ? breakEvenPence - teamPence : null, open),
+    openByUser,
   };
 }

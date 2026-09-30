@@ -19,6 +19,18 @@ export interface MyPerformance {
     tickets: PerformanceTicket[];
   };
   teamProgress: number | null;
+  unlock: {
+    unlocked: boolean;
+    hoursNeeded: number | null;
+    ticketsNeeded: number | null;
+    enoughPlanned: boolean;
+  };
+  myOpen: OpenWork;
+}
+
+export interface OpenWork {
+  tickets: number;
+  minutes: number;
 }
 
 export interface TeamPerformance {
@@ -39,6 +51,15 @@ export interface TeamPerformance {
     bonusPence: number;
     tickets: PerformanceTicket[];
   }[];
+  unlock: {
+    unlocked: boolean;
+    gapPence: number | null;
+    hoursNeeded: number | null;
+    ticketsNeeded: number | null;
+    open: OpenWork & { valuePence: number };
+    shortfallPence: number;
+  };
+  openByUser: Record<string, OpenWork>;
 }
 
 export const getMyPerformance = (month: string) =>

@@ -24,5 +24,20 @@
   "person": "成员",
   "tickets": "事项",
   "previous": "上个月",
-  "next": "下个月"
+  "next": "下个月",
+  "locked": "未解锁",
+  "lockedHint": "团队达到盈亏平衡点后解锁",
+  "unlock": {
+    "lockedTitle": "奖金未解锁",
+    "toGo": "还差 {amount}",
+    "needed": "约 {hours} 小时 · 约 {tickets} 个工单",
+    "neededHint": "本月团队还需完成的客户工作量，完成后开放奖金池；按本月未完成工单估算。",
+    "noOpenWork": "本月周期内还没有已估算的客户工作，因此无法计算解锁所需小时数。",
+    "mine": "你在本月周期内有 {tickets} 个未完成工单（{hours} 小时）。",
+    "mineNone": "你在本月周期内没有未完成的客户工单。",
+    "shortfall": "本月计划的工作尚不足以达到盈亏平衡点：需要计划更多客户工作。",
+    "shortfallAmount": "本月计划的工作距盈亏平衡点还差 {amount}：需要计划更多客户工作。",
+    "unlockedTitle": "奖金已解锁",
+    "unlockedBody": "团队已超过盈亏平衡点：每完成一个客户工单都会增加奖金池。"
+  }
 }

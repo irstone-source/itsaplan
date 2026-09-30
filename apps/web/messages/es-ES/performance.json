@@ -24,5 +24,20 @@
   "person": "Persona",
   "tickets": "Tareas",
   "previous": "Mes anterior",
-  "next": "Mes siguiente"
+  "next": "Mes siguiente",
+  "locked": "Bloqueado",
+  "lockedHint": "Se desbloquea cuando el equipo alcanza el punto de equilibrio",
+  "unlock": {
+    "lockedTitle": "Bonus bloqueado",
+    "toGo": "Faltan {amount}",
+    "needed": "~{hours} h · ~{tickets, plural, one {# ticket} other {# tickets}}",
+    "neededHint": "Trabajo de clientes que el equipo aún debe completar este mes para abrir el fondo de bonus, estimado con los tickets abiertos del mes.",
+    "noOpenWork": "Aún no hay trabajo de clientes estimado en el ciclo de este mes, así que no se pueden calcular las horas para desbloquear.",
+    "mine": "Tienes {tickets, plural, one {# ticket abierto} other {# tickets abiertos}} ({hours} h) en el ciclo de este mes.",
+    "mineNone": "No tienes tickets de clientes abiertos en el ciclo de este mes.",
+    "shortfall": "El trabajo planificado este mes aún no alcanza el punto de equilibrio: hay que planificar más trabajo de clientes.",
+    "shortfallAmount": "Al trabajo planificado este mes le faltan {amount} para el punto de equilibrio: hay que planificar más trabajo de clientes.",
+    "unlockedTitle": "Bonus desbloqueado",
+    "unlockedBody": "El equipo ha superado el punto de equilibrio: cada ticket de cliente completado suma al fondo."
+  }
 }

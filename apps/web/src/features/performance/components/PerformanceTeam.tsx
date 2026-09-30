@@ -8,6 +8,7 @@ import { formatPence } from '@/utils/money';
 import PerformanceMonthSettings from './PerformanceMonthSettings';
 import PerformanceProgress from './PerformanceProgress';
 import PerformanceStat from './PerformanceStat';
+import PerformanceUnlock from './PerformanceUnlock';
 
 // The owner's view of the month: settings, team totals and each person's share.
 export default function PerformanceTeam({ month }: { month: string }) {
@@ -37,6 +38,16 @@ export default function PerformanceTeam({ month }: { month: string }) {
         />
       </div>
       <PerformanceProgress progress={data.team.progress} />
+      {data.breakEvenPence != null && (
+        <PerformanceUnlock
+          unlocked={data.unlock.unlocked}
+          hoursNeeded={data.unlock.hoursNeeded}
+          ticketsNeeded={data.unlock.ticketsNeeded}
+          enoughPlanned={data.unlock.shortfallPence === 0}
+          gapPence={data.unlock.gapPence}
+          shortfallPence={data.unlock.shortfallPence}
+        />
+      )}
       <table className="w-full text-sm">
         <thead className="text-xs text-muted-foreground">
           <tr>

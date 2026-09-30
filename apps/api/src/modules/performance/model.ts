@@ -30,6 +30,8 @@ const Person = t.Object({
   tickets: t.Array(Ticket),
 });
 
+const OpenWork = t.Object({ tickets: t.Number(), minutes: t.Number() });
+
 export const MonthPerformanceResponse = t.Object({
   month: t.String(),
   breakEvenPence: t.Nullable(t.Number()),
@@ -41,6 +43,15 @@ export const MonthPerformanceResponse = t.Object({
     progress: t.Nullable(t.Number()),
   }),
   people: t.Array(Person),
+  unlock: t.Object({
+    unlocked: t.Boolean(),
+    gapPence: t.Nullable(t.Number()),
+    hoursNeeded: t.Nullable(t.Number()),
+    ticketsNeeded: t.Nullable(t.Number()),
+    open: t.Object({ tickets: t.Number(), minutes: t.Number(), valuePence: t.Number() }),
+    shortfallPence: t.Number(),
+  }),
+  openByUser: t.Record(t.String(), OpenWork),
 });
 
 // What a team member sees: their own figures, and the team's progress to break-even
@@ -55,4 +66,12 @@ export const MyPerformanceResponse = t.Object({
     tickets: t.Array(Ticket),
   }),
   teamProgress: t.Nullable(t.Number()),
+  // What the team still has to do before the bonus opens, in hours and tickets only.
+  unlock: t.Object({
+    unlocked: t.Boolean(),
+    hoursNeeded: t.Nullable(t.Number()),
+    ticketsNeeded: t.Nullable(t.Number()),
+    enoughPlanned: t.Boolean(),
+  }),
+  myOpen: OpenWork,
 });

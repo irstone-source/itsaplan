@@ -24,5 +24,20 @@
   "person": "Pessoa",
   "tickets": "Itens",
   "previous": "Mês anterior",
-  "next": "Próximo mês"
+  "next": "Próximo mês",
+  "locked": "Bloqueado",
+  "lockedHint": "Desbloqueia quando a equipe atinge o ponto de equilíbrio",
+  "unlock": {
+    "lockedTitle": "Bônus bloqueado",
+    "toGo": "Faltam {amount}",
+    "needed": "~{hours} h · ~{tickets, plural, one {# ticket} other {# tickets}}",
+    "neededHint": "Trabalho de clientes que a equipe ainda precisa concluir este mês para abrir o fundo de bônus, estimado pelos tickets abertos do mês.",
+    "noOpenWork": "Ainda não há trabalho de clientes estimado no ciclo deste mês, então não dá para calcular as horas para desbloquear.",
+    "mine": "Você tem {tickets, plural, one {# ticket aberto} other {# tickets abertos}} ({hours} h) no ciclo deste mês.",
+    "mineNone": "Você não tem tickets de clientes abertos no ciclo deste mês.",
+    "shortfall": "O trabalho planejado este mês ainda não atinge o ponto de equilíbrio: é preciso planejar mais trabalho de clientes.",
+    "shortfallAmount": "Faltam {amount} no trabalho planejado este mês para o ponto de equilíbrio: é preciso planejar mais trabalho de clientes.",
+    "unlockedTitle": "Bônus desbloqueado",
+    "unlockedBody": "A equipe passou do ponto de equilíbrio: cada ticket de cliente concluído soma ao fundo."
+  }
 }

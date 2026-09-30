@@ -35,6 +35,13 @@ export const performanceRoutes = new Elysia({
           tickets: mine?.tickets ?? [],
         },
         teamProgress: month.team.progress,
+        unlock: {
+          unlocked: month.unlock.unlocked,
+          hoursNeeded: month.unlock.hoursNeeded,
+          ticketsNeeded: month.unlock.ticketsNeeded,
+          enoughPlanned: month.unlock.shortfallPence === 0,
+        },
+        myOpen: month.openByUser[me.id] ?? { tickets: 0, minutes: 0 },
       };
     },
     {

@@ -8,6 +8,7 @@ import { formatPence } from '@/utils/money';
 import PerformanceProgress from './PerformanceProgress';
 import PerformanceStat from './PerformanceStat';
 import PerformanceTickets from './PerformanceTickets';
+import PerformanceUnlock from './PerformanceUnlock';
 
 // A member's own month: billings, share of break-even, bonus, and the team's progress.
 export default function PerformanceMine({ month }: { month: string }) {
@@ -18,6 +19,7 @@ export default function PerformanceMine({ month }: { month: string }) {
   });
   if (!data) return null;
   const share = data.me.shareOfBreakEven;
+  const locked = data.breakEvenSet && !data.unlock.unlocked;
   return (
     <section className="space-y-4">
       <h2 className="text-sm font-medium">{t('mine')}</h2>
@@ -34,11 +36,12 @@ export default function PerformanceMine({ month }: { month: string }) {
         />
         <PerformanceStat
           label={t('bonus')}
-          value={formatPence(data.me.bonusPence)}
-          hint={t('bonusHint')}
+          value={locked ? t('locked') : formatPence(data.me.bonusPence)}
+          hint={locked ? t('lockedHint') : t('bonusHint')}
         />
       </div>
       <PerformanceProgress progress={data.teamProgress} />
+      {data.breakEvenSet && <PerformanceUnlock {...data.unlock} mine={data.myOpen} />}
       <PerformanceTickets tickets={data.me.tickets} />
     </section>
   );

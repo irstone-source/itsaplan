@@ -11,7 +11,7 @@ the instance holds, how the team uses it, and how it is changed and deployed.
 | Web | https://plan.cambray.co |
 | API and MCP | https://plan-api.cambray.co (MCP at `/mcp`) |
 | Sign-in | Google (Cambray Workspace accounts). Email and password sign-in is off. |
-| Brand | "Cambray", accent #00E5CC, ring mark on a dark tile (`scripts/cambray-mark-tile.svg`); light theme: the website's ink mark on a light tile (`scripts/cambray-mark-tile-light.svg`) |
+| Brand | "Cambray", accent #00E5CC, ring mark on a dark tile (`scripts/cambray-mark-tile.svg`); light theme: the press kit "Dark on Light" ink mark (#1A1A1A) on a white tile (`scripts/cambray-mark-tile-light.svg`) |
 | Hosting | Railway project `itsaplan`: services `api`, `web`, `worker`, `bot`, `postgres` |
 | Code | github.com/irstone-source/itsaplan, branch `feat/v1.2-branding-today` |
 | Images | built in the public mirror github.com/irstone-source/itsaplan-images (AGPL source) |

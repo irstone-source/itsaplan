@@ -24,5 +24,20 @@
   "person": "Orang",
   "tickets": "Tugas",
   "previous": "Bulan sebelumnya",
-  "next": "Bulan berikutnya"
+  "next": "Bulan berikutnya",
+  "locked": "Terkunci",
+  "lockedHint": "Terbuka saat tim mencapai titik impas",
+  "unlock": {
+    "lockedTitle": "Bonus terkunci",
+    "toGo": "Kurang {amount}",
+    "needed": "~{hours} jam · ~{tickets} tiket",
+    "neededHint": "Pekerjaan klien yang masih harus diselesaikan tim bulan ini untuk membuka dana bonus, diperkirakan dari tiket terbuka bulan ini.",
+    "noOpenWork": "Belum ada pekerjaan klien yang diestimasi di siklus bulan ini, jadi jam untuk membuka belum bisa dihitung.",
+    "mine": "Anda punya {tickets} tiket terbuka ({hours} jam) di siklus bulan ini.",
+    "mineNone": "Anda tidak punya tiket klien terbuka di siklus bulan ini.",
+    "shortfall": "Pekerjaan yang direncanakan bulan ini belum mencapai titik impas: perlu merencanakan lebih banyak pekerjaan klien.",
+    "shortfallAmount": "Pekerjaan yang direncanakan bulan ini kurang {amount} dari titik impas: perlu merencanakan lebih banyak pekerjaan klien.",
+    "unlockedTitle": "Bonus terbuka",
+    "unlockedBody": "Tim sudah melewati titik impas: setiap tiket klien yang selesai menambah dana."
+  }
 }
