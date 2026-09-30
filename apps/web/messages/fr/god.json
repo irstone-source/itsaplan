@@ -330,6 +330,8 @@
     "accentColorHint": "Utilisée pour les boutons principaux, les contours de focus et le panneau de connexion.",
     "logo": "Logo",
     "logoHint": "Un PNG, JPEG, WebP ou SVG carré de 256 Ko maximum. Sert aussi d'icône d'onglet.",
+    "logoLight": "Logo pour le thème clair",
+    "logoLightHint": "Affiché à la place du logo en thème clair. Laissez vide pour utiliser le logo dans les deux thèmes.",
     "upload": "Importer",
     "reset": "Réinitialiser",
     "logoTooLarge": "Le logo doit faire 256 Ko ou moins",

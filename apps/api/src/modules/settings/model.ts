@@ -71,17 +71,21 @@ export const WhatsNewSchema = t.Object({
   migration: t.Nullable(TeamsMigrationSchema),
 });
 
-// The logo is stored inline as a data URL so it needs no object storage, and is shown
+// A logo is stored inline as a data URL so it needs no object storage, and is shown
 // through <img> only, where an SVG cannot run script.
+const Logo = t.Nullable(
+  t.String({
+    pattern: '^data:image/(png|jpeg|webp|svg\\+xml);base64,[A-Za-z0-9+/]+=*$',
+    maxLength: 400_000,
+  }),
+);
+
 export const BrandingSchema = t.Object({
   appName: t.Nullable(t.String({ maxLength: 40 })),
   accentColor: t.Nullable(t.String({ pattern: '^#[0-9a-fA-F]{6}$' })),
-  logo: t.Nullable(
-    t.String({
-      pattern: '^data:image/(png|jpeg|webp|svg\\+xml);base64,[A-Za-z0-9+/]+=*$',
-      maxLength: 400_000,
-    }),
-  ),
+  logo: Logo,
+  // Shown in the light theme instead of logo; null shows logo in both themes.
+  logoLight: Logo,
 });
 
 export const BillingSettingsSchema = t.Object({

@@ -330,6 +330,8 @@
     "accentColorHint": "Used for primary buttons, focus rings and the sign-in panel.",
     "logo": "Logo",
     "logoHint": "A square PNG, JPEG, WebP or SVG up to 256 KB. Also used as the browser tab icon.",
+    "logoLight": "Logo for the light theme",
+    "logoLightHint": "Shown instead of the logo when the light theme is on. Leave empty to use the logo in both themes.",
     "upload": "Upload",
     "reset": "Reset",
     "logoTooLarge": "The logo must be 256 KB or smaller",

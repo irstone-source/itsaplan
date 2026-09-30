@@ -4,6 +4,7 @@ export interface Branding {
   appName: string | null;
   accentColor: string | null;
   logo: string | null;
+  logoLight: string | null;
 }
 
 export const getBranding = () => request<Branding>('/settings/branding');

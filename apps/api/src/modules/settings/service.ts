@@ -88,9 +88,10 @@ export interface Branding {
   appName: string | null;
   accentColor: string | null;
   logo: string | null;
+  logoLight: string | null;
 }
 
-const NO_BRANDING: Branding = { appName: null, accentColor: null, logo: null };
+const NO_BRANDING: Branding = { appName: null, accentColor: null, logo: null, logoLight: null };
 
 export async function getBranding(): Promise<Branding> {
   return { ...NO_BRANDING, ...(await getSetting<Branding>(BRANDING_SETTING_KEY)) };

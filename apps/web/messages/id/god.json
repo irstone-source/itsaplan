@@ -330,6 +330,8 @@
     "accentColorHint": "Dipakai untuk tombol utama, cincin fokus, dan panel masuk.",
     "logo": "Logo",
     "logoHint": "PNG, JPEG, WebP, atau SVG persegi hingga 256 KB. Juga dipakai sebagai ikon tab.",
+    "logoLight": "Logo untuk tema terang",
+    "logoLightHint": "Ditampilkan sebagai pengganti logo saat tema terang aktif. Kosongkan untuk memakai logo di kedua tema.",
     "upload": "Unggah",
     "reset": "Atur ulang",
     "logoTooLarge": "Logo harus berukuran 256 KB atau lebih kecil",

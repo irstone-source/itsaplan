@@ -330,6 +330,8 @@
     "accentColorHint": "Usada nos botões principais, nos anéis de foco e no painel de login.",
     "logo": "Logotipo",
     "logoHint": "Um PNG, JPEG, WebP ou SVG quadrado de até 256 KB. Também usado como ícone da aba.",
+    "logoLight": "Logo para o tema claro",
+    "logoLightHint": "Exibido no lugar do logo no tema claro. Deixe vazio para usar o logo nos dois temas.",
     "upload": "Enviar",
     "reset": "Redefinir",
     "logoTooLarge": "O logotipo deve ter 256 KB ou menos",

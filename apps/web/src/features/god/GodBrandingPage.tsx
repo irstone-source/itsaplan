@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ChangeEvent } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -10,14 +10,12 @@ import { qk } from '@/services/queryKeys';
 import SettingsCard from '@/components/common/page/SettingsCard';
 import SettingsRow from '@/components/common/page/SettingsRow';
 import SettingsSection from '@/components/common/page/SettingsSection';
-import ItsAPlanMark from '@/components/brand/ItsAPlanMark';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import GodSectionPage from './components/GodSectionPage';
 import GodSettingsGate from './components/GodSettingsGate';
+import GodBrandingLogoRow from './components/GodBrandingLogoRow';
 
-const MAX_LOGO_BYTES = 256 * 1024;
-const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
 const DEFAULT_ACCENT = '#171717';
 
 export default function GodBrandingPage() {
@@ -40,17 +38,6 @@ function BrandingForm({ branding }: { branding: Branding }) {
     onSuccess: (data) => qc.setQueryData(qk.branding, data),
   });
   const dirty = JSON.stringify(draft) !== JSON.stringify(branding);
-
-  function pickLogo(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) return;
-    if (!LOGO_TYPES.includes(file.type)) return void toast.error(t('logoWrongType'));
-    if (file.size > MAX_LOGO_BYTES) return void toast.error(t('logoTooLarge'));
-    const reader = new FileReader();
-    reader.onload = () => setDraft((d) => ({ ...d, logo: String(reader.result) }));
-    reader.readAsDataURL(file);
-  }
 
   async function submit() {
     try {
@@ -104,39 +91,17 @@ function BrandingForm({ branding }: { branding: Branding }) {
               </div>
             }
           />
-          <SettingsRow
+          <GodBrandingLogoRow
             title={t('logo')}
             description={t('logoHint')}
-            control={
-              <div className="flex items-center gap-2">
-                {draft.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- a data URL preview
-                  <img src={draft.logo} alt="" className="size-9 rounded object-contain" />
-                ) : (
-                  <ItsAPlanMark className="size-9" />
-                )}
-                <Button variant="outline" size="sm" asChild>
-                  <label className="cursor-pointer">
-                    {t('upload')}
-                    <input
-                      type="file"
-                      accept={LOGO_TYPES.join(',')}
-                      className="sr-only"
-                      onChange={pickLogo}
-                    />
-                  </label>
-                </Button>
-                {draft.logo && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setDraft({ ...draft, logo: null })}
-                  >
-                    {t('reset')}
-                  </Button>
-                )}
-              </div>
-            }
+            value={draft.logo}
+            onChange={(logo) => setDraft({ ...draft, logo })}
+          />
+          <GodBrandingLogoRow
+            title={t('logoLight')}
+            description={t('logoLightHint')}
+            value={draft.logoLight}
+            onChange={(logoLight) => setDraft({ ...draft, logoLight })}
           />
         </SettingsCard>
       </SettingsSection>

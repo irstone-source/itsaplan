@@ -2,7 +2,12 @@ import { cache } from 'react';
 import type { Branding } from '@/lib/api/endpoints/branding';
 import { serverRuntimeEnv } from '@/utils/runtimeEnv';
 
-const DEFAULT_BRANDING: Branding = { appName: null, accentColor: null, logo: null };
+const DEFAULT_BRANDING: Branding = {
+  appName: null,
+  accentColor: null,
+  logo: null,
+  logoLight: null,
+};
 
 // Read once per request. An unreachable API renders the built-in brand rather than
 // failing the page.

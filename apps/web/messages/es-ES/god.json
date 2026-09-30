@@ -330,6 +330,8 @@
     "accentColorHint": "Se usa en los botones principales, los anillos de foco y el panel de inicio de sesión.",
     "logo": "Logotipo",
     "logoHint": "Un PNG, JPEG, WebP o SVG cuadrado de hasta 256 KB. También se usa como icono de la pestaña.",
+    "logoLight": "Logo para el tema claro",
+    "logoLightHint": "Se muestra en lugar del logo con el tema claro. Déjalo vacío para usar el logo en ambos temas.",
     "upload": "Subir",
     "reset": "Restablecer",
     "logoTooLarge": "El logotipo debe ocupar 256 KB o menos",
