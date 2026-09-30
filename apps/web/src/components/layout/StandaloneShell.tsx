@@ -17,7 +17,7 @@ export default function StandaloneShell({
   title,
   children,
 }: {
-  title: 'allWork' | 'today';
+  title: 'allWork' | 'today' | 'performance';
   children: ReactNode;
 }) {
   const t = useTranslations('nav');

@@ -67,5 +67,6 @@
     "hintMove": "mover",
     "hintOpen": "abrir"
   },
-  "today": "Hoy"
+  "today": "Hoy",
+  "performance": "Rendimiento"
 }

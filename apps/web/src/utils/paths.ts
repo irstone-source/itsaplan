@@ -176,3 +176,5 @@ export const godPath = (section: string) => `/god/${section}`;
 export const allWorkPath = () => '/all-work';
 
 export const todayPath = () => '/today';
+
+export const performancePath = () => '/performance';

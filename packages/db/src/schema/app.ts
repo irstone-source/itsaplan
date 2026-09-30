@@ -1171,6 +1171,24 @@ export const issueTemplateLabel = pgTable(
 // initiative's issue progress against its timeline. owner_user_id is the person
 // accountable. start_date/target_date bound the timeline (start defaults to
 // created_at when null); priority mirrors issue.priority (free text).
+// A month of the performance share: the break-even the team's billings are measured
+// against, and the share of billings above it (percent) that goes to the bonus pool.
+export const performanceMonth = pgTable(
+  'performance_month',
+  {
+    // 'YYYY-MM'.
+    month: text('month').primaryKey(),
+    breakEvenPence: integer('break_even_pence').notNull(),
+    poolPercent: integer('pool_percent').notNull().default(0),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check('performance_month_format_check', sql`${t.month} ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'`),
+    check('performance_month_break_even_check', sql`${t.breakEvenPence} >= 0`),
+    check('performance_month_pool_check', sql`${t.poolPercent} BETWEEN 0 AND 100`),
+  ],
+);
+
 export const initiative = pgTable(
   'initiative',
   {
