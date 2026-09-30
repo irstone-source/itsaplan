@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import InviteActions from './InviteActions';
 import InviteAuthForm from './InviteAuthForm';
 import InviteNotice from './InviteNotice';
+import InviteProviderButtons from './InviteProviderButtons';
+import { useAuthConfig } from '@/services/authConfig.service';
 
 // Picks what the invitee has to do next based on the invite status and the
 // current session: sign in / register, accept or reject, or sign out of the
@@ -19,6 +21,9 @@ export default function InviteStep({ token, invite }: { token: string; invite: I
   const tCommon = useTranslations('common');
   const router = useRouter();
   const { data: session, isPending: sessionPending } = useSession();
+  const authConfig = useAuthConfig();
+  // With password sign-in off the invitee joins through single sign-on only.
+  const passwordEnabled = authConfig?.emailPassword !== false;
 
   async function switchAccount() {
     await signOut();
@@ -35,12 +40,19 @@ export default function InviteStep({ token, invite }: { token: string; invite: I
     );
   }
 
-  if (sessionPending) {
+  if (sessionPending || !authConfig) {
     return <p className="text-sm text-muted-foreground">{tCommon('loading')}</p>;
   }
 
   if (!session) {
-    return <InviteAuthForm token={token} email={invite.email} hasAccount={invite.hasAccount} />;
+    return (
+      <div className="flex flex-col gap-6">
+        <InviteProviderButtons token={token} />
+        {passwordEnabled && (
+          <InviteAuthForm token={token} email={invite.email} hasAccount={invite.hasAccount} />
+        )}
+      </div>
+    );
   }
 
   const sessionEmail = session.user.email;

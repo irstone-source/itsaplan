@@ -69,3 +69,18 @@ export async function signInForInvite(input: {
     throw new InviteAuthError(result.error.message ?? input.signInFailed, result.error.code);
   }
 }
+
+// Signs in through Google or the instance's own identity provider and comes back to
+// this invite, where a signed-in invitee is offered accept and reject. The callback
+// URLs need the web origin: the auth handler runs on the API origin.
+export async function signInWithProviderForInvite(
+  token: string,
+  provider: 'google' | 'oidc',
+): Promise<void> {
+  const back = `${window.location.origin}/invite/${encodeURIComponent(token)}`;
+  const result =
+    provider === 'google'
+      ? await signIn.social({ provider: 'google', callbackURL: back, errorCallbackURL: back })
+      : await signIn.oauth2({ providerId: 'oidc', callbackURL: back, errorCallbackURL: back });
+  if (result.error) throw new Error(result.error.message ?? '');
+}
