@@ -1,0 +1,23 @@
+{
+  "previous": "Tahun sebelumnya",
+  "next": "Tahun berikutnya",
+  "startMonth": "Awal tahun",
+  "revenueTarget": "Target pendapatan tahun ini",
+  "cyclesFrom": "Siklus dari",
+  "saveAndSpread": "Simpan dan tetapkan target siklus",
+  "spreadHint": "Menyimpan menetapkan target setiap siklus sebanding dengan hari kerjanya (Senin sampai Jumat). Target satu siklus tetap bisa diubah di barisnya.",
+  "plannedInCycles": "Direncanakan dalam siklus",
+  "billedToDate": "Ditagih sejauh ini",
+  "yearSaved": "Target tahunan disimpan dan dibagi ke siklus",
+  "month": "Bulan",
+  "cycle": "Siklus",
+  "workingDays": "Hari kerja",
+  "target": "Target",
+  "breakEven": "Titik impas",
+  "pool": "% dana",
+  "billings": "Tagihan",
+  "noCycle": "Tanpa siklus",
+  "save": "Simpan",
+  "monthSaved": "{month} disimpan",
+  "rowsHint": "Tagihan adalah nilai pekerjaan klien yang selesai dalam bulan itu. Titik impas dan % dana menentukan bagi hasil kinerja bulan itu."
+}

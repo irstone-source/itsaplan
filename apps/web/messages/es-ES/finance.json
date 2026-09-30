@@ -1,0 +1,23 @@
+{
+  "previous": "Año anterior",
+  "next": "Año siguiente",
+  "startMonth": "Inicio del año",
+  "revenueTarget": "Objetivo de ingresos del año",
+  "cyclesFrom": "Ciclos de",
+  "saveAndSpread": "Guardar y fijar objetivos de ciclo",
+  "spreadHint": "Al guardar, el objetivo de cada ciclo se fija en proporción a sus días laborables (de lunes a viernes). El objetivo de un ciclo se puede cambiar en su fila.",
+  "plannedInCycles": "Planificado en ciclos",
+  "billedToDate": "Facturado hasta ahora",
+  "yearSaved": "Objetivo anual guardado y repartido entre los ciclos",
+  "month": "Mes",
+  "cycle": "Ciclo",
+  "workingDays": "Días laborables",
+  "target": "Objetivo",
+  "breakEven": "Punto de equilibrio",
+  "pool": "% del fondo",
+  "billings": "Facturación",
+  "noCycle": "Sin ciclo",
+  "save": "Guardar",
+  "monthSaved": "{month} guardado",
+  "rowsHint": "La facturación es el valor del trabajo de clientes completado en el mes. El punto de equilibrio y el % del fondo definen el reparto de rendimiento del mes."
+}

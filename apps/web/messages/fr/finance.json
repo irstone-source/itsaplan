@@ -1,0 +1,23 @@
+{
+  "previous": "Année précédente",
+  "next": "Année suivante",
+  "startMonth": "Début de l'année",
+  "revenueTarget": "Objectif de revenus de l'année",
+  "cyclesFrom": "Cycles de",
+  "saveAndSpread": "Enregistrer et fixer les objectifs des cycles",
+  "spreadHint": "L'enregistrement fixe l'objectif de chaque cycle au prorata de ses jours ouvrés (du lundi au vendredi). L'objectif d'un cycle reste modifiable dans sa ligne.",
+  "plannedInCycles": "Prévu dans les cycles",
+  "billedToDate": "Facturé à ce jour",
+  "yearSaved": "Objectif annuel enregistré et réparti sur les cycles",
+  "month": "Mois",
+  "cycle": "Cycle",
+  "workingDays": "Jours ouvrés",
+  "target": "Objectif",
+  "breakEven": "Seuil de rentabilité",
+  "pool": "% de la cagnotte",
+  "billings": "Facturation",
+  "noCycle": "Aucun cycle",
+  "save": "Enregistrer",
+  "monthSaved": "{month} enregistré",
+  "rowsHint": "La facturation est la valeur du travail client terminé dans le mois. Le seuil de rentabilité et le % de la cagnotte fixent la prime du mois."
+}

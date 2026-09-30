@@ -1,0 +1,23 @@
+{
+  "previous": "上一年",
+  "next": "下一年",
+  "startMonth": "年度开始",
+  "revenueTarget": "年度收入目标",
+  "cyclesFrom": "周期所属项目",
+  "saveAndSpread": "保存并设定周期目标",
+  "spreadHint": "保存时按每个周期的工作日（周一至周五）比例设定其目标。单个周期的目标仍可在下方对应行修改。",
+  "plannedInCycles": "周期内计划",
+  "billedToDate": "迄今已计费",
+  "yearSaved": "年度目标已保存并分配到各周期",
+  "month": "月份",
+  "cycle": "周期",
+  "workingDays": "工作日",
+  "target": "目标",
+  "breakEven": "盈亏平衡点",
+  "pool": "奖金池 %",
+  "billings": "计费",
+  "noCycle": "无周期",
+  "save": "保存",
+  "monthSaved": "{month} 已保存",
+  "rowsHint": "计费是当月完成的客户工作的价值。盈亏平衡点和奖金池 % 决定当月的绩效分成。"
+}

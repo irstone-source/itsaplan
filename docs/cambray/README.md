@@ -38,8 +38,9 @@ kept until they are deleted after a backup.
   description in five parts: Goal, We measure, Control, Tickets by workstream, Open. The
   numeric targets are left as "not set yet (Ian)" until Ian sets them.
 - **One label per client** (GSG, FGE, Window Supply Direct, Lanoguard, Bike Ventures).
-- **Monthly cycles** named like "October 2026". Work planned for the month goes into its
-  cycle.
+- **Monthly cycles** named like "October 2026", from the first Tuesday to the last Thursday
+  of the month; the days between cycles are buffer. Cycles exist to September 2027. Work
+  planned for the month goes into its cycle; work on a buffer day goes into the next one.
 
 Rates (from the 12-week resource plan, 6 hours = 1 day):
 
@@ -66,6 +67,8 @@ Rates (from the 12-week resource plan, 6 hours = 1 day):
 | All work | Sidebar → All work | Every project's issues on one board |
 | Add to projects | God mode → Users → a person | Add someone to several projects at once, across teams; remove per project |
 | Branding | God mode → Branding | Product name, accent colour and logo |
+| Performance | Sidebar → Performance | Each person's completed billings, share of break-even and bonus; the owner sees the team |
+| Finance | Sidebar → Finance (owner only) | The year's revenue target, spread over one project's cycles by working days; per month the cycle target, break-even, pool % and billings |
 
 ## 4. How the team uses it
 
@@ -140,6 +143,10 @@ and ship. Keep the Cambray changes as separate commits so they rebase cleanly.
   `bun run lint` fails otherwise.
 
 ## 7. Open items
+
+- The year's revenue target, break-even and pool % per month (Finance page).
+- Xero (collected cash) and Rize (hours) reconciliation of billings.
+- Product revenue (subscriptions, customers onboarded) as initiatives with gates, and a revenue share on it.
 
 - The numeric targets in each client initiative.
 - The internal day rate (internal work shows no cost until it is set).

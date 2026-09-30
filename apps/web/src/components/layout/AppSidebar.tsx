@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Braces, Server, Shield } from 'lucide-react';
+import { Braces, PoundSterling, Server, Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { Project } from '@/lib/api/endpoints/projects';
 import { useSession } from '@/lib/auth-client';
-import { apiDocsPath, godPath, mcpServerPath } from '@/utils/paths';
+import { apiDocsPath, financePath, godPath, mcpServerPath } from '@/utils/paths';
 import { GOD_SECTIONS } from '@/utils/godSections';
 import { useSettingsNavGroups } from '@/hooks/useSettingsNavGroups';
 import { useSidebarSide } from '@/hooks/useSidebarSide';
@@ -100,6 +100,15 @@ export default function AppSidebar({
               />
               {/* Instance administration, only for the owner account. The API
                   enforces the same, so hiding it here is about noise, not access. */}
+              {isGod && (
+                <SidebarNavItem
+                  href={financePath()}
+                  icon={PoundSterling}
+                  label={t('finance')}
+                  active={false}
+                  disabled={false}
+                />
+              )}
               {isGod && (
                 <SidebarNavItem
                   href={godPath(GOD_SECTIONS[0]!.slug)}

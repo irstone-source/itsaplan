@@ -278,6 +278,7 @@ export const qk = {
   billingSettings: ['billingSettings'] as const,
   myPerformance: (month: string) => ['performance', 'me', month] as const,
   teamPerformance: (month: string) => ['performance', 'team', month] as const,
+  finance: (start: string | undefined) => ['finance', start ?? 'latest'] as const,
   instanceStorageSettings: ['instanceStorageSettings'] as const,
   // The upload limits as read by the upload UI (open to any signed-in user).
   storageSettings: ['storageSettings'] as const,

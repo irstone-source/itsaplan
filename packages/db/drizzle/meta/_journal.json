@@ -967,6 +967,13 @@
       "when": 1790726243163,
       "tag": "0137_performance_month",
       "breakpoints": true
+    },
+    {
+      "idx": 138,
+      "version": "7",
+      "when": 1790726771568,
+      "tag": "0138_finance_year",
+      "breakpoints": true
     }
   ]
 }

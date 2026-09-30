@@ -1189,6 +1189,23 @@ export const performanceMonth = pgTable(
   ],
 );
 
+// The revenue plan for a year of twelve months from start_month. The target is
+// spread over the cycles of project_id that start in those months.
+export const financeYear = pgTable(
+  'finance_year',
+  {
+    // 'YYYY-MM', the first month of the year.
+    startMonth: text('start_month').primaryKey(),
+    revenueTargetPence: integer('revenue_target_pence').notNull(),
+    projectId: integer('project_id').references(() => project.id, { onDelete: 'set null' }),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check('finance_year_format_check', sql`${t.startMonth} ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'`),
+    check('finance_year_target_check', sql`${t.revenueTargetPence} >= 0`),
+  ],
+);
+
 export const initiative = pgTable(
   'initiative',
   {

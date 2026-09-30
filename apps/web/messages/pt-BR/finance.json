@@ -1,0 +1,23 @@
+{
+  "previous": "Ano anterior",
+  "next": "Próximo ano",
+  "startMonth": "Início do ano",
+  "revenueTarget": "Meta de receita do ano",
+  "cyclesFrom": "Ciclos de",
+  "saveAndSpread": "Salvar e definir metas dos ciclos",
+  "spreadHint": "Ao salvar, a meta de cada ciclo é definida em proporção aos seus dias úteis (segunda a sexta). A meta de um ciclo ainda pode ser alterada na sua linha.",
+  "plannedInCycles": "Planejado nos ciclos",
+  "billedToDate": "Faturado até agora",
+  "yearSaved": "Meta anual salva e distribuída pelos ciclos",
+  "month": "Mês",
+  "cycle": "Ciclo",
+  "workingDays": "Dias úteis",
+  "target": "Meta",
+  "breakEven": "Ponto de equilíbrio",
+  "pool": "% do fundo",
+  "billings": "Faturamento",
+  "noCycle": "Sem ciclo",
+  "save": "Salvar",
+  "monthSaved": "{month} salvo",
+  "rowsHint": "Faturamento é o valor do trabalho de clientes concluído no mês. Ponto de equilíbrio e % do fundo definem a participação do mês."
+}
