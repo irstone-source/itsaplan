@@ -11,7 +11,7 @@ the instance holds, how the team uses it, and how it is changed and deployed.
 | Web | https://plan.cambray.co |
 | API and MCP | https://plan-api.cambray.co (MCP at `/mcp`) |
 | Sign-in | Google (Cambray Workspace accounts). Email and password sign-in is off. |
-| Brand | "Cambray", accent #00E5CC, ring mark on a dark tile |
+| Brand | "Cambray", accent #00E5CC, ring mark on a dark tile (`scripts/cambray-mark-tile.svg`); light theme: the website's ink mark on a light tile (`scripts/cambray-mark-tile-light.svg`) |
 | Hosting | Railway project `itsaplan`: services `api`, `web`, `worker`, `bot`, `postgres` |
 | Code | github.com/irstone-source/itsaplan, branch `feat/v1.2-branding-today` |
 | Images | built in the public mirror github.com/irstone-source/itsaplan-images (AGPL source) |
@@ -145,7 +145,8 @@ and ship. Keep the Cambray changes as separate commits so they rebase cleanly.
 ## 7. Open items
 
 - The year's revenue target, break-even and pool % per month (Finance page).
-- Xero (collected cash) and Rize (hours) reconciliation of billings.
+- Xero (collected cash) reconciliation of billings.
+- Rize sync: scoped in `rize-sync.md`, waiting on Ian's decisions there.
 - Product revenue (subscriptions, customers onboarded) as initiatives with gates, and a revenue share on it.
 
 - The numeric targets in each client initiative.
