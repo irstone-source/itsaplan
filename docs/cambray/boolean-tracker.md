@@ -1,175 +1,257 @@
-# Boolean tracker in It's a Plan — scope
+# Growth tracker (Boolean tracker) in It's a Plan — scope
 
-Status: proposed, not built. Decisions for Ian are in section 9.
+Status: proposed, not built. Ian's decisions of 4 Oct 2026 are applied; the questions still
+open are in section 13.
 
 ## 1. Goal
 
-Every growth initiative carries the measures that say whether it is on the rails. Each week
-each measure gets a colour. Zoomed out, the board shows how much of acquisition, delivery
-and marketing operations is green, amber or red, and a run of reds forces a conversation
-about resource, performance or system before the month is lost.
+Growth on rails for every company Cambray runs or serves. Each company's growth is broken
+into initiatives; each initiative carries a few measures with a target for every period;
+every period each measure gets a colour. Zoomed out, the board shows how much of each
+company's revenue loop and capital loop is on target, where the data is missing, and which
+measures are drifting, early enough to act inside the month.
+
+Two things must hold for that confidence:
+
+1. **Every hole is visible and chased.** A missing or unverified figure is never shown as
+   fine. It is black (missing) or carries a person marker (unverified), and a task chases
+   it every working day until the figure is in.
+2. **The colours are trustworthy.** Figures come from a system of record wherever one
+   exists, targets cannot be moved silently, and a definition of every measure is written
+   down before it is tracked.
 
 ## 2. What it is built on
 
-- **Ian's tracker, 2023–25** (Firestarter origin; the Lanoguard Google Sheet; renamed the
-  "growth tracker / Growth 90" in Dec 2024). Weekly yes/no per item, entered by the person
+- **Ian's tracker, 2023–25** (Firestarter origin; the Lanoguard Google Sheet; the "growth
+  tracker / Growth 90" from Dec 2024). Weekly yes/no per item, entered by the person
   responsible, run by Zak in the weekly meeting. "Have you done it, haven't you done it."
   Several weeks of red means more resource or the wrong person. Tracked for 90 days it is
   "a heartbeat to the business". Sources: Otter 2024-05-10, 2024-08-14, 2024-08-28,
   2024-12-03; Fathom 2024-08-14, 2025-02-04, 2025-03-11, 2025-03-13.
 - **The Lanoguard health board, 2026** (`~/unfair-advantage/lanoguard-health-board.html`,
-  `scripts/update-boolean-tracker.js`). The built version, and the rules this scope keeps:
-  - Four kinds of measure: activity (controllable), engagement (influenced), outcome
-    (lagging), guardrail (trip switch).
-  - Cell colour by actual ÷ target: green at 90% or more, amber at 70% or more, red below.
-  - Locked (grey) until there is enough data; a locked measure cannot go red and is left
-    out of the roll-up.
-  - A run of reds raises a focus meeting: 2 weeks for activity, 3 for engagement, 4 for
-    outcome; a guardrail trips at once. The meeting asks one question: resource,
-    performance or system? If the target was wrong, change it and record why.
-- **What It's a Plan already has.** Initiatives show a health badge (on track, at risk,
-  off track), but it is computed from ticket progress against the timeline: it measures
-  delivery, not outcomes. The tracker adds the outcome side and reuses the same colours.
+  `scripts/update-boolean-tracker.js`, funnel definitions in
+  `lanoguard-funnel-metrics-spec.md`). The rules kept here: four kinds of measure; colour
+  by actual ÷ target; locked until enough data; a streak of reds raises a focus meeting
+  that asks resource, performance or system.
+- **It's a Plan today.** Initiatives show a health badge computed from ticket progress
+  against the timeline (delivery, not outcomes). Agents exist as team users with their own
+  key, schedules and a run log; they cannot be attached to an initiative yet.
 
-## 3. Data
+## 3. Structure
 
-| Table | Holds |
+```
+Company (Cambray, George Stone Gardens, Forever Green Energy, Window Supply Direct, Lanoguard, …)
+  └ Loop: Rev loop | Cap loop
+      └ Initiative (owner, agent, status)
+          └ Measure (≤ 5 per initiative; kind, definition, target rule, source)
+              └ Period entry (actual, evidence, verification, colour)
+```
+
+- **Company** is new. A client's growth measures belong to the client, not to Cambray: the
+  board never adds one company's revenue to another's. Cambray's own consulting
+  initiatives (CON) are Cambray's measures; a client's sales are the client's.
+- **Loops** (Ian, 4 Oct):
+  - **Rev loop**: revenue operations. Cold email and the rest of RevOS: sends, replies,
+    meetings, proposals, deals, revenue.
+  - **Cap loop**: finance and operational reporting: cash, costs, contribution margin,
+    break-even, funding.
+- **Five measures at most per initiative.** "Everything not on this board is either support
+  work or a distraction" (2026 board). The limit keeps the board readable.
+
+## 4. Measures
+
+| Field | Meaning |
 | --- | --- |
-| `measure` | Initiative, name, kind (activity, engagement, outcome, guardrail), lane, unit, direction (at least / at most), owner, weekly target or target rule, unlock rule, source, active from |
-| `measure_week` | Measure, ISO week, actual, done (yes/no measures), note, entered by, entered at |
+| Kind | activity (controllable), engagement (influenced), outcome (lagging), guardrail (limit), gate (milestone checklist) |
+| Definition | What counts, from which system, inclusion rules, ex- or inc-VAT, invoiced or collected, which time zone. Required before the first entry; versioned, and a change starts a new version |
+| Direction | at least, or at most (guardrails) |
+| Cadence | weekly or monthly; a monthly measure also shows a weekly pace line |
+| Target rule | section 5 |
+| Unlock rule | a number of periods or a minimum volume before the measure can be judged |
+| Owner | the person accountable; enters the figure when no agent can |
+| Source | manual, It's a Plan, RevOS, Xero, Rize, HubSpot, or another system; and the query or report |
 
-- **Target rules.** A fixed weekly number ("1 pallet sale a week"); yes/no (target = done);
-  growth ("5% month on month" from a baseline month, split into weeks by the cycle's working
-  days); a ceiling for guardrails ("marketing spend at most £X a week").
-- **Unlock rule.** A number of weeks or a minimum volume (the 2026 board unlocks reply
-  rate at a set number of sends) before the measure can be judged.
-- **Lane.** The roll-up group: Acquisition, Delivery, Marketing operations, Finance (list
-  to confirm).
+Every company's Rev loop uses one shared set of funnel definitions (sends, bounces,
+replies, positive replies, meetings booked, meetings held, proposals, deals, revenue), so
+the same measure means the same thing for George Stone and for Lanoguard; only the targets
+differ.
 
-## 4. Colours
+## 5. Target rules
 
-| Measure | Green | Amber | Red |
-| --- | --- | --- | --- |
-| Number, at least | actual ≥ 90% of target | ≥ 70% | < 70% |
-| Number, at most (guardrail) | within the limit | — | over the limit, at once |
-| Yes/no activity | done | not done, first week | not done, second week running |
-| Any, before unlock | grey | grey | grey |
+Ian sets the rule; the period targets follow from it.
 
-A week with no entry shows as "not reported" (section 8, decision 2). A green week
-restarts every count.
-
-## 5. Where it shows
-
-- **Tracker page** (sidebar, across projects, like Today): measures down the side grouped
-  by lane, the last 13 weeks across, one coloured cell per week. Above it, this week's
-  share of green, amber and red per lane and the trend over 13 weeks. Filter by project or
-  client initiative.
-- **Initiative page:** a Measures tab with the same grid for that initiative. When an
-  initiative has measures, its health badge shows the tracker colour (worst current
-  colour) instead of the timeline estimate.
-- **Weekly check-in:** "Your measures this week" on Today, one line per measure the person
-  owns: a number or a done tick, and a note. Due by Monday 12:00 for the week before.
-- **Focus flag:** when a streak trips, the measure is flagged and a ticket is created in
-  the initiative's project, "Focus: <measure> — resource, performance or system?",
-  assigned to the owner and due that week. The flag clears on the next green week.
-
-## 6. Automatic actuals
-
-| Source | Measures it can fill |
+| Rule | Period target |
 | --- | --- |
-| It's a Plan | Billings (completed client work), cycle net value, tickets completed, tickets created per label |
-| Finance page | Month target and growth baseline |
-| Rize (after the Rize sync) | Tracked and billable hours per client |
-| Xero (after the Xero connection) | Cash collected per client |
-| Agents | The daily intake routine and the MCP can write an actual stated in the standup or Slack, marked as agent-entered |
-| Lanoguard data | The 2026 tracker's sends, replies and deals, by the same script writing to the API |
+| Set amount | the same number every period (1 pallet a week) |
+| Linear | start + step × period (+20 sends a week, every week) |
+| Compounding | start × (1 + rate)^period (5% month on month) |
+| Push to gate | a milestone by a date; between now and then the target is the pace needed to reach it, and on the date it is passed or failed |
+| Shelf | hold a level: the target stays at the level reached, for a set number of periods, before the next rise |
+| Leapfrog | step changes on set dates (e.g. +50% at the start of each quarter), flat in between |
 
-Anything else is entered by hand.
+- **Seasonality.** A rule can carry a seasonal profile (the 2024 tracker split weekly
+  revenue by Lanoguard's seasonality) and the working-day calendar (bank holidays, the
+  Christmas weeks), so a short week is not judged as a full one.
+- **Changing a target.** A target can be changed only by the person who sets targets, with
+  a reason. Each period is judged against the target in force at the time; past colours
+  never change because a target moved. The change shows on the board.
+- **Gate measures** (for rollouts): an ordered checklist with a date per step, e.g. RevOS
+  for a client: domains bought → mailboxes warmed → list built → sequences live → first
+  reply → first meeting. Each step is passed or not; the measure is green while the next
+  step is on time.
 
-## 7. An agent per initiative
+## 6. Colours
 
-Every initiative gets its own agent: the initiative's architect. It fetches the figures,
-checks them, fills the week, and writes a short report on where the initiative stands and
-what to look at. It is also how the agent workforce stays under control: one agent per
-initiative, a fixed remit, and every run on record.
+| State | Colour | When |
+| --- | --- | --- |
+| On target | green | actual ≥ 90% of target |
+| Close | amber | ≥ 70% |
+| Off target | red | < 70%; a guardrail over its limit at once |
+| No data | **black** | no figure by the deadline, from the owner or the agent |
+| Unverified | colour + **person marker** | a figure exists but has not been checked against a system of record |
+| Not judged yet | grey | before the unlock rule is met |
+| Restated | colour + mark | a figure changed after the period closed; the old value is kept |
 
-**What It's a Plan already has.** Agents are first-class users of a team: an internal
-agent has a model, instructions, a tool list, its own API key and permissions, a step
-limit, and runs on a schedule (`agent_schedule`: cron, prompt, project), on a mention or
-when an issue is delegated to it; every run is kept in `agent_run`. An external agent
-(Claude Code through the runner or the MCP) acts with its own key. Missing: an agent
-cannot be attached to an initiative, and the built-in tools do not reach Xero, HubSpot,
-Rize or Slack.
+- **Black is a red with a different cause.** It counts toward a streak, and the chase in
+  section 8 starts the same day. Black records why: owner did not report, or the agent
+  could not reach the source (a system hole, e.g. a connector that does not authorise).
+- **Small numbers.** A target of 1 a week can only be 0 or 1, so the 90/70 bands mean
+  nothing. A measure with a target under 5 per period is also judged on its rolling
+  four-period total, and the cell shows both.
+- **Streaks.** A run of reds or blacks raises a focus flag: 2 periods for activity, 3 for
+  engagement, 4 for outcome, 1 for a guardrail or a failed gate step. A green period
+  restarts the count.
+- **Model check.** When an initiative's activity measures are green for 4 periods running
+  and its outcome is red for the same 4, the flag says the plan is wrong, not the people:
+  the conversion assumptions behind the targets are revised.
 
-**What is added.**
-- `initiative.agent_id`: the initiative's architect. Only that agent (and people) may
-  write the initiative's measures; any other agent is refused.
-- A weekly schedule per initiative, Monday 07:00, before the weekly meeting, plus "Run
-  now" on the initiative page.
-- Agent-entered weeks carry their evidence: the source of each figure (a query, a report
-  link, a meeting or Slack permalink) and a check result: **verified** (two sources
-  agree, or the source is a system of record), **unverified** (one soft source, e.g. a
-  figure said in a meeting) or **conflict** (sources disagree; both shown). An unverified
-  or conflicting figure colours the cell but is marked, and waits for the owner to
-  confirm it.
-- The report is posted to the initiative's activity feed: status per measure, what
-  changed since last week, what to look for, any streak about to trip, and the figures it
-  could not get.
-- When a focus flag trips, the agent writes the first pass of the focus ticket: which of
-  resource, performance or system the data points at, and why.
+## 7. The agent on each initiative
 
-**Where it runs.** Two options:
-1. *Cloud routine per initiative* (recommended to start). A Claude routine, like the daily
-   intake, that already has the Fathom, Slack, Rize, HubSpot and Calendar connectors,
-   reads and writes It's a Plan through its MCP as the initiative's agent user. No new
-   integrations are needed.
-2. *Internal agent.* Runs inside It's a Plan on the worker. Needs custom tools for Xero,
-   HubSpot, Rize and Slack, and object storage (S3) for agent skills, which production
-   does not have yet.
+Every initiative has an architect agent, run as a Claude cloud routine (Ian, 4 Oct).
 
-**Control of the workforce.** An Agents board: each initiative, its agent, last run, next
-run, figures filled vs missing, share verified, conflicts open, runs this month and their
-cost. An agent that fails two runs running, or whose figures are mostly unverified, goes
-amber and red on that board by the same rules as a measure.
+- **Schedule.** Every Monday at 07:00, before the weekly meeting, and daily at 07:00 while
+  any cell of its initiative is black or unverified. "Run now" on the initiative page.
+- **What it does.** Fetches each measure's figure from the source named in its definition;
+  checks it; writes the period with its evidence; posts a report to the initiative feed:
+  status per measure, change since last period, streaks about to trip, holes, and what to
+  look at. When a focus flag trips it drafts the focus ticket: which of resource,
+  performance or system the data points at, and why.
+- **Verification.** Verified: read from a system of record, or two sources agree.
+  Unverified: one soft source (a figure said in a meeting or Slack). Conflict: sources
+  disagree; both values are shown and the cell carries the person marker.
+- **What it may not do.** Set or change targets, change definitions, edit a closed period
+  without marking it restated, or type a figure without a source. Only an initiative's own
+  agent (and people) can write its measures.
+- **What it reads is data, not instructions.** Emails, Slack messages and transcripts it
+  reads can contain text aimed at agents; the routine treats them as data, as the daily
+  intake routine does.
+- **Cost and failure.** Each agent has a step limit and a monthly run budget. Two failed
+  runs in a row turn the agent amber, three red, on the Agents board.
 
-**Data rule.** Client figures go only to model routes with zero data retention and a
-data processing agreement; an internal agent's model credential is chosen to match.
+## 8. Chasing holes
 
-## 8. Phases
+| When | What happens |
+| --- | --- |
+| Period closes (Monday 12:00 for weekly) | cells without a figure go black; a task "Figure missing: <measure>, w/c <date>" is created for the owner, due today |
+| Figure arrives unverified | person marker; a task "Check figure: <measure>" for the owner, with the agent's evidence |
+| Every working day | the agent retries the source; the task stays open and its due date moves to today |
+| Third working day | the task is assigned to Ian as well, and the cell shows how many days the hole is old |
+| Figure in and verified | the task closes itself with the value and its source |
 
-1. **Measures, weekly entry, colours, Tracker page, initiative tab.** About two days.
-2. **Focus flag and tickets, streak rules, automatic actuals from It's a Plan, agent
-   writes through the MCP.** About a day.
-3. **Growth targets from the Finance year, driver chains (an outcome worked back into its
-   activity targets, e.g. one pallet a week → meetings → calls → emails), Rize, Xero and
-   Lanoguard sources, a read-only share link so a client sees their own board.** About two
-   days.
-4. **Initiative agents.** `initiative.agent_id`, the write rule, evidence and check result
-   on each week, the weekly report, the Agents board, and the first routine (Lanoguard or
-   Cambray growth) as the pilot. About two days, plus a routine per initiative.
+The chase stops only when the figure is in, or when Ian marks the hole as permanent (the
+source does not exist), which is itself shown on the board.
 
-## 9. Decisions for Ian
+## 9. Where it shows
 
-1. **Colour rule for numbers.** The 90% / 70% bands from the 2026 board (recommended), or
-   your amber-then-red rule applied to numbers as well (hit = green, first miss = amber,
-   second miss running = red).
-2. **A week with no entry.** Red (the 2024 rule: not reported = not done), or a separate
-   "not reported" mark that counts toward the streak. Recommendation: red for activity,
-   "not reported" for the rest.
-3. **Lanes.** Acquisition, Delivery, Marketing operations, Finance — or your own list.
-4. **Who enters.** Each owner enters their own, Zak runs the weekly meeting (the 2024
-   practice), or Zak enters for everyone.
-5. **Cambray growth measure.** 5% month on month of which number (billings, cash
-   collected, or monthly recurring revenue), from which baseline month.
-6. **First measures.** Which initiatives start on the board. Suggested: the five CON
-   client initiatives, Cambray growth, and Lanoguard (one pallet a week).
-7. **Where the agents run.** Cloud routines first (recommended), or internal agents.
-8. **Unverified figures.** Colour the cell and mark it (recommended), or leave it grey
-   until a person confirms.
+- **Tracker page**: company and loop tabs; measures down the side, the last 13 periods
+  across; above it the share of green, amber, red and black per loop, the trend, and a
+  coverage figure (share of cells with a verified figure).
+- **Pace and forecast.** Each outcome measure shows the run rate against the period and
+  quarter target: "at this pace, 3.2 of 4 pallets this month". Confidence comes from
+  seeing the projection, not only last week's colour.
+- **Initiative page**: a Measures tab; the health badge shows the tracker colour when the
+  initiative has measures.
+- **Monday agenda**: generated from the board: only red, black, unverified, conflicts and
+  focus flags, with last week's decisions and whether they were done.
+- **Agents board**: each initiative's agent, last and next run, holes, share verified,
+  conflicts, runs and cost this month.
+- **Client view**: a read-only share link per company, showing that company's board only.
 
-## 10. Not found in the transcripts
+## 10. Focus meetings and what comes after
 
-The amber-then-red rule as stated here, "one pallet sale per week", and the Ryan Deiss
-reference do not appear in the Otter or Fathom transcripts searched; they are taken from
-Ian's brief of 4 Oct 2026. The original Google Sheet and Zak's setup notes are not on this
-Mac.
+A focus flag creates a ticket: "Focus: <measure> — resource, performance or system?" The
+meeting must record one outcome:
+
+| Outcome | Effect |
+| --- | --- |
+| Re-resource | more hours or a different owner; the capacity check (section 11) must pass |
+| Fix the system | a ticket for the system fix, linked to the measure |
+| Re-target | a new target with its reason (section 5) |
+| Shelf | hold the current level for N periods |
+| Stop | the initiative is shelved; its measures stop, history is kept, and it leaves the roll-up |
+
+A measure still red two focus meetings later goes to Ian.
+
+## 11. Things the targets depend on
+
+- **Capacity.** Green plans that need more hours than the team has will not happen. Each
+  initiative's planned hours (cycle estimates) are checked against available hours (Rize,
+  once synced); "resource" in a focus meeting is answered from that, not from opinion.
+- **Margin guardrails.** Revenue growth bought at a loss is not green. Every revenue
+  initiative carries a guardrail from the Cap loop: contribution margin or cost per
+  acquisition within its limit.
+- **Cash, not books.** Cap loop figures use bank receipts as the source of truth (Ian's
+  rule); where the books and the bank differ the cell is a conflict.
+- **Ex-VAT.** All money measures are ex-VAT unless the definition says otherwise.
+
+## 12. Sources and readiness (checked 4 Oct 2026)
+
+Many cells will be black on day one. That is intended: the first job is closing the holes.
+
+| Source | State | Effect |
+| --- | --- | --- |
+| It's a Plan | ready | billings, cycle value, tickets |
+| RevOS | live for George Stone; just running for Lanoguard; not set up for Forever Green Energy or Window Supply Direct | one adapter for RevOS, not one per client; Rev loop cells black for clients without it, and their RevOS rollout tracked as gate measures |
+| Lanoguard 2026 tracker data | ready, except "engaged": Saleshandy open tracking is off | the engaged row stays black until tracking is on or the measure is dropped |
+| Slack | the connector does not authorise in routine runs | figures said in Slack are unreachable until the read-only bot token is added |
+| Fathom | works in routines | figures said in meetings, always unverified |
+| Rize | not synced; 75% of hours untagged to a client | capacity checks wait for the Rize sync and tagging |
+| Xero | Cambray's token is on Ian's Mac (Keychain), which cloud routines cannot reach; bank feeds unreconciled since early August | Cap loop cash figures need a server-side Xero connection, and reconciliation |
+| HubSpot | a different portal per client | one source entry per company |
+| Object storage (S3) | not configured on production | not needed for cloud-routine agents |
+
+## 13. Open questions for Ian
+
+1. **Cambray's growth measure.** 5% month on month of which figure (billings, cash
+   collected, or monthly recurring revenue), from which starting month.
+2. **Loops.** Two loops, Rev and Cap, with contribution margin and break-even inside the
+   Cap loop — or a third group for unit economics.
+3. **Target rule names.** Section 5 reads "shelf" as holding a level and "leapfrog" as
+   step changes on set dates. Correct?
+4. **Who sets targets.** Ian for every company, or each company's lead with Ian's
+   approval.
+5. **Client access.** Do client staff see their own board (share link) from the start, or
+   later.
+6. **First companies and measures.** Suggested start: the RevOS rollout as a gate measure
+   for each of the four clients, George Stone's Rev loop funnel, Lanoguard's pallet sales
+   (1 a week), and Cambray's growth measure.
+
+## 14. Phases
+
+1. **Structure and entry.** Company and loop, measures with definitions and target rules,
+   period entry with evidence, colours including black and the person marker, Tracker page,
+   initiative tab. About three days.
+2. **Chasing and focus.** Hole and check tasks, the daily chase, focus flags and outcomes,
+   Monday agenda. About two days.
+3. **Agents.** `initiative.agent_id` and the write rule, the routine template, the first
+   two agents (Lanoguard and George Stone), Agents board. About two days, then a routine
+   per initiative.
+4. **Sources and confidence.** RevOS adapter, pace and forecast, small-number rule, model
+   check, capacity check, margin guardrails, client share link. About three days, plus
+   Rize and Xero as they land.
+
+## 15. Not found in the transcripts
+
+"One pallet sale per week" and the Ryan Deiss reference do not appear in the Otter or
+Fathom transcripts searched; they come from Ian's brief of 4 Oct 2026. The original Google
+Sheet and Zak's setup notes are not on this Mac.
