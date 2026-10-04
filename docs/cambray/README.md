@@ -147,6 +147,7 @@ and ship. Keep the Cambray changes as separate commits so they rebase cleanly.
 - The year's revenue target, break-even and pool % per month (Finance page).
 - Xero (collected cash) reconciliation of billings.
 - Rize sync: scoped in `rize-sync.md`, waiting on Ian's decisions there.
+- Boolean tracker with an agent per initiative: scoped in `boolean-tracker.md`, waiting on Ian's decisions there.
 - Product revenue (subscriptions, customers onboarded) as initiatives with gates, and a revenue share on it.
 
 - The numeric targets in each client initiative.
