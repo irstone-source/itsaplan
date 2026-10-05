@@ -115,6 +115,10 @@ export const app = new Elysia()
             description: 'Initiatives (issue groupings) and their activity feed',
           },
           { name: 'Cycles', description: 'Cycles (time-boxed periods of work) and their issues' },
+          {
+            name: 'Tracker',
+            description: 'The growth tracker: measures, targets and weekly figures',
+          },
           { name: 'Attachments', description: 'Issue attachments and raw bytes' },
           {
             name: 'Chat attachments',

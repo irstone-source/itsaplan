@@ -1189,6 +1189,99 @@ export const performanceMonth = pgTable(
   ],
 );
 
+// The growth tracker: measures on a project (and optionally one of its initiatives),
+// judged every period against a target. Targets are versioned in
+// tracker_target_version so a past period keeps the target it was judged against.
+export const trackerMeasure = pgTable(
+  'tracker_measure',
+  {
+    id: serial('id').primaryKey(),
+    projectId: integer('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    initiativeId: integer('initiative_id').references(() => initiative.id, {
+      onDelete: 'set null',
+    }),
+    company: text('company').notNull(),
+    loop: text('loop').notNull(),
+    name: text('name').notNull(),
+    // What counts, from which system, and the inclusion rules.
+    definition: text('definition').notNull(),
+    kind: text('kind').notNull(),
+    unit: text('unit').notNull(),
+    direction: text('direction').notNull().default('at_least'),
+    cadence: text('cadence').notNull().default('week'),
+    // Periods from starts_on before the measure is judged.
+    unlockPeriods: integer('unlock_periods').notNull().default(0),
+    source: text('source').notNull().default('manual'),
+    ownerUserId: text('owner_user_id').references(() => user.id, { onDelete: 'set null' }),
+    startsOn: date('starts_on').notNull(),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check(
+      'tracker_measure_kind_check',
+      sql`${t.kind} IN ('activity', 'engagement', 'outcome', 'guardrail', 'gate')`,
+    ),
+    check('tracker_measure_unit_check', sql`${t.unit} IN ('count', 'money', 'percent', 'done')`),
+    check('tracker_measure_direction_check', sql`${t.direction} IN ('at_least', 'at_most')`),
+    check('tracker_measure_cadence_check', sql`${t.cadence} IN ('week', 'month')`),
+    check(
+      'tracker_measure_source_check',
+      sql`${t.source} IN ('manual', 'billings', 'tickets_completed')`,
+    ),
+    check('tracker_measure_unlock_check', sql`${t.unlockPeriods} >= 0`),
+    index('tracker_measure_project_idx').on(t.projectId),
+  ],
+);
+
+export const trackerTargetVersion = pgTable(
+  'tracker_target_version',
+  {
+    id: serial('id').primaryKey(),
+    measureId: integer('measure_id')
+      .notNull()
+      .references(() => trackerMeasure.id, { onDelete: 'cascade' }),
+    // The first period start this rule applies to.
+    effectiveFrom: date('effective_from').notNull(),
+    rule: jsonb('rule').notNull(),
+    reason: text('reason').notNull().default(''),
+    changedByUserId: text('changed_by_user_id').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('tracker_target_version_measure_idx').on(t.measureId, t.effectiveFrom)],
+);
+
+// One period's figure for a measure. A figure changed after its period closed keeps
+// the value it replaced in previous_actual and is marked restated.
+export const trackerEntry = pgTable(
+  'tracker_entry',
+  {
+    id: serial('id').primaryKey(),
+    measureId: integer('measure_id')
+      .notNull()
+      .references(() => trackerMeasure.id, { onDelete: 'cascade' }),
+    periodStart: date('period_start').notNull(),
+    actual: doublePrecision('actual'),
+    done: boolean('done'),
+    note: text('note').notNull().default(''),
+    verified: boolean('verified').notNull().default(true),
+    // Where the figure came from: the report, query or permalink.
+    evidence: text('evidence').notNull().default(''),
+    enteredByUserId: text('entered_by_user_id').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    enteredAt: timestamp('entered_at', { withTimezone: true }).notNull().defaultNow(),
+    restatedAt: timestamp('restated_at', { withTimezone: true }),
+    previousActual: doublePrecision('previous_actual'),
+  },
+  (t) => [uniqueIndex('tracker_entry_period_idx').on(t.measureId, t.periodStart)],
+);
+
 // The revenue plan for a year of twelve months from start_month. The target is
 // spread over the cycles of project_id that start in those months.
 export const financeYear = pgTable(

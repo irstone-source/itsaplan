@@ -63,7 +63,7 @@ async function openWork(start: Date, end: Date, hoursPerDay: number) {
   });
 }
 
-function ticketValue(
+export function ticketValue(
   r: {
     valueOverridePence: number | null;
     estimateMinutes: number | null;
