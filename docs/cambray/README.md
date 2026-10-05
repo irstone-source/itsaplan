@@ -68,6 +68,7 @@ Rates (from the 12-week resource plan, 6 hours = 1 day):
 | Add to projects | God mode → Users → a person | Add someone to several projects at once, across teams; remove per project |
 | Branding | God mode → Branding | Product name, accent colour and logo |
 | Performance | Sidebar → Performance | Each person's completed billings, share of break-even and bonus; the owner sees the team |
+| Tracker | Sidebar → Tracker; God mode → Tracker | Growth measures per company and loop (Rev, Cap) on a project or initiative, a coloured cell per week or month: green/amber/red by the thresholds, black when the figure is missing, a person marker when unverified, a flag when a streak needs a focus meeting. Targets follow a versioned rule (set amount, linear, compounding, gate, shelf, leapfrog, or the Finance cycle targets); billings and completed tickets fill themselves. Scope: `boolean-tracker.md` |
 | Finance | Sidebar → Finance (owner only) | The year's revenue target, spread over one project's cycles by working days; per month the cycle target, break-even, pool % and billings |
 
 ## 4. How the team uses it
@@ -147,7 +148,7 @@ and ship. Keep the Cambray changes as separate commits so they rebase cleanly.
 - The year's revenue target, break-even and pool % per month (Finance page).
 - Xero (collected cash) reconciliation of billings.
 - Rize sync: scoped in `rize-sync.md`, waiting on Ian's decisions there.
-- Boolean tracker with an agent per initiative: scoped in `boolean-tracker.md`, waiting on Ian's decisions there.
+- Growth tracker: phase 1 live; next are the hole-chasing tasks, the per-initiative agents and the RevOS, Rize and Xero sources (`boolean-tracker.md`).
 - Product revenue (subscriptions, customers onboarded) as initiatives with gates, and a revenue share on it.
 
 - The numeric targets in each client initiative.

@@ -294,6 +294,7 @@ async function viewOf(
       done: entry?.done ?? null,
       // A system figure exists once the period has started; it is complete when closed.
       hasEntry: system ? true : !!entry,
+      partial: !!system,
     };
   });
   const results = colourPeriods(

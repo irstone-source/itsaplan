@@ -143,6 +143,8 @@ export interface PeriodInput {
   actual: number | null;
   done: boolean | null;
   hasEntry: boolean;
+  // A figure that keeps growing until the period closes (one It's a Plan computes).
+  partial?: boolean;
 }
 
 export interface PeriodResult {
@@ -205,6 +207,8 @@ export function colourPeriods(
       };
       colour = band(rolling.actual, rolling.target, measure.direction, measure.kind, s);
     } else colour = band(p.actual, p.target, measure.direction, measure.kind, s);
+    // A running figure is judged once its period closes, unless it is already there.
+    if (p.partial && !p.closed && colour !== 'green' && colour !== 'grey') colour = 'open';
 
     const bad = colour === 'red' || colour === 'black';
     const streak = bad ? (prev?.streak ?? 0) + 1 : 0;

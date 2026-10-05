@@ -35,6 +35,10 @@
       "label": "Cobrança",
       "description": "Como as estimativas viram dinheiro: horas por dia e diária interna."
     },
+    "tracker": {
+      "label": "Acompanhamento",
+      "description": "As regras do acompanhamento de crescimento: limites de cor, sequências que geram reunião de foco, loops, empresas e quem define as metas."
+    },
     "authentication": {
       "label": "Autenticação",
       "description": "Quem pode se registrar nesta instância, como contas são confirmadas e os provedores com que as pessoas entram."

@@ -279,6 +279,8 @@ export const qk = {
   myPerformance: (month: string) => ['performance', 'me', month] as const,
   teamPerformance: (month: string) => ['performance', 'team', month] as const,
   finance: (start: string | undefined) => ['finance', start ?? 'latest'] as const,
+  tracker: (filters: object) => ['tracker', filters] as const,
+  trackerSettings: ['trackerSettings'] as const,
   instanceStorageSettings: ['instanceStorageSettings'] as const,
   // The upload limits as read by the upload UI (open to any signed-in user).
   storageSettings: ['storageSettings'] as const,

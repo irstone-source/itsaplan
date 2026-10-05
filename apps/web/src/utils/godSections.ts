@@ -1,4 +1,5 @@
 import {
+  Activity,
   Building2,
   FolderKanban,
   HardDrive,
@@ -62,6 +63,11 @@ export const GOD_SECTIONS: GodSection[] = [
     slug: 'billing',
     group: 'instance',
     icon: PoundSterling,
+  },
+  {
+    slug: 'tracker',
+    group: 'instance',
+    icon: Activity,
   },
   {
     slug: 'authentication',

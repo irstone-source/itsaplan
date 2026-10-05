@@ -35,6 +35,10 @@
       "label": "Facturación",
       "description": "Cómo las estimaciones se convierten en dinero: horas por día y tarifa diaria interna."
     },
+    "tracker": {
+      "label": "Seguimiento",
+      "description": "Las reglas del seguimiento de crecimiento: umbrales de color, rachas de reuniones de foco, bucles, empresas y quién fija los objetivos."
+    },
     "authentication": {
       "label": "Autenticación",
       "description": "Quién se puede registrar en esta instancia, cómo se confirman las cuentas, y los proveedores con los que la gente inicia sesión."

@@ -180,3 +180,5 @@ export const todayPath = () => '/today';
 export const performancePath = () => '/performance';
 
 export const financePath = () => '/finance';
+
+export const trackerPath = () => '/tracker';

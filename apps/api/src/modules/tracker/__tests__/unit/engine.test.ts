@@ -118,6 +118,18 @@ describe('tracker colours', () => {
     expect(r[3]!.rolling).toEqual({ actual: 3, target: 4 });
   });
 
+  it('waits for the period to close before judging a running figure', () => {
+    const r = colourPeriods(
+      [
+        p({ actual: 2, closed: false, partial: true }),
+        p({ actual: 9, closed: false, partial: true }),
+      ],
+      outcome,
+      S,
+    );
+    expect(r.map((x) => x.colour)).toEqual(['open', 'green']);
+  });
+
   it('trips a guardrail at once and greys a locked period', () => {
     const guard = { kind: 'guardrail', unit: 'money', direction: 'at_most' } as const;
     const r = colourPeriods(

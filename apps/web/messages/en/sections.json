@@ -35,6 +35,10 @@
       "label": "Billing",
       "description": "How time estimates become money: hours per day and the internal day rate."
     },
+    "tracker": {
+      "label": "Tracker",
+      "description": "The growth tracker's rules: colour thresholds, focus meeting streaks, loops, companies and who sets targets."
+    },
     "authentication": {
       "label": "Authentication",
       "description": "Who may register on this instance, how accounts are confirmed, and the providers people sign in with."

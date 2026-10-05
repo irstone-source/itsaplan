@@ -35,6 +35,10 @@
       "label": "Penagihan",
       "description": "Cara estimasi menjadi uang: jam per hari dan tarif harian internal."
     },
+    "tracker": {
+      "label": "Pelacak",
+      "description": "Aturan pelacak pertumbuhan: ambang warna, rangkaian yang memicu rapat fokus, loop, perusahaan, dan siapa yang menetapkan target."
+    },
     "authentication": {
       "label": "Autentikasi",
       "description": "Siapa yang boleh mendaftar di instance ini, cara akun dikonfirmasi, dan penyedia yang digunakan untuk masuk."

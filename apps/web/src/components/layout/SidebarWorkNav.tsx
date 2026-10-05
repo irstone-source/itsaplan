@@ -12,11 +12,13 @@ import {
   Target,
   CalendarCheck,
   Trophy,
+  Activity,
 } from 'lucide-react';
 import {
   allWorkPath,
   todayPath,
   performancePath,
+  trackerPath,
   cyclesPath,
   dashboardsPath,
   documentsPath,
@@ -135,6 +137,13 @@ export default function SidebarWorkNav({
             icon={Trophy}
             label={t('performance')}
             active={pathname === performancePath()}
+            disabled={false}
+          />
+          <SidebarNavItem
+            href={trackerPath()}
+            icon={Activity}
+            label={t('tracker')}
+            active={pathname === trackerPath()}
             disabled={false}
           />
           <SidebarNavItem

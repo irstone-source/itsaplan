@@ -35,6 +35,10 @@
       "label": "Facturation",
       "description": "Comment les estimations deviennent de l'argent : heures par jour et tarif journalier interne."
     },
+    "tracker": {
+      "label": "Suivi",
+      "description": "Les règles du suivi de croissance : seuils de couleur, séries déclenchant une réunion de recentrage, boucles, sociétés et qui fixe les objectifs."
+    },
     "authentication": {
       "label": "Authentification",
       "description": "Qui peut s'inscrire sur cette instance, comment les comptes sont confirmés, et les fournisseurs par lesquels les utilisateurs se connectent."

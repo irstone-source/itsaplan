@@ -1,7 +1,10 @@
 # Growth tracker (Boolean tracker) in It's a Plan — scope
 
-Status: proposed, not built. Ian's decisions of 4 Oct 2026 are applied; the questions still
-open are in section 13.
+Status: phase 1 built (5 Oct 2026): measures on a project or initiative, versioned target
+rules including the finance rule, automatic billings and ticket counts, colours with black
+and the person marker, streak flags, the Tracker page and the tracker settings in God mode.
+The open questions in section 13 are settings an instance owner can change (God mode →
+Tracker) rather than fixed in code. Phases 2–4 (chase tasks, agents, sources) are not built.
 
 ## 1. Goal
 
