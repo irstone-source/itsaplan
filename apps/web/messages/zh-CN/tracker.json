@@ -1,7 +1,7 @@
 {
   "addMeasure": "添加指标",
   "editMeasure": "编辑指标",
-  "empty": "还没有指标。为一个计划或项目添加第一个指标。",
+  "empty": "每个指标每周或每月对照其目标跟踪一个数字。载入根据 10 月 5 日站会整理的初始指标集，或添加第一个指标。",
   "legend": "达到目标的 {green}% 及以上为绿色，{amber}% 及以上为琥珀色，低于此为红色。黑色：缺少数据。人形标记：数据尚未核实。灰色：尚未评判。",
   "company": "公司",
   "allCompanies": "全部公司",
@@ -97,6 +97,26 @@
     "target": "目标",
     "by": "截止",
     "addStep": "添加阶梯",
-    "remove": "移除"
+    "remove": "移除",
+    "unset": "尚无目标",
+    "unsetHint": "现在就开始跟踪数据；在设定目标之前，其单元格保持灰色。"
+  },
+  "emptyTitle": "尚未跟踪任何内容",
+  "emptyFiltered": "没有与此公司和循环匹配的指标。",
+  "loadStarter": "载入初始指标集",
+  "starterLoaded": "{created, plural, other {已添加 # 个指标}}，跳过 {skipped} 个",
+  "measureCount": "{count, plural, other {# 个指标}}",
+  "noOwner": "无所有者",
+  "holeCount": "{count, plural, other {# 个缺失}}",
+  "checkCount": "{count, plural, other {# 个待核实}}",
+  "noTarget": "尚无目标",
+  "atMostShort": "上限",
+  "pulse": {
+    "headline": "上周 {total} 个指标中有 {green} 个达标",
+    "headlineNone": "还没有指标有已结束的一周",
+    "holes": "{count, plural, =0 {没有缺失数据} other {缺失 # 个数据}}",
+    "unverified": "{count, plural, =0 {没有待核实的数据} other {# 个数据待核实}}",
+    "focus": "{count, plural, =0 {无需召开重点会议} other {需召开 # 次重点会议}}",
+    "caption": "每周达标、接近、未达标和缺失的指标"
   }
 }

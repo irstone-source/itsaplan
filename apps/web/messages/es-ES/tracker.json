@@ -1,7 +1,7 @@
 {
   "addMeasure": "Añadir indicador",
   "editMeasure": "Editar indicador",
-  "empty": "Aún no hay indicadores. Añade el primer indicador para una iniciativa o un proyecto.",
+  "empty": "Cada indicador sigue una cifra por semana o por mes frente a su objetivo. Carga el conjunto inicial, creado a partir de la reunión diaria del 5 de octubre, o añade tu primer indicador.",
   "legend": "Verde a partir del {green}% del objetivo, ámbar a partir del {amber}%, rojo por debajo. Negro: falta la cifra. Un marcador de persona: la cifra aún no está verificada. Gris: aún sin evaluar.",
   "company": "Empresa",
   "allCompanies": "Todas las empresas",
@@ -97,6 +97,26 @@
     "target": "Objetivo",
     "by": "Antes de",
     "addStep": "Añadir escalón",
-    "remove": "Quitar"
+    "remove": "Quitar",
+    "unset": "Aún sin objetivo",
+    "unsetHint": "Sigue la cifra desde ya; sus celdas siguen en gris hasta que se fije un objetivo."
+  },
+  "emptyTitle": "Aún no se sigue nada",
+  "emptyFiltered": "Ningún indicador coincide con esta empresa y este bucle.",
+  "loadStarter": "Cargar el conjunto inicial",
+  "starterLoaded": "{created, plural, one {# indicador añadido} other {# indicadores añadidos}}, {skipped} omitidos",
+  "measureCount": "{count, plural, one {# indicador} other {# indicadores}}",
+  "noOwner": "Sin propietario",
+  "holeCount": "{count, plural, one {# falta} other {# faltan}}",
+  "checkCount": "{count, plural, one {# por comprobar} other {# por comprobar}}",
+  "noTarget": "Aún sin objetivo",
+  "atMostShort": "límite",
+  "pulse": {
+    "headline": "{green} de {total} indicadores en objetivo la semana pasada",
+    "headlineNone": "Ningún indicador tiene aún una semana cerrada",
+    "holes": "{count, plural, =0 {No falta ninguna cifra} one {Falta # cifra} other {Faltan # cifras}}",
+    "unverified": "{count, plural, =0 {Nada que comprobar} one {# cifra por comprobar} other {# cifras por comprobar}}",
+    "focus": "{count, plural, =0 {Ninguna reunión de foco pendiente} one {# reunión de foco pendiente} other {# reuniones de foco pendientes}}",
+    "caption": "Indicadores en objetivo, cerca, fuera de objetivo y sin cifra, semana a semana"
   }
 }

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { UserRound } from 'lucide-react';
 import type { TrackerCell, TrackerMeasure } from '@/lib/api/endpoints/tracker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { COLOUR_CLASS, formatValue, periodLabel } from '../utils/format';
+import { COLOUR_CLASS, formatCompact, formatValue, periodLabel } from '../utils/format';
 import TrackerEntryForm from './TrackerEntryForm';
 
 // One period of a measure: its colour, a person marker while the figure is
@@ -31,13 +31,22 @@ export default function TrackerCellButton({
         <button
           type="button"
           aria-label={`${periodLabel(c.periodStart, m.cadence)}: ${t(`colour.${c.colour}`)}`}
-          className={`relative inline-block size-6 rounded ${COLOUR_CLASS[c.colour]}`}
+          className={`relative inline-flex h-8 w-11 items-center justify-center rounded-md text-[11px] font-semibold tabular-nums transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${COLOUR_CLASS[c.colour]}`}
         >
+          {c.colour === 'black'
+            ? '?'
+            : m.unit === 'done'
+              ? c.done == null
+                ? ''
+                : c.done
+                  ? '\u2713'
+                  : '\u00d7'
+              : formatCompact(m.unit, c.actual)}
           {!c.verified && (
-            <UserRound className="absolute -end-1.5 -top-1.5 size-3.5 rounded-full bg-background p-px text-foreground" />
+            <UserRound className="absolute -end-1.5 -top-1.5 size-4 rounded-full bg-background p-0.5 text-foreground shadow-sm" />
           )}
           {c.restated && (
-            <span className="absolute start-0.5 bottom-0.5 size-1.5 rounded-full bg-background" />
+            <span className="absolute end-0.5 bottom-0.5 size-1.5 rounded-full bg-current opacity-70" />
           )}
         </button>
       </PopoverTrigger>

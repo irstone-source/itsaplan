@@ -261,4 +261,59 @@ describe('tracker', () => {
       400,
     );
   });
+
+  it('imports measures by project key, initiative and owner email, once', async () => {
+    const { god } = await setup();
+    const { client } = await consulting(god);
+    const member = await addUser();
+    const item = {
+      projectKey: 'CON',
+      initiative: 'GSG',
+      ownerEmail: member.email.toUpperCase(),
+      company: 'George Stone Gardens',
+      loop: 'Rev loop',
+      name: 'Design visits booked',
+      definition: 'Visits booked in the CRM.',
+      kind: 'outcome' as const,
+      unit: 'count' as const,
+      direction: 'at_least' as const,
+      cadence: 'week' as const,
+      unlockPeriods: 0,
+      source: 'manual' as const,
+      startsOn: thisWeek,
+      rule: { type: 'unset' as const },
+    };
+    const first = await god.api.tracker.measures.import.post({
+      measures: [
+        item,
+        { ...item, name: 'Elsewhere', projectKey: 'NOPE' },
+        { ...item, name: 'Other', initiative: 'Zzz' },
+      ],
+    });
+    expect(first.status).toBe(200);
+    expect(first.data!.created.map((c) => c.name)).toEqual(['Design visits booked']);
+    expect(first.data!.skipped.map((s) => s.name)).toEqual(['Elsewhere', 'Other']);
+    const again = await god.api.tracker.measures.import.post({ measures: [item] });
+    expect(again.data!.skipped[0]!.reason).toBe('Already tracked');
+
+    const board = (await god.api.tracker.get({ query: {} })).data!;
+    const m = board.measures.find((x) => x.name === 'Design visits booked')!;
+    expect(m).toMatchObject({ initiativeId: client.id, ownerUserId: member.id });
+    expect(m.cells.at(-1)!.target).toBeNull();
+    expect(board.settings.companies).toContain('George Stone Gardens');
+    expect(board.pulse.length).toBeGreaterThan(0);
+
+    expect((await member.api.tracker.measures.import.post({ measures: [item] })).status).toBe(403);
+  });
+
+  it('loads the starter set, skipping initiatives this instance lacks', async () => {
+    const { god } = await setup();
+    await consulting(god);
+    const res = await god.api.god.tracker.starter.post();
+    expect(res.status).toBe(200);
+    expect(res.data!.created.length).toBeGreaterThan(10);
+    expect(res.data!.created.map((c) => c.name)).toContain('Billings: GSG');
+    expect(res.data!.skipped.map((s) => s.name)).toContain('Billings: FGE');
+    expect((await god.api.god.tracker.starter.post()).data!.created).toHaveLength(0);
+  });
 });

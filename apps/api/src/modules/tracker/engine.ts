@@ -14,7 +14,9 @@ export type TargetRule =
   | { type: 'gate'; start: number; target: number; by: string }
   | { type: 'shelf'; value: number }
   | { type: 'leapfrog'; start: number; steps: { from: string; value: number }[] }
-  | { type: 'finance' };
+  | { type: 'finance' }
+  // A measure tracked before anyone has set its target: its periods stay grey.
+  | { type: 'unset' };
 
 export interface TrackerSettings {
   greenPercent: number;
@@ -132,6 +134,8 @@ export function ruleTarget(
     }
     case 'finance':
       return finance;
+    case 'unset':
+      return null;
   }
 }
 

@@ -1,10 +1,14 @@
 import { Elysia, t } from 'elysia';
 import { noContent } from '#shared/http';
+import { mcpTool } from '#mcp/generate';
+import { STARTER_MEASURES } from './starter';
 import { authContext } from '#shared/auth-context';
 import { requireGod, requireUser } from '#shared/access';
 import { errors } from '#shared/responses';
 import {
   BoardResponse,
+  ImportResponse,
+  importBody,
   HolesResponse,
   IdResponse,
   TrackerSettingsSchema,
@@ -20,6 +24,7 @@ import {
   createMeasure,
   getBoard,
   getTrackerSettings,
+  importMeasures,
   listHoles,
   setEntry,
   setTrackerSettings,
@@ -34,11 +39,11 @@ export const trackerRoutes = new Elysia({ name: 'tracker', detail: { tags: ['Tra
   .get('/tracker', ({ user, query }) => getBoard(requireUser(user), query), {
     query: boardQuery,
     response: { 200: BoardResponse, ...errors(401) },
-    detail: { summary: 'Get the growth tracker board' },
+    detail: { summary: 'Get the growth tracker board', ...mcpTool('get_tracker_board') },
   })
   .get('/tracker/holes', ({ user }) => listHoles(requireUser(user)), {
     response: { 200: HolesResponse, ...errors(401) },
-    detail: { summary: 'List missing and unverified figures' },
+    detail: { summary: 'List missing and unverified figures', ...mcpTool('list_tracker_holes') },
   })
   .post(
     '/tracker/measures',
@@ -50,7 +55,7 @@ export const trackerRoutes = new Elysia({ name: 'tracker', detail: { tags: ['Tra
     {
       body: measureBody,
       response: { 201: IdResponse, ...errors(400, 401, 403, 404, 409) },
-      detail: { summary: 'Create a measure' },
+      detail: { summary: 'Create a measure', ...mcpTool('create_tracker_measure') },
     },
   )
   .patch(
@@ -60,7 +65,7 @@ export const trackerRoutes = new Elysia({ name: 'tracker', detail: { tags: ['Tra
       params: measureParams,
       body: measurePatch,
       response: { 200: IdResponse, ...errors(400, 401, 403, 404) },
-      detail: { summary: 'Change a measure or its target' },
+      detail: { summary: 'Change a measure or its target', ...mcpTool('update_tracker_measure') },
     },
   )
   .delete(
@@ -85,7 +90,7 @@ export const trackerRoutes = new Elysia({ name: 'tracker', detail: { tags: ['Tra
       params: entryParams,
       body: entryBody,
       response: { 204: t.Void(), ...errors(400, 401, 403, 404) },
-      detail: { summary: "Enter a period's figure" },
+      detail: { summary: "Enter a period's figure", ...mcpTool('enter_tracker_figure') },
     },
   )
   .get(
@@ -110,4 +115,20 @@ export const trackerRoutes = new Elysia({ name: 'tracker', detail: { tags: ['Tra
       response: { 200: TrackerSettingsSchema, ...errors(400, 401, 403) },
       detail: { summary: 'Set the tracker settings' },
     },
-  );
+  )
+  .post(
+    '/tracker/measures/import',
+    ({ user, body }) => importMeasures(requireUser(user), body.measures),
+    {
+      body: importBody,
+      response: { 200: ImportResponse, ...errors(400, 401, 403) },
+      detail: {
+        summary: 'Import measures named by project key, initiative and owner email',
+        ...mcpTool('import_tracker_measures'),
+      },
+    },
+  )
+  .post('/god/tracker/starter', ({ user }) => importMeasures(requireUser(user), STARTER_MEASURES), {
+    response: { 200: ImportResponse, ...errors(401, 403) },
+    detail: { summary: 'Load the starter measures' },
+  });

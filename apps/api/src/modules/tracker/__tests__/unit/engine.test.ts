@@ -141,3 +141,11 @@ describe('tracker colours', () => {
     expect(r[2]!.focus).toBe(true);
   });
 });
+
+describe('unset targets', () => {
+  it('leaves the target empty and the period grey', () => {
+    expect(ruleTarget({ type: 'unset' }, 3, '2026-10-05', 'week', null)).toBeNull();
+    const r = colourPeriods([p({ target: null, actual: 4 })], outcome, S);
+    expect(r[0]!.colour).toBe('grey');
+  });
+});

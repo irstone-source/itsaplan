@@ -429,7 +429,28 @@ export async function getBoard(actor: Actor, filters: BoardFilters, now = new Da
     counts[latest.colour]++;
   }
 
+  // The weekly heartbeat: per week, how many weekly measures stood at each colour.
+  const pulse = new Map<string, Record<Colour, number>>();
+  for (const m of measures) {
+    if (m.cadence !== 'week') continue;
+    for (const c of m.cells) {
+      const counts = pulse.get(c.periodStart) ?? {
+        green: 0,
+        amber: 0,
+        red: 0,
+        black: 0,
+        grey: 0,
+        open: 0,
+      };
+      counts[c.colour]++;
+      pulse.set(c.periodStart, counts);
+    }
+  }
+
   return {
+    pulse: [...pulse.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([periodStart, counts]) => ({ periodStart, ...counts })),
     settings: {
       loops: s.loops,
       companies: s.companies,
@@ -644,4 +665,84 @@ export async function listHoles(actor: Actor, now = new Date()) {
         kind: c.colour === 'black' ? ('missing' as const) : ('unverified' as const),
       })),
   );
+}
+
+export type ImportItem = Omit<MeasureInput, 'projectId' | 'initiativeId' | 'ownerUserId'> & {
+  projectKey: string;
+  initiative?: string;
+  ownerEmail?: string;
+};
+
+// Creates measures named by keys. A measure already tracked under the same company
+// and name is left alone, so loading a set twice adds nothing. Companies the set names
+// are added to the settings.
+export async function importMeasures(actor: Actor, items: ImportItem[]) {
+  if (!isGod(actor)) throw new HttpError(403, 'Only the instance owner may import measures');
+  const s = await getTrackerSettings();
+  const companies = [...new Set([...s.companies, ...items.map((i) => i.company.trim())])];
+  if (companies.length !== s.companies.length) await setTrackerSettings({ ...s, companies });
+
+  const existing = await db
+    .select({ company: trackerMeasure.company, name: trackerMeasure.name })
+    .from(trackerMeasure)
+    .where(isNull(trackerMeasure.archivedAt));
+  const taken = new Set(existing.map((e) => `${e.company}\u0000${e.name}`));
+  const created: { id: number; name: string; company: string }[] = [];
+  const skipped: { name: string; company: string; reason: string }[] = [];
+
+  for (const item of items) {
+    const { projectKey, initiative: initiativeName, ownerEmail, ...rest } = item;
+    const skip = (reason: string) =>
+      skipped.push({ name: item.name, company: item.company, reason });
+    if (taken.has(`${item.company}\u0000${item.name}`)) {
+      skip('Already tracked');
+      continue;
+    }
+    const [p] = await db
+      .select({ id: project.id })
+      .from(project)
+      .where(eq(project.key, projectKey))
+      .limit(1);
+    if (!p) {
+      skip(`No project ${projectKey}`);
+      continue;
+    }
+    let initiativeId: number | null = null;
+    if (initiativeName) {
+      const options = await db
+        .select({ id: initiative.id, title: initiative.title })
+        .from(initiative)
+        .where(eq(initiative.projectId, p.id));
+      const match =
+        options.find((o) => o.title === initiativeName) ??
+        options.find((o) => o.title.startsWith(`${initiativeName} —`)) ??
+        options.find((o) => o.title.startsWith(initiativeName));
+      if (!match) {
+        skip(`No initiative starting "${initiativeName}" in ${projectKey}`);
+        continue;
+      }
+      initiativeId = match.id;
+    }
+    let ownerUserId: string | null = null;
+    if (ownerEmail) {
+      const [u] = await db
+        .select({ id: user.id })
+        .from(user)
+        .where(sql`lower(${user.email}) = ${ownerEmail.toLowerCase()}`);
+      ownerUserId = u?.id ?? null;
+    }
+    try {
+      const res = await createMeasure(actor, {
+        ...rest,
+        projectId: p.id,
+        initiativeId,
+        ownerUserId,
+      });
+      created.push({ id: res.id, name: item.name, company: item.company });
+      taken.add(`${item.company}\u0000${item.name}`);
+    } catch (err) {
+      skip(err instanceof HttpError ? err.message : 'Could not be created');
+    }
+  }
+  return { created, skipped };
 }

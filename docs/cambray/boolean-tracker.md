@@ -4,7 +4,7 @@ Status: phase 1 built (5 Oct 2026): measures on a project or initiative, version
 rules including the finance rule, automatic billings and ticket counts, colours with black
 and the person marker, streak flags, the Tracker page and the tracker settings in God mode.
 The open questions in section 13 are settings an instance owner can change (God mode →
-Tracker) rather than fixed in code. Phases 2–4 (chase tasks, agents, sources) are not built.
+Tracker) rather than fixed in code. Phases 2–4 (chase tasks, agents, sources) are not built. The board opens on a 13-week pulse, the share of measures at each colour per week. A starter set from the stand-up of 5 Oct 2026 loads from the empty board (God mode owner); targets nobody stated are "no target yet" (grey). The tracker routes are MCP tools, so the daily intake routine enters figures said in the stand-up as unverified, with the Fathom link as evidence.
 
 ## 1. Goal
 

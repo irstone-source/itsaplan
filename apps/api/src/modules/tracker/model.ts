@@ -39,6 +39,7 @@ export const TargetRule = t.Union([
     steps: t.Array(t.Object({ from: Day, value: t.Number() }), { maxItems: 52 }),
   }),
   t.Object({ type: t.Literal('finance') }),
+  t.Object({ type: t.Literal('unset') }),
 ]);
 
 export const measureBody = t.Object({
@@ -172,6 +173,7 @@ const Counts = t.Object({
 });
 
 export const BoardResponse = t.Object({
+  pulse: t.Array(t.Composite([t.Object({ periodStart: t.String() }), Counts])),
   settings: t.Object({
     loops: t.Array(t.String()),
     companies: t.Array(t.String()),
@@ -196,3 +198,22 @@ export const HolesResponse = t.Array(
 );
 
 export const IdResponse = t.Object({ id: t.Number() });
+
+// A measure named by keys rather than ids, so a set can be written once and loaded
+// into any instance: the project by key, the initiative by the start of its title,
+// the owner by email.
+export const importItem = t.Composite([
+  t.Omit(measureBody, ['projectId', 'initiativeId', 'ownerUserId']),
+  t.Object({
+    projectKey: t.String({ minLength: 1 }),
+    initiative: t.Optional(t.String({ minLength: 1 })),
+    ownerEmail: t.Optional(t.String()),
+  }),
+]);
+
+export const importBody = t.Object({ measures: t.Array(importItem, { maxItems: 200 }) });
+
+export const ImportResponse = t.Object({
+  created: t.Array(t.Object({ id: t.Number(), name: t.String(), company: t.String() })),
+  skipped: t.Array(t.Object({ name: t.String(), company: t.String(), reason: t.String() })),
+});

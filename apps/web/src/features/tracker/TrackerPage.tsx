@@ -8,13 +8,14 @@ import { useSession } from '@/lib/auth-client';
 import { getTrackerBoard, type TrackerFilters } from '@/lib/api/endpoints/tracker';
 import { qk } from '@/services/queryKeys';
 import { Button } from '@/components/ui/button';
-import TrackerFiltersBar from './components/TrackerFiltersBar';
-import TrackerSummary from './components/TrackerSummary';
+import TrackerSegments from './components/TrackerSegments';
+import TrackerPulse from './components/TrackerPulse';
 import TrackerGroup from './components/TrackerGroup';
+import TrackerEmpty from './components/TrackerEmpty';
 import TrackerMeasureDialog from './components/TrackerMeasureDialog';
 
-// The growth tracker: every measure the reader can see, grouped by company, with a
-// coloured cell per period and the share of each colour per loop.
+// The growth tracker: every measure the reader can see, grouped by company, under the
+// weekly pulse of the whole board.
 export default function TrackerPage() {
   const t = useTranslations('tracker');
   const { data: session } = useSession();
@@ -31,16 +32,26 @@ export default function TrackerPage() {
   const isGod = mounted && session?.user.role === 'god';
   const mayCreate = isGod || data.settings.targetSetters === 'measure_owner';
   const companies = [...new Set(data.measures.map((m) => m.company))];
+  const allCompanies = [...new Set([...data.settings.companies, ...companies])];
+  const filtered = !!(filters.company || filters.loop);
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-6 sm:px-6">
         <div className="flex flex-wrap items-center gap-3">
-          <TrackerFiltersBar
-            settings={data.settings}
-            companies={companies}
-            filters={filters}
-            onChange={setFilters}
+          <TrackerSegments
+            label={t('company')}
+            all={t('allCompanies')}
+            options={allCompanies}
+            value={filters.company}
+            onChange={(company) => setFilters({ ...filters, company })}
+          />
+          <TrackerSegments
+            label={t('loop')}
+            all={t('allLoops')}
+            options={data.settings.loops}
+            value={filters.loop}
+            onChange={(loop) => setFilters({ ...filters, loop })}
           />
           {mayCreate && (
             <Button className="ms-auto" size="sm" onClick={() => setCreating(true)}>
@@ -49,22 +60,28 @@ export default function TrackerPage() {
             </Button>
           )}
         </div>
-        <TrackerSummary summary={data.summary} />
+
         {data.measures.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('empty')}</p>
+          <TrackerEmpty isGod={isGod} filtered={filtered} />
         ) : (
-          companies.map((c) => (
-            <TrackerGroup
-              key={c}
-              company={c}
-              measures={data.measures.filter((m) => m.company === c)}
-              settings={data.settings}
-            />
-          ))
+          <>
+            <TrackerPulse board={data} />
+            {companies.map((c) => (
+              <TrackerGroup
+                key={c}
+                company={c}
+                measures={data.measures.filter((m) => m.company === c)}
+                settings={data.settings}
+              />
+            ))}
+            <p className="max-w-3xl text-xs text-muted-foreground">
+              {t('legend', {
+                green: data.settings.greenPercent,
+                amber: data.settings.amberPercent,
+              })}
+            </p>
+          </>
         )}
-        <p className="text-xs text-muted-foreground">
-          {t('legend', { green: data.settings.greenPercent, amber: data.settings.amberPercent })}
-        </p>
       </div>
       {creating && (
         <TrackerMeasureDialog settings={data.settings} onClose={() => setCreating(false)} />

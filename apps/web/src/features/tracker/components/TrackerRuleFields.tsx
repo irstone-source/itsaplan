@@ -13,6 +13,7 @@ const RULES: TargetRule['type'][] = [
   'shelf',
   'leapfrog',
   'finance',
+  'unset',
 ];
 
 const blank: Record<TargetRule['type'], TargetRule> = {
@@ -23,6 +24,7 @@ const blank: Record<TargetRule['type'], TargetRule> = {
   shelf: { type: 'shelf', value: 0 },
   leapfrog: { type: 'leapfrog', start: 0, steps: [] },
   finance: { type: 'finance' },
+  unset: { type: 'unset' },
 };
 
 const SELECT = 'h-9 w-full rounded-md border bg-transparent px-2 text-sm';

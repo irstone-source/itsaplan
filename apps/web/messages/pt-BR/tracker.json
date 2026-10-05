@@ -1,7 +1,7 @@
 {
   "addMeasure": "Adicionar indicador",
   "editMeasure": "Editar indicador",
-  "empty": "Ainda não há indicadores. Adicione o primeiro indicador para uma iniciativa ou um projeto.",
+  "empty": "Cada indicador acompanha um número por semana ou por mês em relação à meta. Carregue o conjunto inicial, montado a partir do stand-up de 5 de outubro, ou adicione seu primeiro indicador.",
   "legend": "Verde a partir de {green}% da meta, âmbar a partir de {amber}%, vermelho abaixo disso. Preto: o número está faltando. Um marcador de pessoa: o número ainda não foi verificado. Cinza: ainda não avaliado.",
   "company": "Empresa",
   "allCompanies": "Todas as empresas",
@@ -97,6 +97,26 @@
     "target": "Meta",
     "by": "Até",
     "addStep": "Adicionar degrau",
-    "remove": "Remover"
+    "remove": "Remover",
+    "unset": "Ainda sem meta",
+    "unsetHint": "Acompanhe o número desde já; as células dele ficam cinza até uma meta ser definida."
+  },
+  "emptyTitle": "Nada acompanhado ainda",
+  "emptyFiltered": "Nenhum indicador corresponde a esta empresa e a este loop.",
+  "loadStarter": "Carregar o conjunto inicial",
+  "starterLoaded": "{created, plural, one {# indicador adicionado} other {# indicadores adicionados}}, {skipped} ignorados",
+  "measureCount": "{count, plural, one {# indicador} other {# indicadores}}",
+  "noOwner": "Sem dono",
+  "holeCount": "{count, plural, one {# faltando} other {# faltando}}",
+  "checkCount": "{count, plural, one {# para conferir} other {# para conferir}}",
+  "noTarget": "Ainda sem meta",
+  "atMostShort": "limite",
+  "pulse": {
+    "headline": "{green} de {total} indicadores na meta na semana passada",
+    "headlineNone": "Nenhum indicador tem uma semana fechada ainda",
+    "holes": "{count, plural, =0 {Nenhum número faltando} one {# número faltando} other {# números faltando}}",
+    "unverified": "{count, plural, =0 {Nada para conferir} one {# número para conferir} other {# números para conferir}}",
+    "focus": "{count, plural, =0 {Nenhuma reunião de foco pendente} one {# reunião de foco pendente} other {# reuniões de foco pendentes}}",
+    "caption": "Indicadores na meta, perto, fora da meta e faltando, semana a semana"
   }
 }

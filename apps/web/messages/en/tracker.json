@@ -1,7 +1,7 @@
 {
   "addMeasure": "Add measure",
   "editMeasure": "Edit measure",
-  "empty": "No measures yet. Add the first measure for an initiative or a project.",
+  "empty": "Each measure tracks one number a week or a month against its target. Load the starter set, built from the stand-up of 5 October, or add your first measure.",
   "legend": "Green at {green}% of target or more, amber at {amber}% or more, red below. Black: the figure is missing. A person marker: the figure is not verified yet. Grey: not judged yet.",
   "company": "Company",
   "allCompanies": "All companies",
@@ -97,6 +97,26 @@
     "target": "Target",
     "by": "By",
     "addStep": "Add step",
-    "remove": "Remove"
+    "remove": "Remove",
+    "unset": "No target yet",
+    "unsetHint": "Track the figure now; its cells stay grey until a target is set."
+  },
+  "emptyTitle": "Nothing tracked yet",
+  "emptyFiltered": "No measures match this company and loop.",
+  "loadStarter": "Load the starter set",
+  "starterLoaded": "{created, plural, one {# measure added} other {# measures added}}, {skipped} skipped",
+  "measureCount": "{count, plural, one {# measure} other {# measures}}",
+  "noOwner": "No owner",
+  "holeCount": "{count, plural, one {# missing} other {# missing}}",
+  "checkCount": "{count, plural, one {# to check} other {# to check}}",
+  "noTarget": "No target yet",
+  "atMostShort": "limit",
+  "pulse": {
+    "headline": "{green} of {total} measures on target last week",
+    "headlineNone": "No measure has a closed week yet",
+    "holes": "{count, plural, =0 {No figures missing} one {# figure missing} other {# figures missing}}",
+    "unverified": "{count, plural, =0 {Nothing to check} one {# figure to check} other {# figures to check}}",
+    "focus": "{count, plural, =0 {No focus meetings due} one {# focus meeting due} other {# focus meetings due}}",
+    "caption": "Measures on target, close, off target and missing, week by week"
   }
 }

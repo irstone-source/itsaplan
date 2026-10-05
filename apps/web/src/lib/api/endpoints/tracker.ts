@@ -14,7 +14,8 @@ export type TargetRule =
   | { type: 'gate'; start: number; target: number; by: string }
   | { type: 'shelf'; value: number }
   | { type: 'leapfrog'; start: number; steps: { from: string; value: number }[] }
-  | { type: 'finance' };
+  | { type: 'finance' }
+  | { type: 'unset' };
 
 export interface TrackerCell {
   periodStart: string;
@@ -61,6 +62,7 @@ export interface TrackerMeasure {
 export type TrackerCounts = Record<TrackerColour, number>;
 
 export interface TrackerBoard {
+  pulse: ({ periodStart: string } & TrackerCounts)[];
   settings: {
     loops: string[];
     companies: string[];
@@ -145,6 +147,14 @@ export const setEntry = (id: number, periodStart: string, body: EntryInput) =>
     method: 'PUT',
     body: JSON.stringify(body),
   });
+
+export interface ImportResult {
+  created: { id: number; name: string; company: string }[];
+  skipped: { name: string; company: string; reason: string }[];
+}
+
+export const loadStarterMeasures = () =>
+  request<ImportResult>('/god/tracker/starter', { method: 'POST' });
 
 export const getTrackerSettings = () => request<TrackerSettings>('/god/tracker');
 

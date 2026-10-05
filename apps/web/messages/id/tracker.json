@@ -1,7 +1,7 @@
 {
   "addMeasure": "Tambah ukuran",
   "editMeasure": "Edit ukuran",
-  "empty": "Belum ada ukuran. Tambahkan ukuran pertama untuk inisiatif atau proyek.",
+  "empty": "Setiap ukuran melacak satu angka per minggu atau per bulan terhadap targetnya. Muat set awal, yang disusun dari stand-up 5 Oktober, atau tambahkan ukuran pertama Anda.",
   "legend": "Hijau pada {green}% dari target atau lebih, kuning pada {amber}% atau lebih, merah di bawahnya. Hitam: angkanya tidak ada. Penanda orang: angkanya belum diverifikasi. Abu-abu: belum dinilai.",
   "company": "Perusahaan",
   "allCompanies": "Semua perusahaan",
@@ -97,6 +97,26 @@
     "target": "Target",
     "by": "Paling lambat",
     "addStep": "Tambah tingkat",
-    "remove": "Hapus"
+    "remove": "Hapus",
+    "unset": "Belum ada target",
+    "unsetHint": "Lacak angkanya sekarang; selnya tetap abu-abu sampai target ditetapkan."
+  },
+  "emptyTitle": "Belum ada yang dilacak",
+  "emptyFiltered": "Tidak ada ukuran yang cocok dengan perusahaan dan loop ini.",
+  "loadStarter": "Muat set awal",
+  "starterLoaded": "{created, plural, other {# ukuran ditambahkan}}, {skipped} dilewati",
+  "measureCount": "{count, plural, other {# ukuran}}",
+  "noOwner": "Tanpa pemilik",
+  "holeCount": "{count, plural, other {# belum ada}}",
+  "checkCount": "{count, plural, other {# perlu diperiksa}}",
+  "noTarget": "Belum ada target",
+  "atMostShort": "batas",
+  "pulse": {
+    "headline": "{green} dari {total} ukuran mencapai target minggu lalu",
+    "headlineNone": "Belum ada ukuran dengan minggu yang sudah ditutup",
+    "holes": "{count, plural, =0 {Tidak ada angka yang kosong} other {# angka belum ada}}",
+    "unverified": "{count, plural, =0 {Tidak ada yang perlu diperiksa} other {# angka perlu diperiksa}}",
+    "focus": "{count, plural, =0 {Tidak ada rapat fokus yang perlu diadakan} other {# rapat fokus perlu diadakan}}",
+    "caption": "Ukuran yang mencapai target, mendekati, meleset, dan tanpa angka, minggu demi minggu"
   }
 }

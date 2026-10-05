@@ -1,7 +1,7 @@
 {
   "addMeasure": "Ajouter un indicateur",
   "editMeasure": "Modifier l'indicateur",
-  "empty": "Aucun indicateur pour l'instant. Ajoutez le premier indicateur pour une initiative ou un projet.",
+  "empty": "Chaque indicateur suit un chiffre par semaine ou par mois par rapport à son objectif. Chargez le jeu de départ, établi à partir du point d'équipe du 5 octobre, ou ajoutez votre premier indicateur.",
   "legend": "Vert à partir de {green} % de l'objectif, orange à partir de {amber} %, rouge en dessous. Noir : le chiffre manque. Un repère de personne : le chiffre n'est pas encore vérifié. Gris : pas encore évalué.",
   "company": "Société",
   "allCompanies": "Toutes les sociétés",
@@ -97,6 +97,26 @@
     "target": "Objectif",
     "by": "Au plus tard le",
     "addStep": "Ajouter un palier",
-    "remove": "Retirer"
+    "remove": "Retirer",
+    "unset": "Pas encore d'objectif",
+    "unsetHint": "Suivez le chiffre dès maintenant ; ses cellules restent grises jusqu'à ce qu'un objectif soit fixé."
+  },
+  "emptyTitle": "Rien n'est encore suivi",
+  "emptyFiltered": "Aucun indicateur ne correspond à cette société et à cette boucle.",
+  "loadStarter": "Charger le jeu de départ",
+  "starterLoaded": "{created, plural, one {# indicateur ajouté} other {# indicateurs ajoutés}}, {skipped} ignorés",
+  "measureCount": "{count, plural, one {# indicateur} other {# indicateurs}}",
+  "noOwner": "Sans propriétaire",
+  "holeCount": "{count, plural, one {# manquant} other {# manquants}}",
+  "checkCount": "{count, plural, one {# à vérifier} other {# à vérifier}}",
+  "noTarget": "Pas encore d'objectif",
+  "atMostShort": "limite",
+  "pulse": {
+    "headline": "{green} indicateurs sur {total} à l'objectif la semaine dernière",
+    "headlineNone": "Aucun indicateur n'a encore de semaine clôturée",
+    "holes": "{count, plural, =0 {Aucun chiffre manquant} one {# chiffre manquant} other {# chiffres manquants}}",
+    "unverified": "{count, plural, =0 {Rien à vérifier} one {# chiffre à vérifier} other {# chiffres à vérifier}}",
+    "focus": "{count, plural, =0 {Aucune réunion de recentrage à prévoir} one {# réunion de recentrage à prévoir} other {# réunions de recentrage à prévoir}}",
+    "caption": "Indicateurs à l'objectif, proches, hors objectif et manquants, semaine par semaine"
   }
 }
