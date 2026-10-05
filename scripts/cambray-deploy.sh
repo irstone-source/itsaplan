@@ -182,29 +182,44 @@ echo "backup: $DUMP ($(du -h "$DUMP" | cut -f1))"
 [[ "$MODE" == backup ]] && exit 0
 
 # ── build ───────────────────────────────────────────────────────────────────
-log "Building images for $TAG"
-REMOTE_SHA="$(git ls-remote "https://github.com/$IMAGES_REPO.git" "refs/tags/$TAG" | cut -f1)"
-if [[ -z "$REMOTE_SHA" ]]; then
-  git rev-parse -q --verify "refs/tags/$TAG" >/dev/null || git tag "$TAG" "$SHA"
-  [[ "$(git rev-parse "$TAG^{commit}")" == "$SHA" ]] || die "local tag $TAG is not HEAD"
-  git push -q "https://github.com/$IMAGES_REPO.git" "refs/tags/$TAG"
-elif [[ "$REMOTE_SHA" != "$SHA" && "$(git rev-parse "$REMOTE_SHA^{commit}" 2>/dev/null)" != "$SHA" ]]; then
-  die "$TAG already exists on $IMAGES_REPO at another commit; pick a new TAG"
+# SKIP_BUILD=1 deploys images an earlier run already published (e.g. after a job of
+# that run was rerun by hand); it checks each multi-arch manifest exists first.
+if [[ "${SKIP_BUILD:-}" == 1 ]]; then
+  log "Checking published images for $TAG"
+  for service in "${SERVICES[@]}"; do
+    repo="${IMAGES_REPO}-${service}"
+    token="$(curl -fsS "https://ghcr.io/token?scope=repository:${repo}:pull" | sed -E 's/.*"token":"([^"]+)".*/\1/')"
+    curl -fsS -o /dev/null -H "Authorization: Bearer $token" \
+      -H "Accept: application/vnd.oci.image.index.v1+json,application/vnd.docker.distribution.manifest.list.v2+json" \
+      "https://ghcr.io/v2/${repo}/manifests/${VERSION}" \
+      || die "no published image ${IMAGE_PREFIX}-${service}:${VERSION}"
+  done
+  echo "images published"
+else
+  log "Building images for $TAG"
+  REMOTE_SHA="$(git ls-remote "https://github.com/$IMAGES_REPO.git" "refs/tags/$TAG" | cut -f1)"
+  if [[ -z "$REMOTE_SHA" ]]; then
+    git rev-parse -q --verify "refs/tags/$TAG" >/dev/null || git tag "$TAG" "$SHA"
+    [[ "$(git rev-parse "$TAG^{commit}")" == "$SHA" ]] || die "local tag $TAG is not HEAD"
+    git push -q "https://github.com/$IMAGES_REPO.git" "refs/tags/$TAG"
+  elif [[ "$REMOTE_SHA" != "$SHA" && "$(git rev-parse "$REMOTE_SHA^{commit}" 2>/dev/null)" != "$SHA" ]]; then
+    die "$TAG already exists on $IMAGES_REPO at another commit; pick a new TAG"
+  fi
+  STARTED="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  gh workflow run publish-images.yml -R "$IMAGES_REPO" -f tag="$TAG"
+  RUN_ID=""
+  for _ in $(seq 1 30); do
+    RUN_ID="$(gh run list -R "$IMAGES_REPO" --workflow publish-images.yml --event workflow_dispatch \
+      --json databaseId,createdAt -q "[.[] | select(.createdAt >= \"$STARTED\")][0].databaseId")"
+    [[ -n "$RUN_ID" ]] && break
+    sleep 5
+  done
+  [[ -n "$RUN_ID" ]] || die "publish-images.yml run did not start"
+  echo "run: https://github.com/$IMAGES_REPO/actions/runs/$RUN_ID"
+  gh run watch "$RUN_ID" -R "$IMAGES_REPO" --exit-status --interval 30 >/dev/null \
+    || die "image build failed: gh run view $RUN_ID -R $IMAGES_REPO --log-failed"
+  echo "images published"
 fi
-STARTED="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-gh workflow run publish-images.yml -R "$IMAGES_REPO" -f tag="$TAG"
-RUN_ID=""
-for _ in $(seq 1 30); do
-  RUN_ID="$(gh run list -R "$IMAGES_REPO" --workflow publish-images.yml --event workflow_dispatch \
-    --json databaseId,createdAt -q "[.[] | select(.createdAt >= \"$STARTED\")][0].databaseId")"
-  [[ -n "$RUN_ID" ]] && break
-  sleep 5
-done
-[[ -n "$RUN_ID" ]] || die "publish-images.yml run did not start"
-echo "run: https://github.com/$IMAGES_REPO/actions/runs/$RUN_ID"
-gh run watch "$RUN_ID" -R "$IMAGES_REPO" --exit-status --interval 30 >/dev/null \
-  || die "image build failed: gh run view $RUN_ID -R $IMAGES_REPO --log-failed"
-echo "images published"
 
 # ── deploy ──────────────────────────────────────────────────────────────────
 log "Deploying"
