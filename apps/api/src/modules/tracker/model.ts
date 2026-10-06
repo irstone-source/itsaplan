@@ -181,6 +181,8 @@ export const BoardResponse = t.Object({
     amberPercent: t.Number(),
     targetSetters: t.String(),
     maxMeasuresPerInitiative: t.Number(),
+    historyPeriods: t.Number(),
+    closeAfterHours: t.Number(),
   }),
   summary: t.Record(t.String(), Counts),
   measures: t.Array(Measure),

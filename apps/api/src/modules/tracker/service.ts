@@ -458,6 +458,8 @@ export async function getBoard(actor: Actor, filters: BoardFilters, now = new Da
       amberPercent: s.amberPercent,
       targetSetters: s.targetSetters,
       maxMeasuresPerInitiative: s.maxMeasuresPerInitiative,
+      historyPeriods: s.historyPeriods,
+      closeAfterHours: s.closeAfterHours,
     },
     summary,
     measures,

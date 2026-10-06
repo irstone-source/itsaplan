@@ -94,7 +94,14 @@ export default function TrackerRow({
             key={p}
             className={`border-t px-1 py-2.5 text-center group-hover:bg-muted/40 ${p === current ? 'bg-primary/5' : ''}`}
           >
-            {c ? <TrackerCellButton measure={m} cell={c} /> : null}
+            {c ? (
+              <TrackerCellButton measure={m} cell={c} />
+            ) : (
+              <span
+                className="inline-block size-1 rounded-full bg-muted-foreground/30"
+                aria-hidden
+              />
+            )}
           </td>
         );
       })}

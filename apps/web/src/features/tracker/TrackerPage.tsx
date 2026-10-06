@@ -13,6 +13,7 @@ import TrackerPulse from './components/TrackerPulse';
 import TrackerGroup from './components/TrackerGroup';
 import TrackerEmpty from './components/TrackerEmpty';
 import TrackerMeasureDialog from './components/TrackerMeasureDialog';
+import TrackerStarterButton from './components/TrackerStarterButton';
 
 // The growth tracker: every measure the reader can see, grouped by company, under the
 // weekly pulse of the whole board.
@@ -53,12 +54,15 @@ export default function TrackerPage() {
             value={filters.loop}
             onChange={(loop) => setFilters({ ...filters, loop })}
           />
-          {mayCreate && (
-            <Button className="ms-auto" size="sm" onClick={() => setCreating(true)}>
-              <Plus />
-              {t('addMeasure')}
-            </Button>
-          )}
+          <div className="ms-auto flex gap-2">
+            {isGod && data.measures.length > 0 && <TrackerStarterButton variant="outline" />}
+            {mayCreate && (
+              <Button size="sm" onClick={() => setCreating(true)}>
+                <Plus />
+                {t('addMeasure')}
+              </Button>
+            )}
+          </div>
         </div>
 
         {data.measures.length === 0 ? (

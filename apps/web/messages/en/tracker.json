@@ -113,7 +113,8 @@
   "atMostShort": "limit",
   "pulse": {
     "headline": "{green} of {total} measures on target last week",
-    "headlineNone": "No measure has a closed week yet",
+    "headlineFirst": "Week of {week} in progress",
+    "firstWeekBody": "{count, plural, =0 {No weekly measures yet.} one {# measure is being tracked this week.} other {# measures are being tracked this week.}} The week closes {closes}; its colours appear then.",
     "holes": "{count, plural, =0 {No figures missing} one {# figure missing} other {# figures missing}}",
     "unverified": "{count, plural, =0 {Nothing to check} one {# figure to check} other {# figures to check}}",
     "focus": "{count, plural, =0 {No focus meetings due} one {# focus meeting due} other {# focus meetings due}}",

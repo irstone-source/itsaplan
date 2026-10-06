@@ -113,7 +113,8 @@
   "atMostShort": "batas",
   "pulse": {
     "headline": "{green} dari {total} ukuran mencapai target minggu lalu",
-    "headlineNone": "Belum ada ukuran dengan minggu yang sudah ditutup",
+    "headlineFirst": "Minggu {week} sedang berjalan",
+    "firstWeekBody": "{count, plural, =0 {Belum ada ukuran mingguan.} other {# ukuran dilacak minggu ini.}} Minggu ini ditutup {closes}; warnanya muncul saat itu.",
     "holes": "{count, plural, =0 {Tidak ada angka yang kosong} other {# angka belum ada}}",
     "unverified": "{count, plural, =0 {Tidak ada yang perlu diperiksa} other {# angka perlu diperiksa}}",
     "focus": "{count, plural, =0 {Tidak ada rapat fokus yang perlu diadakan} other {# rapat fokus perlu diadakan}}",

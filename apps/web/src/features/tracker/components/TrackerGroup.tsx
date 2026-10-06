@@ -2,11 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 import type { TrackerBoard, TrackerMeasure } from '@/lib/api/endpoints/tracker';
-import { COLOUR_CLASS, PULSE_ORDER, periodLabel } from '../utils/format';
+import { COLOUR_CLASS, PULSE_ORDER, periodLabel, recentPeriods } from '../utils/format';
 import TrackerRow from './TrackerRow';
 
 // One company's measures, weekly and monthly in tables of their own so each column is
-// one period. The heading carries the company's colours in its latest closed periods.
+// one period. The columns cover the measures' history, and at least the last six
+// periods so a new board still reads as a timeline. The heading carries the company's colours in its latest closed periods.
 export default function TrackerGroup({
   company,
   measures,
@@ -48,7 +49,12 @@ export default function TrackerGroup({
       {(['week', 'month'] as const).map((cadence) => {
         const rows = measures.filter((m) => m.cadence === cadence);
         if (rows.length === 0) return null;
-        const periods = [...new Set(rows.flatMap((m) => m.cells.map((c) => c.periodStart)))].sort();
+        const periods = [
+          ...new Set([
+            ...recentPeriods(cadence, Math.min(6, settings.historyPeriods)),
+            ...rows.flatMap((m) => m.cells.map((c) => c.periodStart)),
+          ]),
+        ].sort();
         const current = periods.findLast((p) => p <= today);
         return (
           <div key={cadence} className="overflow-x-auto rounded-xl border">

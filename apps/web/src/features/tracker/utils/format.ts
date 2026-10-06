@@ -46,3 +46,34 @@ export const periodLabel = (periodStart: string, cadence: 'week' | 'month') =>
     month: 'short',
     timeZone: 'UTC',
   });
+
+const DAY = 86_400_000;
+const ymd = (d: Date) => d.toISOString().slice(0, 10);
+
+// The last `count` period starts up to the one containing today, oldest first: the
+// columns the board shows, whether or not a measure has a figure in them yet.
+export function recentPeriods(cadence: 'week' | 'month', count: number): string[] {
+  const now = new Date();
+  const out: string[] = [];
+  for (let i = count - 1; i >= 0; i--) {
+    if (cadence === 'month') {
+      out.push(ymd(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1))));
+    } else {
+      const monday =
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
+        ((now.getUTCDay() + 6) % 7) * DAY;
+      out.push(ymd(new Date(monday - i * 7 * DAY)));
+    }
+  }
+  return out;
+}
+
+// When the period starting at `periodStart` closes: its end plus the closing hours.
+export function closesAt(periodStart: string, cadence: 'week' | 'month', closeAfterHours: number) {
+  const start = new Date(`${periodStart}T00:00:00Z`);
+  const end =
+    cadence === 'week'
+      ? new Date(start.getTime() + 7 * DAY)
+      : new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1));
+  return new Date(end.getTime() + closeAfterHours * 3_600_000);
+}

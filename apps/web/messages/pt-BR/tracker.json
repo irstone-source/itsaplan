@@ -113,7 +113,8 @@
   "atMostShort": "limite",
   "pulse": {
     "headline": "{green} de {total} indicadores na meta na semana passada",
-    "headlineNone": "Nenhum indicador tem uma semana fechada ainda",
+    "headlineFirst": "Semana de {week} em andamento",
+    "firstWeekBody": "{count, plural, =0 {Ainda não há indicadores semanais.} one {# indicador está sendo acompanhado nesta semana.} other {# indicadores estão sendo acompanhados nesta semana.}} A semana fecha {closes}; as cores aparecem então.",
     "holes": "{count, plural, =0 {Nenhum número faltando} one {# número faltando} other {# números faltando}}",
     "unverified": "{count, plural, =0 {Nada para conferir} one {# número para conferir} other {# números para conferir}}",
     "focus": "{count, plural, =0 {Nenhuma reunião de foco pendente} one {# reunião de foco pendente} other {# reuniões de foco pendentes}}",

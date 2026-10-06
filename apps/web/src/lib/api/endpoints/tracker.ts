@@ -70,6 +70,8 @@ export interface TrackerBoard {
     amberPercent: number;
     targetSetters: 'owner_only' | 'measure_owner';
     maxMeasuresPerInitiative: number;
+    historyPeriods: number;
+    closeAfterHours: number;
   };
   summary: Record<string, TrackerCounts>;
   measures: TrackerMeasure[];

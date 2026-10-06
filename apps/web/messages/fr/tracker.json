@@ -113,7 +113,8 @@
   "atMostShort": "limite",
   "pulse": {
     "headline": "{green} indicateurs sur {total} à l'objectif la semaine dernière",
-    "headlineNone": "Aucun indicateur n'a encore de semaine clôturée",
+    "headlineFirst": "Semaine du {week} en cours",
+    "firstWeekBody": "{count, plural, =0 {Aucun indicateur hebdomadaire pour l'instant.} one {# indicateur est suivi cette semaine.} other {# indicateurs sont suivis cette semaine.}} La semaine se clôt {closes} ; ses couleurs apparaissent alors.",
     "holes": "{count, plural, =0 {Aucun chiffre manquant} one {# chiffre manquant} other {# chiffres manquants}}",
     "unverified": "{count, plural, =0 {Rien à vérifier} one {# chiffre à vérifier} other {# chiffres à vérifier}}",
     "focus": "{count, plural, =0 {Aucune réunion de recentrage à prévoir} one {# réunion de recentrage à prévoir} other {# réunions de recentrage à prévoir}}",
