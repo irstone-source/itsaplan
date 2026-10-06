@@ -119,5 +119,17 @@
     "unverified": "{count, plural, =0 {没有待核实的数据} other {# 个数据待核实}}",
     "focus": "{count, plural, =0 {无需召开重点会议} other {需召开 # 次重点会议}}",
     "caption": "每周达标、接近、未达标和缺失的指标"
-  }
+  },
+  "northStar": "北极星指标",
+  "northStars": "北极星指标",
+  "northStarsHint": "每个举措和公司所依循的那一个指标。",
+  "northStarsEmpty": "还没有北极星指标。在指标所在行或编辑器中，为每个举措或公司标出它依循的那一个指标。",
+  "makeNorthStar": "设为北极星指标",
+  "removeNorthStar": "取消北极星指标",
+  "northStarSet": "{name} 现为北极星指标",
+  "northStarRemoved": "{name} 不再是北极星指标",
+  "noNorthStar": "还没有北极星指标",
+  "companyWide": "{company} 全公司",
+  "ofTarget": "目标 {target}",
+  "northStarField": "所属举措的北极星指标；未关联举措时为所属公司的北极星指标"
 }

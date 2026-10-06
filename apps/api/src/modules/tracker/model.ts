@@ -59,6 +59,7 @@ export const measureBody = t.Object({
   startsOn: Day,
   rule: TargetRule,
   reason: t.Optional(t.String({ maxLength: 500 })),
+  northStar: t.Optional(t.Boolean()),
 });
 
 export const measurePatch = t.Partial(measureBody);
@@ -149,6 +150,7 @@ const Measure = t.Object({
   ownerUserId: t.Nullable(t.String()),
   ownerName: t.Nullable(t.String()),
   startsOn: t.String(),
+  northStar: t.Boolean(),
   rule: TargetRule,
   targetHistory: t.Array(
     t.Object({

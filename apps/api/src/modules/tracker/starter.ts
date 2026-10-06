@@ -24,6 +24,7 @@ export const STARTER_MEASURES: ImportItem[] = [
     company: 'Cambray',
     loop: 'Cap loop',
     name: 'Consulting billings',
+    northStar: true,
     definition:
       "Value of client work completed in the week, from It's a Plan: estimate × the client's day rate, or the value set by hand. Ex-VAT.",
     kind: 'outcome',
@@ -139,6 +140,7 @@ export const STARTER_MEASURES: ImportItem[] = [
     company: 'Lanoguard',
     loop: 'Rev loop',
     name: 'Pallet sales',
+    northStar: true,
     definition:
       'Pallets paid for in the week (Shopify order paid), ex-VAT. Ian, 4 Oct: one a week, worked back.',
     kind: 'outcome',
@@ -189,6 +191,7 @@ export const STARTER_MEASURES: ImportItem[] = [
     company: 'Window Supply Direct',
     loop: 'Rev loop',
     name: 'Online revenue',
+    northStar: true,
     definition:
       'Website orders paid in the month, ex-VAT, from Shopify. Ian, 5 Oct: 5% month-on-month growth needed; set the starting month and figure.',
     kind: 'outcome',

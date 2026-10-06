@@ -14,6 +14,7 @@ import TrackerGroup from './components/TrackerGroup';
 import TrackerEmpty from './components/TrackerEmpty';
 import TrackerMeasureDialog from './components/TrackerMeasureDialog';
 import TrackerStarterButton from './components/TrackerStarterButton';
+import TrackerNorthStars from './components/TrackerNorthStars';
 
 // The growth tracker: every measure the reader can see, grouped by company, under the
 // weekly pulse of the whole board.
@@ -70,6 +71,7 @@ export default function TrackerPage() {
         ) : (
           <>
             <TrackerPulse board={data} />
+            <TrackerNorthStars measures={data.measures} canEdit={mayCreate} />
             {companies.map((c) => (
               <TrackerGroup
                 key={c}

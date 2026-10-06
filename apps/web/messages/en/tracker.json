@@ -119,5 +119,17 @@
     "unverified": "{count, plural, =0 {Nothing to check} one {# figure to check} other {# figures to check}}",
     "focus": "{count, plural, =0 {No focus meetings due} one {# focus meeting due} other {# focus meetings due}}",
     "caption": "Measures on target, close, off target and missing, week by week"
-  }
+  },
+  "northStar": "North Star",
+  "northStars": "North Stars",
+  "northStarsHint": "The one measure each initiative and company steers by.",
+  "northStarsEmpty": "No North Star yet. Star the one measure each initiative or company steers by, from its row or its editor.",
+  "makeNorthStar": "Make this the North Star",
+  "removeNorthStar": "Remove the North Star",
+  "northStarSet": "{name} is now the North Star",
+  "northStarRemoved": "{name} is no longer the North Star",
+  "noNorthStar": "No North Star yet",
+  "companyWide": "Across {company}",
+  "ofTarget": "of {target}",
+  "northStarField": "North Star of its initiative, or of its company when it is on no initiative"
 }

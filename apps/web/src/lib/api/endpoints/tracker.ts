@@ -52,6 +52,7 @@ export interface TrackerMeasure {
   ownerUserId: string | null;
   ownerName: string | null;
   startsOn: string;
+  northStar: boolean;
   rule: TargetRule;
   targetHistory: { effectiveFrom: string; rule: TargetRule; reason: string; createdAt: string }[];
   canEnter: boolean;
@@ -99,6 +100,7 @@ export interface MeasureInput {
   startsOn: string;
   rule: TargetRule;
   reason?: string;
+  northStar?: boolean;
 }
 
 export interface EntryInput {

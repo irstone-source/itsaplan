@@ -316,4 +316,28 @@ describe('tracker', () => {
     expect(res.data!.skipped.map((s) => s.name)).toContain('Billings: FGE');
     expect((await god.api.god.tracker.starter.post()).data!.created).toHaveLength(0);
   });
+
+  it('keeps one North Star per initiative, and per project and company off any initiative', async () => {
+    const { god } = await setup();
+    const { projectId, client } = await consulting(god);
+    const onClient = { ...base(projectId), initiativeId: client.id };
+    const a = (await god.api.tracker.measures.post({ ...onClient, name: 'A', northStar: true }))
+      .data!.id;
+    const b = (await god.api.tracker.measures.post({ ...onClient, name: 'B' })).data!.id;
+    const other = (
+      await god.api.tracker.measures.post({
+        ...base(projectId),
+        company: 'Lanoguard',
+        name: 'C',
+        northStar: true,
+      })
+    ).data!.id;
+    const stars = async () =>
+      Object.fromEntries(
+        (await god.api.tracker.get({ query: {} })).data!.measures.map((m) => [m.id, m.northStar]),
+      );
+    expect(await stars()).toMatchObject({ [a]: true, [b]: false, [other]: true });
+    await god.api.tracker.measures({ measureId: b }).patch({ northStar: true });
+    expect(await stars()).toMatchObject({ [a]: false, [b]: true, [other]: true });
+  });
 });

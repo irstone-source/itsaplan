@@ -119,5 +119,17 @@
     "unverified": "{count, plural, =0 {Tidak ada yang perlu diperiksa} other {# angka perlu diperiksa}}",
     "focus": "{count, plural, =0 {Tidak ada rapat fokus yang perlu diadakan} other {# rapat fokus perlu diadakan}}",
     "caption": "Ukuran yang mencapai target, mendekati, meleset, dan tanpa angka, minggu demi minggu"
-  }
+  },
+  "northStar": "Bintang Utara",
+  "northStars": "Bintang Utara",
+  "northStarsHint": "Satu ukuran yang menjadi pedoman tiap inisiatif dan perusahaan.",
+  "northStarsEmpty": "Belum ada Bintang Utara. Beri bintang pada ukuran utama tiap inisiatif atau perusahaan, dari barisnya atau editornya.",
+  "makeNorthStar": "Jadikan Bintang Utara",
+  "removeNorthStar": "Hapus Bintang Utara",
+  "northStarSet": "{name} kini menjadi Bintang Utara",
+  "northStarRemoved": "{name} bukan lagi Bintang Utara",
+  "noNorthStar": "Belum ada Bintang Utara",
+  "companyWide": "Seluruh {company}",
+  "ofTarget": "dari {target}",
+  "northStarField": "Bintang Utara inisiatifnya, atau perusahaannya bila tidak terkait inisiatif"
 }

@@ -981,6 +981,13 @@
       "when": 1791224669504,
       "tag": "0139_tracker",
       "breakpoints": true
+    },
+    {
+      "idx": 140,
+      "version": "7",
+      "when": 1791269125835,
+      "tag": "0140_tracker_north_star",
+      "breakpoints": true
     }
   ]
 }

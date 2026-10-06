@@ -5,6 +5,30 @@ import type { TrackerBoard, TrackerMeasure } from '@/lib/api/endpoints/tracker';
 import { COLOUR_CLASS, PULSE_ORDER, periodLabel, recentPeriods } from '../utils/format';
 import TrackerRow from './TrackerRow';
 
+// A company's measures by initiative, company-wide ones first, each group led by its
+// North Star.
+function byInitiative(rows: TrackerMeasure[]): [string, TrackerMeasure[]][] {
+  const groups = new Map<string, TrackerMeasure[]>();
+  for (const m of rows) {
+    const key = String(m.initiativeId ?? 0);
+    groups.set(key, [...(groups.get(key) ?? []), m]);
+  }
+  return [...groups.entries()]
+    .sort(([a, x], [b, y]) =>
+      a === '0'
+        ? -1
+        : b === '0'
+          ? 1
+          : (x[0]!.initiativeTitle ?? '').localeCompare(y[0]!.initiativeTitle ?? ''),
+    )
+    .map(([k, g]) => [
+      k,
+      [...g].sort(
+        (p, q) => Number(q.northStar) - Number(p.northStar) || p.name.localeCompare(q.name),
+      ),
+    ]);
+}
+
 // One company's measures, weekly and monthly in tables of their own so each column is
 // one period. The columns cover the measures' history, and at least the last six
 // periods so a new board still reads as a timeline. The heading carries the company's colours in its latest closed periods.
@@ -75,17 +99,32 @@ export default function TrackerGroup({
                   ))}
                 </tr>
               </thead>
-              <tbody>
-                {rows.map((m) => (
-                  <TrackerRow
-                    key={m.id}
-                    measure={m}
-                    periods={periods}
-                    current={current}
-                    settings={settings}
-                  />
-                ))}
-              </tbody>
+              {byInitiative(rows).map(([key, group]) => (
+                <tbody key={key}>
+                  <tr>
+                    <td
+                      colSpan={periods.length + 2}
+                      className="border-t bg-muted/30 px-4 py-1.5 text-xs text-muted-foreground"
+                    >
+                      <span className="font-medium text-foreground">
+                        {group[0]!.initiativeTitle ?? t('companyWide', { company })}
+                      </span>
+                      {!group.some((m) => m.northStar) && (
+                        <span className="ms-3">{t('noNorthStar')}</span>
+                      )}
+                    </td>
+                  </tr>
+                  {group.map((m) => (
+                    <TrackerRow
+                      key={m.id}
+                      measure={m}
+                      periods={periods}
+                      current={current}
+                      settings={settings}
+                    />
+                  ))}
+                </tbody>
+              ))}
             </table>
           </div>
         );

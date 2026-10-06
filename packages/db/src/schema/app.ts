@@ -1216,6 +1216,9 @@ export const trackerMeasure = pgTable(
     source: text('source').notNull().default('manual'),
     ownerUserId: text('owner_user_id').references(() => user.id, { onDelete: 'set null' }),
     startsOn: date('starts_on').notNull(),
+    // The one measure its initiative (or, off any initiative, its project and company)
+    // is steered by. The service keeps at most one per scope.
+    northStar: boolean('north_star').notNull().default(false),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

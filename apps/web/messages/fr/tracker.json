@@ -119,5 +119,17 @@
     "unverified": "{count, plural, =0 {Rien à vérifier} one {# chiffre à vérifier} other {# chiffres à vérifier}}",
     "focus": "{count, plural, =0 {Aucune réunion de recentrage à prévoir} one {# réunion de recentrage à prévoir} other {# réunions de recentrage à prévoir}}",
     "caption": "Indicateurs à l'objectif, proches, hors objectif et manquants, semaine par semaine"
-  }
+  },
+  "northStar": "Étoile polaire",
+  "northStars": "Étoiles polaires",
+  "northStarsHint": "L'indicateur qui guide chaque initiative et chaque entreprise.",
+  "northStarsEmpty": "Aucune étoile polaire pour l'instant. Marquez d'une étoile l'indicateur qui guide chaque initiative ou entreprise, depuis sa ligne ou son éditeur.",
+  "makeNorthStar": "En faire l'étoile polaire",
+  "removeNorthStar": "Retirer l'étoile polaire",
+  "northStarSet": "{name} est désormais l'étoile polaire",
+  "northStarRemoved": "{name} n'est plus l'étoile polaire",
+  "noNorthStar": "Pas encore d'étoile polaire",
+  "companyWide": "Pour tout {company}",
+  "ofTarget": "sur {target}",
+  "northStarField": "Étoile polaire de son initiative, ou de son entreprise s'il n'est rattaché à aucune initiative"
 }

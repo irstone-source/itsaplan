@@ -234,6 +234,7 @@ export interface TrackerMeasureView {
   ownerUserId: string | null;
   ownerName: string | null;
   startsOn: string;
+  northStar: boolean;
   rule: TargetRule;
   targetHistory: { effectiveFrom: string; rule: TargetRule; reason: string; createdAt: string }[];
   canEnter: boolean;
@@ -327,6 +328,7 @@ async function viewOf(
     ownerUserId: m.ownerUserId,
     ownerName: m.ownerName,
     startsOn: m.startsOn,
+    northStar: m.northStar,
     rule: (versions.at(-1)?.rule as TargetRule) ?? { type: 'fixed', value: 0 },
     targetHistory: versions.map((v) => ({
       effectiveFrom: v.effectiveFrom,
@@ -485,6 +487,32 @@ export interface MeasureInput {
   startsOn: string;
   rule: TargetRule;
   reason?: string;
+  northStar?: boolean;
+}
+
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+// Unstars the North Star of a measure's scope: its initiative, or off any initiative
+// its project and company.
+async function clearNorthStar(
+  tx: Tx,
+  scope: { initiativeId: number | null; projectId: number; company: string },
+) {
+  await tx
+    .update(trackerMeasure)
+    .set({ northStar: false })
+    .where(
+      and(
+        eq(trackerMeasure.northStar, true),
+        scope.initiativeId
+          ? eq(trackerMeasure.initiativeId, scope.initiativeId)
+          : and(
+              isNull(trackerMeasure.initiativeId),
+              eq(trackerMeasure.projectId, scope.projectId),
+              eq(trackerMeasure.company, scope.company),
+            ),
+      ),
+    );
 }
 
 async function validate(input: Omit<MeasureInput, 'rule' | 'reason'>, rule: TargetRule) {
@@ -527,6 +555,7 @@ export async function createMeasure(actor: Actor, input: MeasureInput) {
   }
   const { rule, reason, ...fields } = input;
   return db.transaction(async (tx) => {
+    if (fields.northStar) await clearNorthStar(tx, fields);
     const [m] = await tx.insert(trackerMeasure).values(fields).returning();
     await tx.insert(trackerTargetVersion).values({
       measureId: m!.id,
@@ -556,6 +585,7 @@ export async function updateMeasure(
   if (rule && !reason?.trim()) throw new HttpError(400, 'A target change needs a reason');
   const effectiveFrom = periodStartOf(now.toISOString().slice(0, 10), merged.cadence as Cadence);
   await db.transaction(async (tx) => {
+    if (fields.northStar) await clearNorthStar(tx, merged);
     if (Object.keys(fields).length)
       await tx
         .update(trackerMeasure)

@@ -330,6 +330,14 @@ export default function TrackerMeasureDialog({
               />
             )}
           </div>
+          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+            <input
+              type="checkbox"
+              checked={!!form.northStar}
+              onChange={(e) => set('northStar', e.target.checked)}
+            />
+            {t('northStarField')}
+          </label>
           {ruleChanged && (
             <div className="sm:col-span-2">
               {field(

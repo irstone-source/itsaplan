@@ -9,6 +9,7 @@ import { formatValue } from '../utils/format';
 import TrackerCellButton from './TrackerCellButton';
 import TrackerMeasureDialog from './TrackerMeasureDialog';
 import TrackerStatusChip from './TrackerStatusChip';
+import TrackerStarButton from './TrackerStarButton';
 
 export default function TrackerRow({
   measure: m,
@@ -31,9 +32,15 @@ export default function TrackerRow({
   const noTarget = m.rule.type === 'unset' && m.unit !== 'done';
 
   return (
-    <tr className="group">
-      <td className="sticky start-0 z-10 max-w-80 border-t bg-background px-4 py-2.5 group-hover:bg-muted/40">
+    <tr
+      id={`measure-${m.id}`}
+      className={`group scroll-mt-24 ${m.northStar ? 'bg-[color-mix(in_oklab,var(--primary)_6%,var(--background))]' : ''}`}
+    >
+      <td
+        className={`sticky start-0 z-10 max-w-80 border-t px-4 py-2.5 group-hover:bg-muted ${m.northStar ? 'bg-[color-mix(in_oklab,var(--primary)_6%,var(--background))]' : 'bg-background'}`}
+      >
         <div className="flex items-start gap-2.5">
+          <TrackerStarButton measure={m} />
           {m.ownerName ? (
             <Avatar name={m.ownerName} className="mt-0.5 size-6 text-[10px]" title={m.ownerName} />
           ) : (
@@ -45,14 +52,14 @@ export default function TrackerRow({
           <div className="min-w-0 space-y-1">
             <button
               type="button"
-              className="block max-w-full truncate text-start font-medium hover:underline disabled:cursor-default disabled:no-underline"
+              className={`block max-w-full truncate text-start hover:underline disabled:cursor-default disabled:no-underline ${m.northStar ? 'font-semibold' : 'font-medium'}`}
               disabled={!m.canEdit}
               onClick={() => setEditing(true)}
             >
               {m.name}
             </button>
             <p className="line-clamp-1 text-xs text-muted-foreground" title={m.definition}>
-              {m.initiativeTitle ?? m.definition}
+              {m.definition}
             </p>
             <div className="flex flex-wrap gap-1">
               <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">

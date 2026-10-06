@@ -119,5 +119,17 @@
     "unverified": "{count, plural, =0 {Nada que comprobar} one {# cifra por comprobar} other {# cifras por comprobar}}",
     "focus": "{count, plural, =0 {Ninguna reunión de foco pendiente} one {# reunión de foco pendiente} other {# reuniones de foco pendientes}}",
     "caption": "Indicadores en objetivo, cerca, fuera de objetivo y sin cifra, semana a semana"
-  }
+  },
+  "northStar": "Estrella Polar",
+  "northStars": "Estrellas Polares",
+  "northStarsHint": "El indicador que guía cada iniciativa y empresa.",
+  "northStarsEmpty": "Aún no hay Estrella Polar. Marca con una estrella el indicador que guía cada iniciativa o empresa, desde su fila o su editor.",
+  "makeNorthStar": "Convertir en Estrella Polar",
+  "removeNorthStar": "Quitar la Estrella Polar",
+  "northStarSet": "{name} es ahora la Estrella Polar",
+  "northStarRemoved": "{name} ya no es la Estrella Polar",
+  "noNorthStar": "Aún sin Estrella Polar",
+  "companyWide": "En toda {company}",
+  "ofTarget": "de {target}",
+  "northStarField": "Estrella Polar de su iniciativa, o de su empresa si no está en ninguna iniciativa"
 }
