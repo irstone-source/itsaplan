@@ -24,7 +24,7 @@ esac
 
 HEAD_SHA="$(git rev-parse HEAD)"
 latest="$(git ls-remote --tags "$MIRROR" "refs/tags/${PREFIX}*" \
-  | grep -v '\^{}$' | sed "s#.*refs/tags/${PREFIX}##" | sort -n | tail -1)"
+  | { grep -v '\^{}$' || true; } | sed "s#.*refs/tags/${PREFIX}##" | sort -n | tail -1)"
 latest="${latest:-0}"
 latest_sha="$(git ls-remote "$MIRROR" "refs/tags/${PREFIX}${latest}" | cut -f1)"
 if [[ -n "$latest_sha" && "$latest_sha" == "$HEAD_SHA" ]]; then
