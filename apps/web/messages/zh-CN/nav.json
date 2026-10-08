@@ -3,7 +3,6 @@
   "dashboards": "仪表盘",
   "workItems": "工作项",
   "allWorkItems": "全部工作项",
-  "allWork": "全部工作",
   "initiatives": "计划",
   "cycles": "周期",
   "notes": "便签",
@@ -65,8 +64,11 @@
     "noHiddenResults": "No hidden projects match your search",
     "noVisibleProjects": "No projects in your view",
     "hintMove": "移动",
-    "hintOpen": "打开"
+    "hintOpen": "打开",
+    "workspaces": "工作区",
+    "workspaceSettings": "工作区设置"
   },
+  "allWork": "全部工作",
   "today": "今天",
   "performance": "绩效",
   "finance": "财务",

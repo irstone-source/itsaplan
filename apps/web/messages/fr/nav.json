@@ -3,7 +3,6 @@
   "dashboards": "Tableaux de bord",
   "workItems": "Tickets",
   "allWorkItems": "Tous les tickets",
-  "allWork": "Tout le travail",
   "initiatives": "Initiatives",
   "cycles": "Cycles",
   "documents": "Documents",
@@ -65,8 +64,11 @@
     "noHiddenResults": "No hidden projects match your search",
     "noVisibleProjects": "No projects in your view",
     "hintMove": "naviguer",
-    "hintOpen": "ouvrir"
+    "hintOpen": "ouvrir",
+    "workspaces": "Espaces de travail",
+    "workspaceSettings": "Paramètres de l'espace de travail"
   },
+  "allWork": "Tout le travail",
   "today": "Aujourd'hui",
   "performance": "Performance",
   "finance": "Finances",

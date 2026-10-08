@@ -47,13 +47,6 @@ import {
   listInstanceTeamMembers,
   verifyInstanceUserEmail,
 } from '@/lib/api/endpoints/god';
-import {
-  getInstanceScimSettings,
-  updateInstanceScimSettings,
-  createInstanceScimToken,
-  listInstanceScimGroups,
-  setInstanceScimGroupMappings,
-} from '@/lib/api/endpoints/scim';
 import { qk } from '@/services/queryKeys';
 
 // Data hooks for god mode. Every write returns the new state, which replaces the
@@ -141,51 +134,6 @@ export function useUpdateInstanceOidcSettings() {
       qc.setQueryData(qk.instanceOidcSettings, data);
       invalidateSignInMethods(qc);
     },
-  });
-}
-
-// SCIM provisioning: the token an identity provider authenticates with, and what the
-// groups it pushes grant.
-export function useInstanceScimSettingsQuery() {
-  return useQuery({
-    queryKey: qk.instanceScimSettings,
-    queryFn: () => getInstanceScimSettings(),
-  });
-}
-
-export function useUpdateInstanceScimSettings() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (patch: { enabled: boolean }) => updateInstanceScimSettings(patch),
-    onSuccess: (data) => qc.setQueryData(qk.instanceScimSettings, data),
-  });
-}
-
-export function useCreateInstanceScimToken() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () => createInstanceScimToken(),
-    // The response is the token itself, not the settings, so the redacted view has
-    // to be refetched for its new prefix.
-    onSuccess: () => qc.invalidateQueries({ queryKey: qk.instanceScimSettings }),
-  });
-}
-
-export function useInstanceScimGroupsQuery() {
-  return useQuery({
-    queryKey: qk.instanceScimGroups,
-    queryFn: () => listInstanceScimGroups(),
-  });
-}
-
-export function useSetInstanceScimGroupMappings() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (input: {
-      groupId: string;
-      mappings: { projectId: number; role: 'owner' | 'member'; roleId: number | null }[];
-    }) => setInstanceScimGroupMappings(input.groupId, input.mappings),
-    onSuccess: () => qc.invalidateQueries({ queryKey: qk.instanceScimGroups }),
   });
 }
 
@@ -298,8 +246,7 @@ export function useInstanceProjectsQuery(filters: InstanceProjectFilters) {
   });
 }
 
-// Every project on the instance, for the SCIM mapping picker. Changes rarely, so it
-// is cached for the session.
+// Every instance project as a picker entry, for the add-to-projects dialog.
 export function useInstanceProjectOptionsQuery() {
   return useQuery({
     queryKey: qk.instanceProjectOptions,

@@ -3,7 +3,6 @@
   "dashboards": "لوحات المعلومات",
   "workItems": "عناصر العمل (work items)",
   "allWorkItems": "كل عناصر العمل (work items)",
-  "allWork": "كل العمل",
   "initiatives": "المبادرات (initiatives)",
   "cycles": "الدورات (cycles)",
   "notes": "الملاحظات",
@@ -65,8 +64,11 @@
     "noHiddenResults": "No hidden projects match your search",
     "noVisibleProjects": "No projects in your view",
     "hintMove": "تنقل",
-    "hintOpen": "فتح"
+    "hintOpen": "فتح",
+    "workspaces": "مساحات العمل",
+    "workspaceSettings": "إعدادات مساحة العمل"
   },
+  "allWork": "كل العمل",
   "today": "اليوم",
   "performance": "الأداء",
   "finance": "المالية",

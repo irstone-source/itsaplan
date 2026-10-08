@@ -62,6 +62,24 @@ if (!locked) {
 // what `db:migrate:test` sets — BACKUP_DIR is a path only the api container has, and
 // a test database that is truncated between tests has nothing to go back to.
 const journal = JSON.parse(readFileSync(`${migrationsFolder}/meta/_journal.json`, 'utf8'));
+
+// drizzle applies only the migrations newer than the newest one it has recorded. A
+// recorded migration whose timestamp is in no journal entry was renumbered away (the
+// Cambray migrations 0135-0140, replaced by the re-runnable 0147_cambray when upstream
+// took those numbers), and left in place it would hide every upstream migration older
+// than it. Such records are dropped before anything else is read.
+const known = new Set<number>(journal.entries.map((e: { when: number }) => e.when));
+const [{ exists: hasLedger }] = await migrationClient<{ exists: boolean }[]>`
+  select to_regclass('drizzle.__drizzle_migrations') is not null as exists`;
+if (hasLedger) {
+  const recorded = await migrationClient<{ id: number; created_at: string }[]>`
+    select id, created_at from drizzle.__drizzle_migrations`;
+  const orphans = recorded.filter((r) => !known.has(Number(r.created_at)));
+  if (orphans.length > 0) {
+    await migrationClient`delete from drizzle.__drizzle_migrations where id in ${migrationClient(orphans.map((r) => r.id))}`;
+    console.log(`🧭 Dropped ${orphans.length} record(s) of migrations no longer in the journal`);
+  }
+}
 const pending = await pendingMigrations(migrationClient, journal);
 const skipBackup = process.env.SKIP_PRE_MIGRATION_BACKUP === '1';
 let backup = null;

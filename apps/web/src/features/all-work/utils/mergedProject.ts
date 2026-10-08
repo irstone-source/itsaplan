@@ -18,6 +18,7 @@ const STATE_ORDER: StateType[] = ['backlog', 'unstarted', 'started', 'completed'
 // synthetic, so nothing that writes or fetches by project key may light up.
 const MERGED_PROJECT: Project = {
   id: 0,
+  archivedAt: null,
   teamId: 0,
   teamName: '',
   teamRef: '',
@@ -132,7 +133,7 @@ export function mergeProjects(work: ProjectWork[]): MergedBoard {
       assignees: [...assignees.values()],
       customFields: [],
       issueTemplates: [],
-      viewer: { role: 'member', teamRole: null },
+      viewer: { role: 'member', teamRole: null, via: 'member' },
       permissions: {} as Permissions,
       issues,
       plannedCycles: [],

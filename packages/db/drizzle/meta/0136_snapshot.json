@@ -1,6 +1,6 @@
 {
-  "id": "5b854d24-8c1d-486a-9b23-950670b47b98",
-  "prevId": "483f3502-e5de-4a74-8c61-203410bb7e39",
+  "id": "f1325165-6de1-490b-9213-723ea2196273",
+  "prevId": "1de7457d-6793-4d19-8efe-ca2482de7826",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1008,6 +1008,12 @@
         "scim_external_id": {
           "name": "scim_external_id",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scim_workspace_id": {
+          "name": "scim_workspace_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         }
@@ -3212,12 +3218,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "target_pence": {
-          "name": "target_pence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "completed_at": {
           "name": "completed_at",
           "type": "timestamp with time zone",
@@ -4347,18 +4347,6 @@
           "notNull": true,
           "default": 0
         },
-        "billing_model": {
-          "name": "billing_model",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "day_rate_pence": {
-          "name": "day_rate_pence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -4429,14 +4417,6 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
-        "initiative_billing_model_check": {
-          "name": "initiative_billing_model_check",
-          "value": "\"initiative\".\"billing_model\" IN ('day_rate', 'retainer', 'rev_share', 'internal')"
-        },
-        "initiative_day_rate_check": {
-          "name": "initiative_day_rate_check",
-          "value": "\"initiative\".\"day_rate_pence\" >= 0"
-        },
         "initiative_status_check": {
           "name": "initiative_status_check",
           "value": "\"initiative\".\"status\" IN ('proposed', 'planned', 'active', 'completed', 'canceled')"
@@ -4795,12 +4775,6 @@
         },
         "estimate_minutes": {
           "name": "estimate_minutes",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "value_override_pence": {
-          "name": "value_override_pence",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -7951,13 +7925,6 @@
           "notNull": true,
           "default": false
         },
-        "internal": {
-          "name": "internal",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "time_logging_enabled": {
           "name": "time_logging_enabled",
           "type": "boolean",
@@ -9566,6 +9533,12 @@
           "primaryKey": true,
           "notNull": true
         },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -9600,8 +9573,38 @@
           "default": "now()"
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
+      "indexes": {
+        "team_workspace_idx": {
+          "name": "team_workspace_idx",
+          "columns": [
+            {
+              "expression": "workspace_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "team_workspace_id_workspace_id_fk": {
+          "name": "team_workspace_id_workspace_id_fk",
+          "tableFrom": "team",
+          "tableTo": "workspace",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "team_slug_unique": {
@@ -10754,6 +10757,149 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.workspace": {
+      "name": "workspace",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workspace_manager": {
+      "name": "workspace_manager",
+      "schema": "",
+      "columns": {
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'admin'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "workspace_manager_owner_uq": {
+          "name": "workspace_manager_owner_uq",
+          "columns": [
+            {
+              "expression": "workspace_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"workspace_manager\".\"role\" = 'owner'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "workspace_manager_user_idx": {
+          "name": "workspace_manager_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "workspace_manager_workspace_id_workspace_id_fk": {
+          "name": "workspace_manager_workspace_id_workspace_id_fk",
+          "tableFrom": "workspace_manager",
+          "tableTo": "workspace",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "workspace_manager_user_id_user_id_fk": {
+          "name": "workspace_manager_user_id_user_id_fk",
+          "tableFrom": "workspace_manager",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "workspace_manager_workspace_id_user_id_pk": {
+          "name": "workspace_manager_workspace_id_user_id_pk",
+          "columns": [
+            "workspace_id",
+            "user_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "workspace_manager_role_check": {
+          "name": "workspace_manager_role_check",
+          "value": "\"workspace_manager\".\"role\" IN ('owner', 'admin')"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.scim_group": {
       "name": "scim_group",
       "schema": "",
@@ -10764,6 +10910,12 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         },
         "display_name": {
           "name": "display_name",
@@ -10793,13 +10945,28 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "scim_group_workspace_id_workspace_id_fk": {
+          "name": "scim_group_workspace_id_workspace_id_fk",
+          "tableFrom": "scim_group",
+          "tableTo": "workspace",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "scim_group_display_name_unique": {
-          "name": "scim_group_display_name_unique",
+        "scim_group_workspace_id_display_name_unique": {
+          "name": "scim_group_workspace_id_display_name_unique",
           "nullsNotDistinct": false,
           "columns": [
+            "workspace_id",
             "display_name"
           ]
         }

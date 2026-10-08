@@ -12,6 +12,7 @@ const RESERVED_SLUGS = new Set([
   'all-work',
   'api',
   'docs',
+  'finance',
   'forgot-password',
   'god',
   'invite',
@@ -19,6 +20,7 @@ const RESERVED_SLUGS = new Set([
   'login',
   'media',
   'oauth',
+  'performance',
   'project',
   'protected-media',
   'register',
@@ -26,6 +28,8 @@ const RESERVED_SLUGS = new Set([
   'settings',
   'share',
   'today',
+  'tracker',
+  'workspaces',
 ]);
 
 export function isReservedSlug(slug: string): boolean {

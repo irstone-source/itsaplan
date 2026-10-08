@@ -3,7 +3,6 @@
   "dashboards": "Dashboards",
   "workItems": "Work items",
   "allWorkItems": "All work items",
-  "allWork": "All work",
   "initiatives": "Initiatives",
   "cycles": "Cycles",
   "notes": "Notes",
@@ -65,8 +64,11 @@
     "noHiddenResults": "No hidden projects match your search",
     "noVisibleProjects": "No projects in your view",
     "hintMove": "move",
-    "hintOpen": "open"
+    "hintOpen": "open",
+    "workspaces": "Workspaces",
+    "workspaceSettings": "Workspace settings"
   },
+  "allWork": "All work",
   "today": "Today",
   "performance": "Performance",
   "finance": "Finance",

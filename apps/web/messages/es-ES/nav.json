@@ -3,7 +3,6 @@
   "dashboards": "Paneles",
   "workItems": "Elementos de trabajo",
   "allWorkItems": "Todos los elementos de trabajo",
-  "allWork": "Todo el trabajo",
   "initiatives": "Iniciativas",
   "cycles": "Ciclos",
   "notes": "Notas",
@@ -65,8 +64,11 @@
     "noHiddenResults": "Ningún proyecto oculto coincide con tu búsqueda",
     "noVisibleProjects": "No hay proyectos en tu vista",
     "hintMove": "mover",
-    "hintOpen": "abrir"
+    "hintOpen": "abrir",
+    "workspaces": "Espacios de trabajo",
+    "workspaceSettings": "Ajustes del espacio de trabajo"
   },
+  "allWork": "Todo el trabajo",
   "today": "Hoy",
   "performance": "Rendimiento",
   "finance": "Finanzas",

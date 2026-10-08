@@ -3,7 +3,6 @@
   "dashboards": "Дашборды",
   "workItems": "Задачи",
   "allWorkItems": "Все задачи",
-  "allWork": "Вся работа",
   "initiatives": "Инициативы",
   "cycles": "Циклы",
   "notes": "Заметки",
@@ -65,8 +64,11 @@
     "noHiddenResults": "No hidden projects match your search",
     "noVisibleProjects": "No projects in your view",
     "hintMove": "перейти",
-    "hintOpen": "открыть"
+    "hintOpen": "открыть",
+    "workspaces": "Воркспейсы",
+    "workspaceSettings": "Настройки воркспейса"
   },
+  "allWork": "Вся работа",
   "today": "Сегодня",
   "performance": "Результаты",
   "finance": "Финансы",

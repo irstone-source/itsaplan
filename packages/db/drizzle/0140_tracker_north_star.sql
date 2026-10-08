@@ -1,1 +1,0 @@
-ALTER TABLE "tracker_measure" ADD COLUMN "north_star" boolean DEFAULT false NOT NULL;

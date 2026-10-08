@@ -3,7 +3,6 @@
   "dashboards": "Dasbor",
   "workItems": "Item pekerjaan",
   "allWorkItems": "Semua item pekerjaan",
-  "allWork": "Semua pekerjaan",
   "initiatives": "Inisiatif",
   "cycles": "Cycle",
   "notes": "Catatan",
@@ -65,8 +64,11 @@
     "noHiddenResults": "No hidden projects match your search",
     "noVisibleProjects": "No projects in your view",
     "hintMove": "pindah",
-    "hintOpen": "buka"
+    "hintOpen": "buka",
+    "workspaces": "Workspace",
+    "workspaceSettings": "Pengaturan workspace"
   },
+  "allWork": "Semua pekerjaan",
   "today": "Hari ini",
   "performance": "Kinerja",
   "finance": "Keuangan",
