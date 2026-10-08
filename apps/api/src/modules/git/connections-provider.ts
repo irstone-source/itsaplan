@@ -773,7 +773,7 @@ export async function installProviderWebhook(
       body: JSON.stringify({
         ...(existing ? {} : { type: 'gitea' }),
         active: true,
-        events: ['pull_request', 'create', 'delete'],
+        events: ['pull_request', 'create', 'delete', 'release'],
         config: { url: payloadUrl, content_type: 'json', secret },
       }),
     });
@@ -830,7 +830,7 @@ export async function installProviderWebhook(
     body: JSON.stringify({
       ...(existing ? {} : { name: 'web' }),
       active: true,
-      events: ['pull_request', 'check_run', 'create', 'delete'],
+      events: ['pull_request', 'check_run', 'create', 'delete', 'release'],
       config: { url: payloadUrl, content_type: 'json', insecure_ssl: '0', secret },
     }),
   });

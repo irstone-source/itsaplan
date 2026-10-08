@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { detectProvider } from '../../providers';
+import { releasePullRequestNumbers } from '../../development';
 
 describe('repository provider events', () => {
   it('normalizes a GitLab pipeline event', () => {
@@ -234,5 +235,43 @@ describe('repository provider events', () => {
       branch: 'MKT-12-cleanup',
       headSha: null,
     });
+  });
+
+  it('normalizes a published GitHub release and ignores a draft', () => {
+    const headers = { 'x-github-event': 'release' };
+    const provider = detectProvider(headers)!;
+    const release = {
+      tag_name: 'v0.1.0-rc.1',
+      name: 'Finance v0.1.0 rc.1',
+      body: 'Includes https://github.com/acme/site/pull/42 and #7',
+      html_url: 'https://github.com/acme/site/releases/tag/v0.1.0-rc.1',
+      prerelease: true,
+      draft: false,
+      target_commitish: 'main',
+      published_at: '2026-10-12T10:00:00Z',
+    };
+    const repository = { full_name: 'acme/site' };
+    expect(provider.parse({ action: 'published', release, repository }, headers)).toMatchObject({
+      kind: 'release',
+      action: 'published',
+      repo: 'acme/site',
+      tag: 'v0.1.0-rc.1',
+      prerelease: true,
+    });
+    expect(provider.parse({ action: 'deleted', release, repository }, headers)).toMatchObject({
+      action: 'deleted',
+    });
+    expect(
+      provider.parse(
+        { action: 'published', release: { ...release, draft: true }, repository },
+        headers,
+      ),
+    ).toBeNull();
+  });
+
+  it('reads the pull request numbers a release names', () => {
+    expect(
+      releasePullRequestNumbers('* Fix by @a in https://github.com/acme/site/pull/42\n* #7, #42'),
+    ).toEqual([42, 7]);
   });
 });

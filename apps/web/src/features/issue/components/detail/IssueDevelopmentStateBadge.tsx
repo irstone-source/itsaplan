@@ -5,6 +5,7 @@ import {
   GitPullRequestArrow,
   GitPullRequestClosed,
   GitPullRequestDraft,
+  Tag,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { DevelopmentLink } from '@/lib/api/endpoints/git';
@@ -21,6 +22,16 @@ export default function IssueDevelopmentStateBadge({ link }: { link: Development
       >
         <GitBranch />
         {t('branch')}
+      </Badge>
+    );
+  if (link.kind === 'release')
+    return (
+      <Badge
+        variant="outline"
+        className={`${issueDevelopmentBadgeClassName} ${link.state === 'prerelease' ? 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300' : 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'}`}
+      >
+        <Tag />
+        {link.state === 'prerelease' ? t('releaseCandidate') : t('released')}
       </Badge>
     );
   if (link.draft)

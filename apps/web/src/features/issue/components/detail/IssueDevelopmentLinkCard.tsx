@@ -1,4 +1,4 @@
-import { ExternalLink, GitBranch, GitPullRequest, Unlink } from 'lucide-react';
+import { ExternalLink, GitBranch, GitPullRequest, Tag, Unlink } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import type { DevelopmentLink } from '@/lib/api/endpoints/git';
 import IssueDevelopmentChecks from './IssueDevelopmentChecks';
@@ -38,6 +38,8 @@ export default function IssueDevelopmentLinkCard({
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             {link.kind === 'branch' ? (
               <GitBranch className="size-3.5" />
+            ) : link.kind === 'release' ? (
+              <Tag className="size-3.5" />
             ) : (
               <GitPullRequest className="size-3.5" />
             )}
@@ -45,6 +47,7 @@ export default function IssueDevelopmentLinkCard({
             <span>·</span>
             <span className="truncate">
               {link.repository}
+              {link.kind === 'release' ? ` ${link.sourceBranch}` : ''}
               {link.number == null ? '' : `#${link.number}`}
             </span>
           </div>

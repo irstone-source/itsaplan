@@ -61,6 +61,8 @@ export type GitProvider = 'github' | 'gitlab' | 'gitea' | 'forgejo' | 'bitbucket
 
 export type PullRequestState = 'open' | 'merged' | 'closed';
 
+export type DevelopmentLinkState = PullRequestState | 'released' | 'prerelease';
+
 export type PipelineStatus = 'pending' | 'running' | 'success' | 'failed' | 'canceled' | 'skipped';
 
 export interface DevelopmentCheck {
@@ -75,11 +77,11 @@ export interface DevelopmentLink {
   id: number;
   provider: GitProvider;
   repository: string;
-  kind: 'pull_request' | 'branch';
+  kind: 'pull_request' | 'branch' | 'release';
   number: number | null;
   title: string;
   url: string | null;
-  state: PullRequestState;
+  state: DevelopmentLinkState;
   draft: boolean;
   sourceBranch: string | null;
   targetBranch: string;
@@ -243,3 +245,20 @@ export const createIssuePullRequest = (issueId: number, input: CreateIssuePullRe
     method: 'POST',
     body: JSON.stringify(input),
   });
+
+// A published release of a connected repository, with the issues whose merged pull
+// requests its notes name.
+export interface GitRelease {
+  id: number;
+  repository: string;
+  tag: string;
+  name: string;
+  notes: string;
+  url: string | null;
+  prerelease: boolean;
+  publishedAt: string | null;
+  issues: { id: number; identifier: string; title: string }[];
+}
+
+export const listReleases = (projectKey: string) =>
+  request<GitRelease[]>(`/projects/${projectKey}/releases`);

@@ -412,7 +412,9 @@
       "failed": "فشل",
       "canceled": "ملغي",
       "skipped": "تم تخطيه"
-    }
+    },
+    "released": "Released",
+    "releaseCandidate": "Release candidate"
   },
   "documents": {
     "title": "المستندات",

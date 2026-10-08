@@ -1246,4 +1246,43 @@ describe('Repository webhook', () => {
     expect(res.status).toBe(200);
     expect((await issueState(asOwner, issue.id)).columnId).toBe(done.id);
   });
+
+  it('records a release and marks the issues its pull requests shipped', async () => {
+    const { asOwner, webhookId, secret, columns } = await setupProject();
+    const issue = (await createIssue(asOwner, columns[0].id)).data!;
+    await deliver(webhookId, secret, prPayload({ body: `Fixes MKT-${issue.sequenceNumber}` }));
+
+    const release = (action: string, prerelease: boolean) => ({
+      action,
+      release: {
+        tag_name: 'v0.1.0',
+        name: 'Finance v0.1.0',
+        body: '## What changed\n* Xero sync in https://github.com/acme/site/pull/42',
+        html_url: 'https://github.com/acme/site/releases/tag/v0.1.0',
+        prerelease,
+        draft: false,
+        target_commitish: 'main',
+        published_at: '2026-10-13T16:00:00Z',
+      },
+      repository: { full_name: 'acme/site', default_branch: 'main' },
+    });
+    const res = await deliver(webhookId, secret, release('published', false), { event: 'release' });
+    expect(res.status).toBe(200);
+    expect(res.data).toMatchObject({ handled: 'release' });
+
+    const list = await asOwner.projects({ projectKey: 'MKT' }).releases.get();
+    expect(list.status).toBe(200);
+    expect(list.data).toHaveLength(1);
+    expect(list.data![0]).toMatchObject({
+      tag: 'v0.1.0',
+      prerelease: false,
+      issues: [{ id: issue.id, identifier: `MKT-${issue.sequenceNumber}` }],
+    });
+    expect((await issueState(asOwner, issue.id)).development).toContainEqual(
+      expect.objectContaining({ kind: 'release', state: 'released', title: 'Finance v0.1.0' }),
+    );
+
+    await deliver(webhookId, secret, release('deleted', false), { event: 'release' });
+    expect((await asOwner.projects({ projectKey: 'MKT' }).releases.get()).data).toHaveLength(0);
+  });
 });

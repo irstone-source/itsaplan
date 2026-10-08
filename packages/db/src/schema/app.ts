@@ -1832,6 +1832,32 @@ export const issueDevelopmentLink = pgTable(
   ],
 );
 
+// A release published in a connected repository: the record of what shipped. The
+// issues it shipped are linked through issue_development_link (kind 'release').
+export const gitRelease = pgTable(
+  'git_release',
+  {
+    id: serial('id').primaryKey(),
+    projectId: integer('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    provider: text('provider').notNull(),
+    repository: text('repository').notNull(),
+    tag: text('tag').notNull(),
+    name: text('name').notNull(),
+    notes: text('notes').notNull().default(''),
+    url: text('url'),
+    prerelease: boolean('prerelease').notNull().default(false),
+    targetCommitish: text('target_commitish'),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique().on(t.projectId, t.provider, t.repository, t.tag),
+    index('git_release_project_idx').on(t.projectId, t.publishedAt.desc()),
+  ],
+);
+
 export const issueDevelopmentCheck = pgTable(
   'issue_development_check',
   {

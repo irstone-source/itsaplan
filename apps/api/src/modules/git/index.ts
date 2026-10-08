@@ -15,8 +15,10 @@ import {
   gitProviderConnectionParams,
   teamGitProviderConnectionParams,
   updateGitSettingsBody,
+  ReleaseListResponse,
 } from './model';
 import { getOrCreateGitSettings, regenerateGitSecret, updateGitSettings } from './service';
+import { listReleases } from './development';
 import {
   connectGitProvider,
   connectRepositories,
@@ -70,6 +72,15 @@ export const gitSettingsRoutes = new Elysia({
       detail: { summary: 'Disconnect a team Git provider account and its managed webhooks' },
     },
   )
+  .get('/projects/:projectKey/releases', ({ project }) => listReleases(project.id), {
+    projectMember: true,
+    response: { 200: ReleaseListResponse, ...accessErrors },
+    detail: {
+      summary: "List a project's releases",
+      description:
+        'Every release published in a repository connected to the project, newest first, with the issues each one shipped.',
+    },
+  })
   .get('/projects/:projectKey/settings/git', ({ project }) => getOrCreateGitSettings(project.id), {
     permission: ['repositories', 'edit'],
     response: { 200: GitSettingsResponse, ...accessErrors },

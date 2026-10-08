@@ -412,7 +412,9 @@
       "failed": "Gagal",
       "canceled": "Dibatalkan",
       "skipped": "Dilewati"
-    }
+    },
+    "released": "Released",
+    "releaseCandidate": "Release candidate"
   },
   "documents": {
     "title": "Dokumen",

@@ -57,7 +57,22 @@ export interface CheckEvent {
   url: string | null;
 }
 
-export type GitEvent = PullRequestEvent | BranchEvent | PipelineEvent | CheckEvent;
+// A release published (or a draft made public) or removed. Tags ending in a
+// pre-release suffix come through as prerelease when the host marks them so.
+export interface ReleaseEvent {
+  kind: 'release';
+  action: 'published' | 'deleted';
+  repo: string;
+  tag: string;
+  name: string;
+  body: string;
+  url: string | null;
+  prerelease: boolean;
+  targetCommitish: string | null;
+  publishedAt: string | null;
+}
+
+export type GitEvent = PullRequestEvent | BranchEvent | PipelineEvent | CheckEvent | ReleaseEvent;
 
 export type DeliveryHeaders = Record<string, string | undefined>;
 
@@ -136,6 +151,16 @@ interface GithubPayload {
     details_url?: string | null;
     pull_requests?: { number?: number }[];
     app?: { id?: number };
+  };
+  release?: {
+    tag_name?: string;
+    name?: string | null;
+    body?: string | null;
+    html_url?: string;
+    prerelease?: boolean;
+    draft?: boolean;
+    target_commitish?: string;
+    published_at?: string | null;
   };
   repository?: { full_name?: string; default_branch?: string; html_url?: string };
 }
@@ -238,9 +263,30 @@ function parseGithubBranch(payload: unknown, headers: DeliveryHeaders): BranchEv
   };
 }
 
+function parseGithubRelease(payload: unknown): ReleaseEvent | null {
+  const { action, release, repository } = payload as GithubPayload;
+  if (!release?.tag_name || !repository?.full_name) return null;
+  const removed = action === 'deleted' || action === 'unpublished';
+  const shown = ['published', 'released', 'prereleased', 'edited'].includes(action ?? '');
+  if (!removed && (!shown || release.draft)) return null;
+  return {
+    kind: 'release',
+    action: removed ? 'deleted' : 'published',
+    repo: repository.full_name,
+    tag: release.tag_name,
+    name: release.name || release.tag_name,
+    body: release.body ?? '',
+    url: httpUrl(release.html_url),
+    prerelease: release.prerelease === true,
+    targetCommitish: release.target_commitish ?? null,
+    publishedAt: release.published_at ?? null,
+  };
+}
+
 function parseGithubPayload(payload: unknown, headers: DeliveryHeaders): GitEvent | null {
   const event = headers['x-github-event'] ?? headers['x-gitea-event'] ?? headers['x-forgejo-event'];
   if (event === 'check_run') return parseGithubCheck(payload);
+  if (event === 'release') return parseGithubRelease(payload);
   if (event === 'create' || event === 'delete') return parseGithubBranch(payload, headers);
   return parseGithubPullRequest(payload);
 }

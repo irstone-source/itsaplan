@@ -1,4 +1,11 @@
-import { db, issue, issueDevelopmentCheck, issueDevelopmentLink } from '@repo/db';
+import {
+  db,
+  gitRelease,
+  issue,
+  issueDevelopmentCheck,
+  issueDevelopmentLink,
+  project,
+} from '@repo/db';
 import { and, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import { HttpError, iso } from '#shared/lib';
 import {
@@ -19,6 +26,7 @@ import type {
   PipelineStatus,
   PullRequestEvent,
   PullRequestState,
+  ReleaseEvent,
 } from './providers';
 
 export interface DevelopmentCheck {
@@ -29,15 +37,18 @@ export interface DevelopmentCheck {
   updatedAt: string;
 }
 
+// A release link reads 'released' or 'prerelease'; the rest are pull request states.
+export type DevelopmentLinkState = PullRequestState | 'released' | 'prerelease';
+
 export interface DevelopmentLink {
   id: number;
   provider: GitProviderKey;
   repository: string;
-  kind: 'pull_request' | 'branch';
+  kind: 'pull_request' | 'branch' | 'release';
   number: number | null;
   title: string;
   url: string | null;
-  state: PullRequestState;
+  state: DevelopmentLinkState;
   draft: boolean;
   sourceBranch: string | null;
   targetBranch: string;
@@ -112,8 +123,8 @@ export async function listIssueDevelopmentLinks(issueId: number): Promise<Develo
     return {
       ...link,
       provider: link.provider as GitProviderKey,
-      kind: link.kind === 'branch' ? 'branch' : 'pull_request',
-      state: link.state as PullRequestState,
+      kind: link.kind as DevelopmentLink['kind'],
+      state: link.state as DevelopmentLinkState,
       pipelineStatus: link.pipelineStatus as PipelineStatus | null,
       checkStatus: aggregateChecks(checks),
       checks,
@@ -538,4 +549,161 @@ export async function updateCheckLinks(
         updatedAt,
       },
     });
+}
+
+// The pull request numbers a release's notes name: GitHub's generated notes list each
+// merged pull request by URL, and hand-written notes usually say #123.
+export function releasePullRequestNumbers(body: string): number[] {
+  const numbers = new Set<number>();
+  for (const match of body.matchAll(/(?:\/pull\/|#)(\d+)\b/g)) numbers.add(Number(match[1]));
+  return [...numbers];
+}
+
+// Records a published release and links it to every issue whose pull request its notes
+// name; a removed release takes its record and links with it.
+export async function recordRelease(
+  projectId: number,
+  provider: GitProviderKey,
+  event: ReleaseEvent,
+): Promise<number> {
+  const externalKey = `release:${event.tag}`;
+  if (event.action === 'deleted') {
+    await db
+      .delete(gitRelease)
+      .where(
+        and(
+          eq(gitRelease.projectId, projectId),
+          eq(gitRelease.provider, provider),
+          eq(gitRelease.repository, event.repo),
+          eq(gitRelease.tag, event.tag),
+        ),
+      );
+    await db
+      .delete(issueDevelopmentLink)
+      .where(
+        and(
+          eq(issueDevelopmentLink.provider, provider),
+          eq(issueDevelopmentLink.repository, event.repo),
+          eq(issueDevelopmentLink.externalKey, externalKey),
+          projectIssue(projectId),
+        ),
+      );
+    return 0;
+  }
+
+  const now = new Date();
+  const publishedAt = event.publishedAt ? new Date(event.publishedAt) : now;
+  const values = {
+    name: event.name,
+    notes: event.body,
+    url: event.url,
+    prerelease: event.prerelease,
+    targetCommitish: event.targetCommitish,
+    publishedAt,
+    updatedAt: now,
+  };
+  await db
+    .insert(gitRelease)
+    .values({ projectId, provider, repository: event.repo, tag: event.tag, ...values })
+    .onConflictDoUpdate({
+      target: [gitRelease.projectId, gitRelease.provider, gitRelease.repository, gitRelease.tag],
+      set: values,
+    });
+
+  const numbers = releasePullRequestNumbers(event.body);
+  if (numbers.length === 0) return 0;
+  const shipped = await db
+    .selectDistinct({ issueId: issueDevelopmentLink.issueId })
+    .from(issueDevelopmentLink)
+    .where(
+      and(
+        eq(issueDevelopmentLink.provider, provider),
+        eq(issueDevelopmentLink.repository, event.repo),
+        inArray(
+          issueDevelopmentLink.externalKey,
+          numbers.map((n) => `pull_request:${n}`),
+        ),
+        projectIssue(projectId),
+      ),
+    );
+  if (shipped.length === 0) return 0;
+  const state = event.prerelease ? 'prerelease' : 'released';
+  await db
+    .insert(issueDevelopmentLink)
+    .values(
+      shipped.map(({ issueId }) => ({
+        issueId,
+        provider,
+        repository: event.repo,
+        kind: 'release',
+        externalKey,
+        number: null,
+        title: event.name,
+        url: event.url,
+        state,
+        draft: false,
+        sourceBranch: event.tag,
+        targetBranch: event.targetCommitish ?? '',
+        headSha: null,
+        updatedAt: now,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [
+        issueDevelopmentLink.issueId,
+        issueDevelopmentLink.provider,
+        issueDevelopmentLink.repository,
+        issueDevelopmentLink.externalKey,
+      ],
+      set: { title: event.name, url: event.url, state, updatedAt: now },
+    });
+  return shipped.length;
+}
+
+export interface ReleaseRow {
+  id: number;
+  repository: string;
+  tag: string;
+  name: string;
+  notes: string;
+  url: string | null;
+  prerelease: boolean;
+  publishedAt: string | null;
+  issues: { id: number; identifier: string; title: string }[];
+}
+
+// A project's releases, newest first, each with the issues it shipped.
+export async function listReleases(projectId: number): Promise<ReleaseRow[]> {
+  const releases = await db
+    .select()
+    .from(gitRelease)
+    .where(eq(gitRelease.projectId, projectId))
+    .orderBy(desc(gitRelease.publishedAt));
+  if (releases.length === 0) return [];
+  const links = await db
+    .select({
+      repository: issueDevelopmentLink.repository,
+      externalKey: issueDevelopmentLink.externalKey,
+      id: issue.id,
+      key: project.key,
+      sequenceNumber: issue.sequenceNumber,
+      title: issue.title,
+    })
+    .from(issueDevelopmentLink)
+    .innerJoin(issue, eq(issue.id, issueDevelopmentLink.issueId))
+    .innerJoin(project, eq(project.id, issue.projectId))
+    .where(and(eq(issueDevelopmentLink.kind, 'release'), eq(issue.projectId, projectId)));
+  return releases.map((r) => ({
+    id: r.id,
+    repository: r.repository,
+    tag: r.tag,
+    name: r.name,
+    notes: r.notes,
+    url: r.url,
+    prerelease: r.prerelease,
+    publishedAt: r.publishedAt ? iso(r.publishedAt) : null,
+    issues: links
+      .filter((l) => l.repository === r.repository && l.externalKey === `release:${r.tag}`)
+      .map((l) => ({ id: l.id, identifier: `${l.key}-${l.sequenceNumber}`, title: l.title })),
+  }));
 }

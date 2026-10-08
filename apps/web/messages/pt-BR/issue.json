@@ -412,7 +412,9 @@
       "failed": "Falhou",
       "canceled": "Cancelado",
       "skipped": "Ignorado"
-    }
+    },
+    "released": "Released",
+    "releaseCandidate": "Release candidate"
   },
   "documents": {
     "title": "Documentos",

@@ -33,11 +33,17 @@ export const DevelopmentLinkResponse = t.Object({
     t.Literal('bitbucket'),
   ]),
   repository: t.String(),
-  kind: t.Union([t.Literal('pull_request'), t.Literal('branch')]),
+  kind: t.Union([t.Literal('pull_request'), t.Literal('branch'), t.Literal('release')]),
   number: t.Nullable(t.Number()),
   title: t.String(),
   url: t.Nullable(t.String()),
-  state: t.Union([t.Literal('open'), t.Literal('merged'), t.Literal('closed')]),
+  state: t.Union([
+    t.Literal('open'),
+    t.Literal('merged'),
+    t.Literal('closed'),
+    t.Literal('released'),
+    t.Literal('prerelease'),
+  ]),
   draft: t.Boolean(),
   sourceBranch: t.Nullable(t.String()),
   targetBranch: t.String(),
@@ -144,3 +150,17 @@ export const connectRepositoriesBody = t.Object({
     maxItems: 50,
   }),
 });
+
+export const ReleaseListResponse = t.Array(
+  t.Object({
+    id: t.Number(),
+    repository: t.String(),
+    tag: t.String(),
+    name: t.String(),
+    notes: t.String(),
+    url: t.Nullable(t.String()),
+    prerelease: t.Boolean(),
+    publishedAt: t.Nullable(t.String()),
+    issues: t.Array(t.Object({ id: t.Number(), identifier: t.String(), title: t.String() })),
+  }),
+);

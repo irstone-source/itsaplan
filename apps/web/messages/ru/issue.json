@@ -412,7 +412,9 @@
       "failed": "Ошибка",
       "canceled": "Отменён",
       "skipped": "Пропущен"
-    }
+    },
+    "released": "Released",
+    "releaseCandidate": "Release candidate"
   },
   "documents": {
     "title": "Документы",

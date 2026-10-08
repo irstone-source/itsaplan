@@ -412,7 +412,9 @@
       "failed": "失败",
       "canceled": "已取消",
       "skipped": "已跳过"
-    }
+    },
+    "released": "Released",
+    "releaseCandidate": "Release candidate"
   },
   "documents": {
     "title": "文档",

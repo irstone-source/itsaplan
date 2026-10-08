@@ -13,6 +13,7 @@ import {
   CalendarCheck,
   Trophy,
   Activity,
+  Tag,
 } from 'lucide-react';
 import {
   allWorkPath,
@@ -26,6 +27,7 @@ import {
   initiativesPath,
   notesPath,
   projectPath,
+  releasesPath,
   viewPath,
 } from '@/utils/paths';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -49,7 +51,7 @@ export default function SidebarWorkNav({
   const t = useTranslations('nav');
   const pathname = usePathname();
   const routeSub = useShellRoute().sub;
-  const { can } = usePermissions();
+  const { can, isMember } = usePermissions();
   const features = useProjectFeatures();
   const disabled = !projectKey;
   const { data: inboxUnread } = useInboxUnread(projectKey, projectId);
@@ -168,6 +170,15 @@ export default function SidebarWorkNav({
               icon={RefreshCw}
               label={t('cycles')}
               active={pathname.includes('/cycles')}
+              disabled={disabled}
+            />
+          )}
+          {isMember && (
+            <SidebarNavItem
+              href={projectKey ? releasesPath(projectKey) : '#'}
+              icon={Tag}
+              label={t('releases')}
+              active={pathname.endsWith('/releases')}
               disabled={disabled}
             />
           )}

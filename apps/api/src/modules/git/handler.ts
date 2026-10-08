@@ -13,6 +13,7 @@ import {
   removePullRequestLinks,
   updateCheckLinks,
   updatePipelineLinks,
+  recordRelease,
   updatePullRequestLinks,
   upsertBranchLinks,
   upsertPullRequestLinks,
@@ -62,10 +63,14 @@ export async function handleGitEvent(
   providerKey: GitProviderKey,
   providerLabel: string,
   event: GitEvent,
-): Promise<PullRequestOutcome | 'branch' | 'pipeline' | 'check'> {
+): Promise<PullRequestOutcome | 'branch' | 'pipeline' | 'check' | 'release'> {
   if (event.kind === 'check') {
     await updateCheckLinks(project.id, providerKey, event);
     return 'check';
+  }
+  if (event.kind === 'release') {
+    await recordRelease(project.id, providerKey, event);
+    return 'release';
   }
   if (event.kind === 'pipeline') {
     await updatePipelineLinks(project.id, providerKey, event);
