@@ -5,13 +5,13 @@
 #   scripts/ship.sh --plan    print what would happen, change nothing
 #   scripts/ship.sh --backup  only dump the production database
 #
-# Tags are v1.2.1-cambray.N on the images mirror. When the newest tag already points
+# Tags are v<upstream version>-cambray.N on the images mirror (v1.4.0-cambray.1, …). When the newest tag already points
 # at HEAD it is reused; otherwise N goes up by one. Output is kept in
 # ~/backups/itsaplan/deploy-<time>.log.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-PREFIX="v1.2.1-cambray."
+PREFIX="v$(node -p "require('./package.json').version")-cambray."
 MIRROR="https://github.com/irstone-source/itsaplan-images.git"
 
 MODE="--apply"

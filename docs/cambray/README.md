@@ -13,9 +13,9 @@ the instance holds, how the team uses it, and how it is changed and deployed.
 | Sign-in | Google (Cambray Workspace accounts). Email and password sign-in is off. |
 | Brand | "Cambray", accent #00E5CC, ring mark on a dark tile (`scripts/cambray-mark-tile.svg`); light theme: the press kit "Dark on Light" ink mark (#1A1A1A) on a white tile (`scripts/cambray-mark-tile-light.svg`) |
 | Hosting | Railway project `itsaplan`: services `api`, `web`, `worker`, `bot`, `postgres` |
-| Code | github.com/irstone-source/itsaplan, branch `feat/v1.2-branding-today` |
+| Code | github.com/irstone-source/itsaplan, branch `feat/v1.4-cambray` (`feat/v1.2-branding-today` is the pre-v1.4 line) |
 | Images | built in the public mirror github.com/irstone-source/itsaplan-images (AGPL source) |
-| Version | upstream v1.2.1 plus the Cambray changes, released as `v1.2.1-cambray.N` |
+| Version | upstream v1.4.0 plus the Cambray changes, released as `v1.4.0-cambray.N` |
 
 ## 2. How the work is organised
 
@@ -105,7 +105,7 @@ them (God mode → Users → Add to projects).
 
 ## 6. Changing and deploying
 
-The branch is `feat/v1.2-branding-today`. Every change is committed and pushed there.
+The branch is `feat/v1.4-cambray`. Every change is committed and pushed there.
 
 | Script | Purpose |
 | --- | --- |
@@ -128,8 +128,10 @@ Rolling back: `scripts/cambray-deploy.sh --rollback ~/backups/itsaplan/rollback-
 The database keeps the newer migrations; to restore the data as well, load the matching
 `prod-<time>.sql.gz` (instructions are printed by `--rollback`).
 
-Updating from upstream: rebase the branch onto `upstream/main`, fix conflicts, check, push
-and ship. Keep the Cambray changes as separate commits so they rebase cleanly.
+Updating from upstream: merge the upstream release tag into the branch, fix conflicts, check,
+push and ship. Upstream migration numbers win: a Cambray schema change goes in a new,
+re-runnable migration after upstream's, and `migrate.ts` drops ledger records of migrations
+that were renumbered away. Rehearse on a restored production backup before shipping.
 
 ### Local development and tests
 
