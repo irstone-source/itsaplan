@@ -7,6 +7,7 @@ import SectionPageView from '@/components/common/page/SectionPageView';
 import { EmptyState } from '@/components/common/page/EmptyState';
 import PlaybookAddDialog from './components/PlaybookAddDialog';
 import PlaybookGroupCard from './components/PlaybookGroupCard';
+import PlaybookImportDialog from './components/PlaybookImportDialog';
 import { usePlaybookQuery } from './services/playbook.service';
 
 export default function PlaybookPage() {
@@ -22,7 +23,10 @@ export default function PlaybookPage() {
       description={t('description')}
       actions={
         projectKey && can('initiatives', 'create') ? (
-          <PlaybookAddDialog projectKey={projectKey} />
+          <div className="flex gap-2">
+            <PlaybookImportDialog projectKey={projectKey} />
+            <PlaybookAddDialog projectKey={projectKey} />
+          </div>
         ) : null
       }
       wide

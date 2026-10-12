@@ -105,11 +105,13 @@ month-end finance review, retainer fee balance, cycle planning and close, playbo
 and a quarterly portfolio review. Its tickets are costed at the internal day rate and shown
 as their own line in the cycle breakdown.
 
-**Loading a playbook from a CSV.** `scripts/import-playbook.ts` reads columns `client,
-deliverable, price, billing, cadence, quarter_month, estimate_hours` (client = the part of
-the initiative title before " — "). It also sets the revenue classes, the MGM initiative,
-label and items, and the quarterly reviews where missing. It prints a plan; `--apply`
-writes; a rerun skips what exists. Quote a price that contains a comma.
+**Loading a playbook from a CSV.** Playbook → Import CSV. Columns: client, deliverable,
+price, billing, cadence, quarter month, estimate hours (client = the part of the initiative
+title before " — "). With "Also set up MGM…" ticked it also marks the known clients
+committed or new, creates the MGM initiative, label and items, and a quarterly review per
+committed client. Choosing the file shows every change first; Apply writes them; a second
+import skips what exists. Quote a price that contains a comma. Anyone who may create
+initiatives in CON can import; the MCP tool `import_playbook` does the same for an agent.
 
 **Daily.** Open Today for your own list. Tickets from the standup appear on their own (see
 section 5).
@@ -192,7 +194,7 @@ that were renumbered away. Rehearse on a restored production backup before shipp
 - Object storage (S3): not configured on production, so file attachments, document assets,
   imports and agent skills do not work.
 - The table view does not show ticket values yet.
-- Playbook: Jo's CSV of repeatable tasks, with billing marked per row, to load with
-  `scripts/import-playbook.ts`; monthly retainer fees on each committed client.
+- Playbook: Jo's CSV of repeatable tasks, with billing marked per row (Playbook → Import
+  CSV); monthly retainer fees on each committed client.
 - Playbook items synced to the Stripe product catalogue (`playbook_item.stripe_price_id` is
   reserved for the price id).

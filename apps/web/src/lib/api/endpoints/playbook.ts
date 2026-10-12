@@ -58,3 +58,28 @@ export const updatePlaybookItem = (projectKey: string, id: number, patch: Playbo
 
 export const deletePlaybookItem = (projectKey: string, id: number) =>
   request<void>(`/projects/${projectKey}/playbook/${id}`, { method: 'DELETE' });
+
+// One spreadsheet row of a playbook import; every value is the cell as typed.
+export interface PlaybookImportRow {
+  client: string;
+  deliverable: string;
+  price: string;
+  billing: string;
+  cadence: string;
+  quarterMonth: string;
+  estimateHours: string;
+}
+
+export interface PlaybookImportAction {
+  kind: 'class' | 'label' | 'initiative' | 'item' | 'skip';
+  text: string;
+}
+
+export const importPlaybook = (
+  projectKey: string,
+  input: { rows: PlaybookImportRow[]; setup: boolean; apply: boolean },
+) =>
+  request<{ actions: PlaybookImportAction[] }>(`/projects/${projectKey}/playbook/import`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });

@@ -1,11 +1,15 @@
 import { Elysia, t } from 'elysia';
+import { authContext } from '#shared/auth-context';
+import { requireUser } from '#shared/access';
 import { noContent } from '#shared/http';
 import { guards } from '#shared/guards';
 import { HttpError } from '#shared/lib';
 import { commonErrors } from '#shared/responses';
 import { mcpTool } from '#mcp/generate';
 import {
+  ImportPlaybookResponse,
   PlaybookItemResponse,
+  importPlaybookBody,
   PlaybookResponse,
   createPlaybookItemBody,
   playbookParams,
@@ -17,8 +21,10 @@ import {
   listPlaybook,
   updatePlaybookItem,
 } from './service';
+import { importPlaybook } from './import';
 
 export const playbookRoutes = new Elysia({ name: 'playbook', detail: { tags: ['Playbook'] } })
+  .use(authContext)
   .use(guards)
   .get('/projects/:projectKey/playbook', ({ project }) => listPlaybook(project.id), {
     permission: ['initiatives', 'read'],
@@ -47,6 +53,26 @@ export const playbookRoutes = new Elysia({ name: 'playbook', detail: { tags: ['P
         summary: 'Create a playbook item',
         description: 'Add a repeatable deliverable to a client initiative.',
         ...mcpTool('create_playbook_item'),
+      },
+    },
+  )
+
+  .post(
+    '/projects/:projectKey/playbook/import',
+    ({ project, body, user }) => importPlaybook(project.id, body, requireUser(user).id),
+    {
+      body: importPlaybookBody,
+      permission: ['initiatives', 'create'],
+      response: { 200: ImportPlaybookResponse, ...commonErrors },
+      detail: {
+        summary: 'Import a playbook',
+        description:
+          'Load playbook items from spreadsheet rows (client, deliverable, price, billing, ' +
+          'cadence, quarter month, estimate hours). With setup, also the revenue classes, ' +
+          'the MGM consulting-management initiative and its items, and a quarterly review per ' +
+          'committed client. Items already in the playbook are skipped. apply false only ' +
+          'reports what would happen.',
+        ...mcpTool('import_playbook'),
       },
     },
   )

@@ -74,6 +74,35 @@ export const addPlaybookBody = t.Object({
   itemIds: t.Array(t.Integer(), { minItems: 1, description: 'Playbook item ids to add.' }),
 });
 
+export const importPlaybookBody = t.Object({
+  rows: t.Array(
+    t.Object({
+      client: t.String({ description: 'The part of an initiative title before " — ", e.g. GSG.' }),
+      deliverable: t.String(),
+      price: t.Optional(t.String({ description: 'Pounds, e.g. 250 or £1,200.' })),
+      billing: t.Optional(t.String({ description: 'billable, retainer or non_billable.' })),
+      cadence: t.Optional(t.String({ description: 'monthly, quarterly or ad_hoc.' })),
+      quarterMonth: t.Optional(t.String({ description: 'Month of the quarter, 1-3.' })),
+      estimateHours: t.Optional(t.String()),
+    }),
+    { maxItems: 500 },
+  ),
+  setup: t.Boolean({
+    description:
+      'Also set the known clients revenue classes, create the MGM initiative, label and items, and a quarterly review per committed client.',
+  }),
+  apply: t.Boolean({ description: 'false: only report what would happen.' }),
+});
+
+export const ImportPlaybookResponse = t.Object({
+  actions: t.Array(
+    t.Object({
+      kind: t.UnionEnum(['class', 'label', 'initiative', 'item', 'skip']),
+      text: t.String(),
+    }),
+  ),
+});
+
 export const AddPlaybookResponse = t.Object({
   created: t.Array(t.Object({ itemId: t.Number(), issueId: t.Number() })),
   skipped: t.Array(t.Number()),
