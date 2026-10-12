@@ -24,6 +24,7 @@ export interface CycleRow {
   startDate: string;
   endDate: string;
   targetPence: number | null;
+  capacityMinutes: number | null;
   // When the cycle was finished ahead of its planned end date, or null.
   completedAt: string | null;
   status: CycleStatus;
@@ -56,6 +57,7 @@ function toCycle(row: typeof cycle.$inferSelect, progress: CycleProgress): Cycle
     startDate: row.startDate,
     endDate: row.endDate,
     targetPence: row.targetPence,
+    capacityMinutes: row.capacityMinutes,
     completedAt: row.completedAt ? iso(row.completedAt) : null,
     status: cycleStatus(row.startDate, row.endDate, row.completedAt),
     createdAt: iso(row.createdAt),
@@ -215,6 +217,7 @@ export interface NewCycleInput {
   startDate: string;
   endDate: string;
   targetPence?: number | null;
+  capacityMinutes?: number | null;
 }
 
 export async function createCycle(projectId: number, input: NewCycleInput): Promise<CycleRow> {
@@ -228,6 +231,7 @@ export async function createCycle(projectId: number, input: NewCycleInput): Prom
       startDate: input.startDate,
       endDate: input.endDate,
       targetPence: input.targetPence ?? null,
+      capacityMinutes: input.capacityMinutes ?? null,
     })
     .returning();
   // A cycle nothing can point at yet, so its progress needs no reading back.
@@ -238,6 +242,7 @@ export interface CyclePatch {
   name?: string;
   goal?: string;
   targetPence?: number | null;
+  capacityMinutes?: number | null;
   startDate?: string;
   endDate?: string;
 }
@@ -279,6 +284,7 @@ export async function updateCycle(id: number, patch: CyclePatch): Promise<CycleR
   if (patch.name !== undefined) set.name = patch.name;
   if (patch.goal !== undefined) set.goal = patch.goal;
   if (patch.targetPence !== undefined) set.targetPence = patch.targetPence;
+  if (patch.capacityMinutes !== undefined) set.capacityMinutes = patch.capacityMinutes;
   if (patch.startDate !== undefined) set.startDate = patch.startDate;
   if (patch.endDate !== undefined) set.endDate = patch.endDate;
   if (Object.keys(set).length > 0) {

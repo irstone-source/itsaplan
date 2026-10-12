@@ -1,6 +1,16 @@
-import { cycle, db, initiative, issue, project, projectColumn } from '@repo/db';
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import {
+  aiAgent,
+  cycle,
+  db,
+  initiative,
+  issue,
+  project,
+  projectColumn,
+  projectMember,
+} from '@repo/db';
+import { and, asc, count, eq, isNull, notInArray } from 'drizzle-orm';
 import { getBillingSettings } from '#modules/settings/service';
+import { workingDays } from '#modules/finance/service';
 
 export type BillableKind = 'billable' | 'internal';
 
@@ -23,9 +33,28 @@ export interface BillableGroup {
   kind: BillableKind;
   billingModel: string | null;
   dayRatePence: number | null;
+  revenueClass: string | null;
   valuePence: number;
   donePence: number;
   issueCount: number;
+}
+
+export type RevenueClass = 'committed' | 'new' | 'management' | 'internal' | 'unclassified';
+
+export interface ClassTotal {
+  revenueClass: RevenueClass;
+  valuePence: number;
+  estimatedMinutes: number;
+  issueCount: number;
+}
+
+export interface CycleCapacity {
+  capacityMinutes: number;
+  overridden: boolean;
+  reservePercent: number;
+  reserveMinutes: number;
+  plannedMinutes: number;
+  freeMinutes: number;
 }
 
 export interface CycleBillables {
@@ -45,7 +74,41 @@ export interface CycleBillables {
     unpriced: number;
   };
   groups: BillableGroup[];
+  byClass: ClassTotal[];
+  capacity: CycleCapacity;
   issues: BillableIssue[];
+}
+
+const CLASS_ORDER: RevenueClass[] = ['committed', 'new', 'management', 'internal', 'unclassified'];
+
+// Which revenue a ticket counts toward: its initiative's class, internal work that
+// is not management, or unclassified client work.
+function classOf(kind: BillableKind, revenueClass: string | null): RevenueClass {
+  if (revenueClass === 'management') return 'management';
+  if (kind === 'internal') return 'internal';
+  return revenueClass === 'committed' || revenueClass === 'new' ? revenueClass : 'unclassified';
+}
+
+// The team minutes a cycle offers: its own figure when set, else working days ×
+// hours per day × the project's human members (agents excluded).
+async function cycleCapacityMinutes(
+  c: { projectId: number; startDate: string; endDate: string; capacityMinutes: number | null },
+  hoursPerDay: number,
+): Promise<{ minutes: number; overridden: boolean }> {
+  if (c.capacityMinutes != null) return { minutes: c.capacityMinutes, overridden: true };
+  const [members] = await db
+    .select({ n: count() })
+    .from(projectMember)
+    .where(
+      and(
+        eq(projectMember.projectId, c.projectId),
+        notInArray(projectMember.userId, db.select({ id: aiAgent.userId }).from(aiAgent)),
+      ),
+    );
+  return {
+    minutes: workingDays(c.startDate, c.endDate) * hoursPerDay * 60 * Number(members?.n ?? 0),
+    overridden: false,
+  };
 }
 
 // The value of an estimate: its days (at hoursPerDay) times the day rate, in pence.
@@ -58,9 +121,15 @@ export function valueOf(minutes: number, hoursPerDay: number, dayRatePence: numb
 // comes off the net; any other issue is valued at its initiative's day rate. A value
 // set by hand replaces estimate × rate. Canceled and archived issues are left out.
 export async function getCycleBillables(cycleId: number): Promise<CycleBillables> {
-  const { hoursPerDay, internalDayRatePence } = await getBillingSettings();
+  const { hoursPerDay, internalDayRatePence, reservePercent = 20 } = await getBillingSettings();
   const [target] = await db
-    .select({ targetPence: cycle.targetPence })
+    .select({
+      targetPence: cycle.targetPence,
+      projectId: cycle.projectId,
+      startDate: cycle.startDate,
+      endDate: cycle.endDate,
+      capacityMinutes: cycle.capacityMinutes,
+    })
     .from(cycle)
     .where(eq(cycle.id, cycleId));
   const rows = await db
@@ -77,6 +146,7 @@ export async function getCycleBillables(cycleId: number): Promise<CycleBillables
       initiativeTitle: initiative.title,
       billingModel: initiative.billingModel,
       dayRatePence: initiative.dayRatePence,
+      revenueClass: initiative.revenueClass,
     })
     .from(issue)
     .innerJoin(project, eq(project.id, issue.projectId))
@@ -96,6 +166,12 @@ export async function getCycleBillables(cycleId: number): Promise<CycleBillables
     unpriced: 0,
   };
   const groups = new Map<string, BillableGroup>();
+  const byClass = new Map<RevenueClass, ClassTotal>(
+    CLASS_ORDER.map((c) => [
+      c,
+      { revenueClass: c, valuePence: 0, estimatedMinutes: 0, issueCount: 0 },
+    ]),
+  );
   const issues: BillableIssue[] = [];
 
   for (const r of rows) {
@@ -115,15 +191,25 @@ export async function getCycleBillables(cycleId: number): Promise<CycleBillables
     if (!overridden && !r.estimateMinutes) totals.unestimated++;
     else if (valuePence == null) totals.unpriced++;
 
-    const key = kind === 'internal' ? 'internal' : String(r.initiativeId ?? 'none');
+    const cls = byClass.get(classOf(kind, r.revenueClass))!;
+    cls.issueCount++;
+    cls.estimatedMinutes += r.estimateMinutes ?? 0;
+    cls.valuePence += valuePence ?? 0;
+
+    const key =
+      kind === 'internal' && r.revenueClass !== 'management'
+        ? 'internal'
+        : String(r.initiativeId ?? 'none');
     let group = groups.get(key);
     if (!group) {
+      const pooled = key === 'internal';
       group = {
-        initiativeId: kind === 'internal' ? null : r.initiativeId,
-        title: kind === 'internal' ? 'Internal work' : (r.initiativeTitle ?? 'No initiative'),
+        initiativeId: pooled ? null : r.initiativeId,
+        title: pooled ? 'Internal work' : (r.initiativeTitle ?? 'No initiative'),
         kind,
-        billingModel: kind === 'internal' ? null : r.billingModel,
+        billingModel: pooled ? null : r.billingModel,
         dayRatePence: rate,
+        revenueClass: pooled ? null : r.revenueClass,
         valuePence: 0,
         donePence: 0,
         issueCount: 0,
@@ -157,12 +243,26 @@ export async function getCycleBillables(cycleId: number): Promise<CycleBillables
   }
   totals.netPence = totals.billablePence - totals.internalPence;
 
+  const { minutes: capacityMinutes, overridden } = target
+    ? await cycleCapacityMinutes(target, hoursPerDay)
+    : { minutes: 0, overridden: false };
+  const reserveMinutes = Math.round((capacityMinutes * reservePercent) / 100);
+
   return {
     hoursPerDay,
     targetPence: target?.targetPence ?? null,
     internalDayRatePence,
     totals,
     groups: [...groups.values()].sort((a, b) => b.valuePence - a.valuePence),
+    byClass: [...byClass.values()],
+    capacity: {
+      capacityMinutes,
+      overridden,
+      reservePercent,
+      reserveMinutes,
+      plannedMinutes: totals.estimatedMinutes,
+      freeMinutes: capacityMinutes - reserveMinutes - totals.estimatedMinutes,
+    },
     issues,
   };
 }

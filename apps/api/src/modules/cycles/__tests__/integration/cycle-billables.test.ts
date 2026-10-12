@@ -133,6 +133,7 @@ describe('cycle billables', () => {
     expect((await member.api.settings.billing.get()).data).toEqual({
       hoursPerDay: 8,
       internalDayRatePence: null,
+      reservePercent: 20,
     });
     expect(
       (await god.api.god.billing.put({ hoursPerDay: 0, internalDayRatePence: null })).status,

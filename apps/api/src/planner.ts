@@ -44,6 +44,7 @@ import { todayRoutes } from './modules/today';
 import { performanceRoutes } from './modules/performance';
 import { financeRoutes } from './modules/finance';
 import { trackerRoutes } from './modules/tracker';
+import { playbookRoutes } from './modules/playbook';
 import { notificationSettingsRoutes } from './modules/notification-settings';
 import { notificationPreferenceRoutes } from './modules/notification-preferences';
 import { userPreferenceRoutes } from './modules/user-preferences';
@@ -131,6 +132,7 @@ export const planner = new Elysia({ name: 'planner' })
   .use(performanceRoutes)
   .use(financeRoutes)
   .use(trackerRoutes)
+  .use(playbookRoutes)
   .use(notificationSettingsRoutes)
   .use(notificationPreferenceRoutes)
   .use(userPreferenceRoutes)

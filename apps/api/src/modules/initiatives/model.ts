@@ -62,6 +62,8 @@ export const InitiativeResponse = t.Object({
   targetDate: t.Nullable(t.String()),
   billingModel: t.Nullable(t.String()),
   dayRatePence: t.Nullable(t.Number()),
+  revenueClass: t.Nullable(t.String()),
+  monthlyFeePence: t.Nullable(t.Number()),
   position: t.Number(),
   createdAt: t.String(),
   updatedAt: t.String(),
@@ -138,6 +140,17 @@ export const createInitiativeBody = t.Object({
         description: 'Day rate in pence the linked issues are valued at, or null.',
       }),
     ),
+  ),
+  revenueClass: t.Optional(
+    t.Nullable(
+      t.Union([t.Literal('committed'), t.Literal('new'), t.Literal('management')], {
+        description:
+          'committed: retained income the team must deliver; new: a new client; management: running the consultancy. Or null.',
+      }),
+    ),
+  ),
+  monthlyFeePence: t.Optional(
+    t.Nullable(t.Integer({ minimum: 0, description: 'Retainer fee per month in pence, or null.' })),
   ),
   labelIds: t.Optional(
     t.Array(t.Integer(), { description: 'Label ids to attach. From get_project.labels.' }),

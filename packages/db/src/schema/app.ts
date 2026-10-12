@@ -1406,6 +1406,11 @@ export const initiative = pgTable(
     // its time estimate in days times this rate. NULL rate: the work is not valued.
     billingModel: text('billing_model'),
     dayRatePence: integer('day_rate_pence'),
+    // Whether the work is retained income the team must deliver (committed), a new
+    // client (new), or the running of the consultancy itself (management).
+    revenueClass: text('revenue_class'),
+    // The retainer fee per month, which the playbook items are priced against.
+    monthlyFeePence: integer('monthly_fee_pence'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -1415,6 +1420,11 @@ export const initiative = pgTable(
       sql`${t.billingModel} IN ('day_rate', 'retainer', 'rev_share', 'internal')`,
     ),
     check('initiative_day_rate_check', sql`${t.dayRatePence} >= 0`),
+    check(
+      'initiative_revenue_class_check',
+      sql`${t.revenueClass} IN ('committed', 'new', 'management')`,
+    ),
+    check('initiative_monthly_fee_check', sql`${t.monthlyFeePence} >= 0`),
     check(
       'initiative_status_check',
       sql`${t.status} IN ('proposed', 'planned', 'active', 'completed', 'canceled')`,
@@ -1479,6 +1489,9 @@ export const cycle = pgTable(
     endDate: date('end_date').notNull(),
     // What the cycle's work should be worth (pence), for planning against.
     targetPence: integer('target_pence'),
+    // The team minutes available in the cycle. NULL: working days × hours per day ×
+    // the project's human members.
+    capacityMinutes: integer('capacity_minutes'),
     // When the cycle was finished before its planned end date. NULL while it still
     // runs on its dates; once set it is never cleared, and end_date keeps the date
     // the cycle was planned to run until.
@@ -1542,6 +1555,10 @@ export const issue = pgTable(
     estimateMinutes: integer('estimate_minutes'),
     // A value set by hand (pence), in place of estimate × day rate.
     valueOverridePence: integer('value_override_pence'),
+    // The playbook item this issue was created from.
+    playbookItemId: integer('playbook_item_id').references((): AnyPgColumn => playbookItem.id, {
+      onDelete: 'set null',
+    }),
     startDate: date('start_date'),
     dueDate: date('due_date'),
     position: doublePrecision('position').notNull().default(0),
@@ -1560,6 +1577,9 @@ export const issue = pgTable(
   },
   (t) => [
     unique().on(t.projectId, t.sequenceNumber),
+    index('issue_playbook_item_idx')
+      .on(t.playbookItemId, t.cycleId)
+      .where(sql`${t.playbookItemId} IS NOT NULL`),
     check('issue_estimate_points_check', sql`${t.estimatePoints} >= 0`),
     check('issue_estimate_minutes_check', sql`${t.estimateMinutes} >= 0`),
     // Backs the board/list read (active issues of a project) and the worker's
@@ -1834,6 +1854,60 @@ export const issueDevelopmentLink = pgTable(
 
 // A release published in a connected repository: the record of what shipped. The
 // issues it shipped are linked through issue_development_link (kind 'release').
+// A deliverable repeated for a client: priced by outcome, added to a cycle when its
+// cadence makes it due. quarter_month is the month of each quarter (1-3) a quarterly
+// item falls in. stripe_price_id holds the matching Stripe recurring price once the
+// catalogue is synced.
+export const playbookItem = pgTable(
+  'playbook_item',
+  {
+    id: serial('id').primaryKey(),
+    projectId: integer('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    initiativeId: integer('initiative_id')
+      .notNull()
+      .references(() => initiative.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    description: text('description').notNull().default(''),
+    pricePence: integer('price_pence').notNull().default(0),
+    billing: text('billing').notNull().default('billable'),
+    estimateMinutes: integer('estimate_minutes'),
+    cadence: text('cadence').notNull().default('monthly'),
+    quarterMonth: integer('quarter_month').notNull().default(1),
+    typeId: integer('type_id').references(() => issueType.id, { onDelete: 'set null' }),
+    active: boolean('active').notNull().default(true),
+    position: doublePrecision('position').notNull().default(0),
+    stripePriceId: text('stripe_price_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check('playbook_item_price_check', sql`${t.pricePence} >= 0`),
+    check('playbook_item_estimate_check', sql`${t.estimateMinutes} >= 0`),
+    check(
+      'playbook_item_billing_check',
+      sql`${t.billing} IN ('billable', 'retainer', 'non_billable')`,
+    ),
+    check('playbook_item_cadence_check', sql`${t.cadence} IN ('monthly', 'quarterly', 'ad_hoc')`),
+    check('playbook_item_quarter_month_check', sql`${t.quarterMonth} BETWEEN 1 AND 3`),
+    index('playbook_item_project_idx').on(t.projectId, t.initiativeId, t.position),
+  ],
+);
+
+export const playbookItemLabel = pgTable(
+  'playbook_item_label',
+  {
+    itemId: integer('item_id')
+      .notNull()
+      .references(() => playbookItem.id, { onDelete: 'cascade' }),
+    labelId: integer('label_id')
+      .notNull()
+      .references(() => label.id, { onDelete: 'cascade' }),
+  },
+  (t) => [primaryKey({ columns: [t.itemId, t.labelId] })],
+);
+
 export const gitRelease = pgTable(
   'git_release',
   {

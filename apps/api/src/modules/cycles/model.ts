@@ -27,6 +27,7 @@ export const CycleResponse = t.Object({
   startDate: t.String(),
   endDate: t.String(),
   targetPence: t.Nullable(t.Number()),
+  capacityMinutes: t.Nullable(t.Number()),
   completedAt: t.Nullable(t.String()),
   status: t.String(),
   createdAt: t.String(),
@@ -52,6 +53,15 @@ export const createCycleBody = t.Object({
       t.Integer({
         minimum: 0,
         description: "What the cycle's work should be worth, in pence, or null.",
+      }),
+    ),
+  ),
+  capacityMinutes: t.Optional(
+    t.Nullable(
+      t.Integer({
+        minimum: 0,
+        description:
+          'Team minutes available in the cycle, or null for working days × hours per day × members.',
       }),
     ),
   ),
@@ -96,11 +106,29 @@ export const CycleBillablesResponse = t.Object({
       kind: BillableKind,
       billingModel: t.Nullable(t.String()),
       dayRatePence: t.Nullable(t.Number()),
+      revenueClass: t.Nullable(t.String()),
       valuePence: t.Number(),
       donePence: t.Number(),
       issueCount: t.Number(),
     }),
   ),
+  byClass: t.Array(
+    t.Object({
+      revenueClass: t.UnionEnum(['committed', 'new', 'management', 'internal', 'unclassified']),
+      valuePence: t.Number(),
+      estimatedMinutes: t.Number(),
+      issueCount: t.Number(),
+    }),
+  ),
+  capacity: t.Object({
+    capacityMinutes: t.Number(),
+    // Whether capacityMinutes was set on the cycle rather than worked out.
+    overridden: t.Boolean(),
+    reservePercent: t.Number(),
+    reserveMinutes: t.Number(),
+    plannedMinutes: t.Number(),
+    freeMinutes: t.Number(),
+  }),
   issues: t.Array(
     t.Object({
       id: t.Number(),

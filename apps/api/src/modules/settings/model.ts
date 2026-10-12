@@ -93,4 +93,11 @@ export const BillingSettingsSchema = t.Object({
   internalDayRatePence: t.Nullable(
     t.Integer({ minimum: 0, description: 'Day rate in pence internal work is costed at.' }),
   ),
+  reservePercent: t.Optional(
+    t.Integer({
+      minimum: 0,
+      maximum: 100,
+      description: 'Share of each cycle kept free for unplanned step-change work.',
+    }),
+  ),
 });

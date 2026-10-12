@@ -5,7 +5,7 @@ import { guards, entityGuard } from '#shared/guards';
 import { authContext } from '#shared/auth-context';
 import { requireUser } from '#shared/access';
 import { HttpError } from '#shared/lib';
-import { accessErrors, commonErrors } from '#shared/responses';
+import { accessErrors, commonErrors, errors } from '#shared/responses';
 import { paginate } from '#shared/pagination';
 import { transferCycleIssues } from '#modules/issues/service';
 import {
@@ -36,6 +36,12 @@ import {
   startNextCycle,
 } from './service';
 import { getCycleBillables } from './billables';
+import {
+  AddPlaybookResponse,
+  CyclePlaybookResponse,
+  addPlaybookBody,
+} from '#modules/playbook/model';
+import { addPlaybookToCycle, getCyclePlaybook } from '#modules/playbook/service';
 
 export const cycleRoutes = new Elysia({
   name: 'cycles',
@@ -159,6 +165,41 @@ export const cycleRoutes = new Elysia({
       ...mcpTool('get_cycle_billables'),
     },
   })
+
+  .get('/cycles/:cycleId/playbook', ({ params }) => getCyclePlaybook(params.cycleId), {
+    params: cycleParams,
+    cycle: 'read',
+    response: { 200: CyclePlaybookResponse, ...commonErrors },
+    detail: {
+      summary: "Get a cycle's playbook",
+      description:
+        "The playbook items due in the cycle's month and not yet in it (monthly items " +
+        'every month, quarterly items in their month of the quarter), the ad-hoc items, ' +
+        'and the items already added with the issue each became.',
+      ...mcpTool('get_cycle_playbook'),
+    },
+  })
+
+  .post(
+    '/cycles/:cycleId/playbook',
+    async ({ params, body, user, set }) => {
+      set.status = 201;
+      return addPlaybookToCycle(params.cycleId, body.itemIds, requireUser(user).id);
+    },
+    {
+      params: cycleParams,
+      body: addPlaybookBody,
+      cycle: 'edit',
+      response: { 201: AddPlaybookResponse, ...commonErrors, ...errors(409) },
+      detail: {
+        summary: 'Add playbook items to a cycle',
+        description:
+          'Create one issue per playbook item in the cycle, under its initiative and valued ' +
+          'at its outcome price. An item already in the cycle is skipped.',
+        ...mcpTool('add_playbook_to_cycle'),
+      },
+    },
+  )
 
   .patch(
     '/cycles/:cycleId',

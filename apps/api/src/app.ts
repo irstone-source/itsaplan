@@ -121,6 +121,10 @@ export const app = new Elysia()
             name: 'Tracker',
             description: 'The growth tracker: measures, targets and weekly figures',
           },
+          {
+            name: 'Playbook',
+            description: 'Repeatable, outcome-priced deliverables per client initiative',
+          },
           { name: 'Attachments', description: 'Issue attachments and raw bytes' },
           {
             name: 'Chat attachments',

@@ -29,6 +29,8 @@ export interface InitiativeRow {
   targetDate: string | null;
   billingModel: string | null;
   dayRatePence: number | null;
+  revenueClass: string | null;
+  monthlyFeePence: number | null;
   position: number;
   createdAt: string;
   updatedAt: string;
@@ -97,6 +99,8 @@ function mapInitiative(
     targetDate: row.targetDate,
     billingModel: row.billingModel,
     dayRatePence: row.dayRatePence,
+    revenueClass: row.revenueClass,
+    monthlyFeePence: row.monthlyFeePence,
     position: num(row.position),
     createdAt: iso(row.createdAt),
     updatedAt: iso(row.updatedAt),
@@ -296,6 +300,8 @@ export interface NewInitiativeInput {
   targetDate?: string | null;
   billingModel?: string | null;
   dayRatePence?: number | null;
+  revenueClass?: string | null;
+  monthlyFeePence?: number | null;
   labelIds?: number[];
 }
 
@@ -362,6 +368,8 @@ export async function createInitiative(
       targetDate: input.targetDate ?? null,
       billingModel: input.billingModel ?? null,
       dayRatePence: input.dayRatePence ?? null,
+      revenueClass: input.revenueClass ?? null,
+      monthlyFeePence: input.monthlyFeePence ?? null,
       position: Number(posRow.pos),
     })
     .returning({ id: initiative.id });
@@ -381,6 +389,8 @@ export interface InitiativePatch {
   targetDate?: string | null;
   billingModel?: string | null;
   dayRatePence?: number | null;
+  revenueClass?: string | null;
+  monthlyFeePence?: number | null;
   labelIds?: number[];
 }
 
@@ -426,6 +436,8 @@ export async function updateInitiative(
   if (patch.targetDate !== undefined) set.targetDate = patch.targetDate;
   if (patch.billingModel !== undefined) set.billingModel = patch.billingModel;
   if (patch.dayRatePence !== undefined) set.dayRatePence = patch.dayRatePence;
+  if (patch.revenueClass !== undefined) set.revenueClass = patch.revenueClass;
+  if (patch.monthlyFeePence !== undefined) set.monthlyFeePence = patch.monthlyFeePence;
 
   if (Object.keys(set).length > 0) {
     set.updatedAt = sql`now()` as unknown as Date;
