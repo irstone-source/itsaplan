@@ -349,7 +349,9 @@
     "hoursPerDay": "Horas por día",
     "hoursPerDayHint": "Cuántas horas de estimación forman un día facturable.",
     "internalDayRate": "Tarifa diaria interna (£)",
-    "internalDayRateHint": "El coste de un día de trabajo en proyectos internos. Déjalo vacío para no costear el trabajo interno."
+    "internalDayRateHint": "El coste de un día de trabajo en proyectos internos. Déjalo vacío para no costear el trabajo interno.",
+    "reservePercent": "Reserved capacity (%)",
+    "reservePercentHint": "Share of each cycle kept free for step-change work nobody has planned yet."
   },
   "tracker": {
     "saved": "Ajustes del seguimiento guardados",

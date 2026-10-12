@@ -70,6 +70,11 @@ Rates (from the 12-week resource plan, 6 hours = 1 day):
 | Performance | Sidebar → Performance | Each person's completed billings, share of break-even and bonus; the owner sees the team |
 | Tracker | Sidebar → Tracker; God mode → Tracker | Growth measures per company and loop (Rev, Cap) on a project or initiative, a coloured cell per week or month: green/amber/red by the thresholds, black when the figure is missing, a person marker when unverified, a flag when a streak needs a focus meeting. Targets follow a versioned rule (set amount, linear, compounding, gate, shelf, leapfrog, or the Finance cycle targets); billings and completed tickets fill themselves. Scope: `boolean-tracker.md` |
 | Finance | Sidebar → Finance (owner only) | The year's revenue target, spread over one project's cycles by working days; per month the cycle target, break-even, pool % and billings |
+| Playbook | Sidebar → Playbook | Each client's repeatable deliverables with an outcome price, billing (billable, retainer, non-billable), cadence (monthly, quarterly in month 1–3 of the quarter, ad hoc) and an estimate used for capacity only. Each client shows what its items are priced at per month against its monthly retainer fee |
+| Revenue class and fee | Initiative £/day pill | Committed (retained income that must be delivered), New (a new client) or Management (MGM, running the consultancy), and the monthly retainer fee |
+| Repeatable work | Top of every open cycle page | The playbook items the cycle's month makes due, grouped committed → new → management, to add in one go or one by one; an item is added once per cycle. Each becomes a ticket under its initiative, valued at its price |
+| Capacity and reserve | Cycle strip; God mode → Billing | Planned hours against capacity (working days × hours per day × the project's people, or a figure set on the cycle), with a reserve (20% by default) kept free for step-change work nobody has planned; the breakdown splits value and hours by revenue class |
+| Client report | Cycle breakdown → the copy icon on a client | The client's delivered tickets with their value and what is still in progress, as markdown to paste to them |
 
 ## 4. How the team uses it
 
@@ -83,11 +88,35 @@ Rates (from the 12-week resource plan, 6 hours = 1 day):
 5. Internal work planned in the month goes under an initiative with the "Internal" billing
    model, so its cost comes off the net.
 
+With the playbook, steps 2 and 3 start from **Repeatable work** on the cycle page: press "Add
+all due", then add the month's one-off tickets. Keep the capacity bar out of the striped
+reserve; the reserve is for work nobody has planned yet, not for more planned work. Order of
+priority when capacity is short: committed clients, then new clients, then everything else.
+
+**Playbook upkeep.** Price each deliverable by the outcome the client pays for (a town page
+is £250 however long it takes). For a retainer client, price the items until they add up to
+the monthly fee; the bar on the client shows what is still unpriced or over. A non-billable
+item adds nothing to billings and is a cost to challenge. Each committed client has a
+quarterly strategic review, a month apart from the others.
+
+**MGM.** The initiative "MGM — Consulting management" (label MGM, billing model Internal,
+revenue class Management) holds the running of the consultancy: billing and invoicing, the
+month-end finance review, retainer fee balance, cycle planning and close, playbook upkeep,
+and a quarterly portfolio review. Its tickets are costed at the internal day rate and shown
+as their own line in the cycle breakdown.
+
+**Loading a playbook from a CSV.** `scripts/import-playbook.ts` reads columns `client,
+deliverable, price, billing, cadence, quarter_month, estimate_hours` (client = the part of
+the initiative title before " — "). It also sets the revenue classes, the MGM initiative,
+label and items, and the quarterly reviews where missing. It prints a plan; `--apply`
+writes; a rerun skips what exists. Quote a price that contains a comma.
+
 **Daily.** Open Today for your own list. Tickets from the standup appear on their own (see
 section 5).
 
 **New client.** Create its label and an initiative titled `<Client> — <commercial goal>`,
-set the day rate with the £/day pill, and file its tickets under that initiative.
+set the day rate, revenue class and any monthly fee with the £/day pill, add its
+deliverables to the Playbook, and file its tickets under that initiative.
 
 **New teammate.** They sign in with Google; the account has no projects until someone adds
 them (God mode → Users → Add to projects).
@@ -163,3 +192,7 @@ that were renumbered away. Rehearse on a restored production backup before shipp
 - Object storage (S3): not configured on production, so file attachments, document assets,
   imports and agent skills do not work.
 - The table view does not show ticket values yet.
+- Playbook: Jo's CSV of repeatable tasks, with billing marked per row, to load with
+  `scripts/import-playbook.ts`; monthly retainer fees on each committed client.
+- Playbook items synced to the Stripe product catalogue (`playbook_item.stripe_price_id` is
+  reserved for the price id).

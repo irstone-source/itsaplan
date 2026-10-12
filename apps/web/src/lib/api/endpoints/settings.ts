@@ -140,6 +140,8 @@ export const getAuthConfig = () => request<PublicAuthConfig>('/auth-config');
 export interface BillingSettings {
   hoursPerDay: number;
   internalDayRatePence: number | null;
+  // Share of each cycle's capacity kept free for unplanned work.
+  reservePercent?: number;
 }
 
 export const getBillingSettings = () => request<BillingSettings>('/settings/billing');

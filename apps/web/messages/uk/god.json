@@ -349,7 +349,9 @@
     "hoursPerDay": "Годин у дні",
     "hoursPerDayHint": "Скільки годин оцінки становлять один оплачуваний день.",
     "internalDayRate": "Внутрішня денна ставка (£)",
-    "internalDayRateHint": "Вартість дня роботи над внутрішніми проєктами. Залиште порожнім, щоб не враховувати витрати на внутрішню роботу."
+    "internalDayRateHint": "Вартість дня роботи над внутрішніми проєктами. Залиште порожнім, щоб не враховувати витрати на внутрішню роботу.",
+    "reservePercent": "Reserved capacity (%)",
+    "reservePercentHint": "Share of each cycle kept free for step-change work nobody has planned yet."
   },
   "tracker": {
     "saved": "Налаштування трекера збережено",

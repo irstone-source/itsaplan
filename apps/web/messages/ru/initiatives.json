@@ -177,6 +177,14 @@
       "internal": "Внутренняя"
     },
     "hint": "Стоимость задачи — её оценка в днях, умноженная на эту ставку. Оставьте пустым, чтобы не оценивать эту работу.",
-    "save": "Сохранить"
+    "save": "Сохранить",
+    "revenueClass": "Revenue",
+    "noClass": "Not set",
+    "classes": {
+      "committed": "Committed",
+      "new": "New",
+      "management": "Management"
+    },
+    "monthlyFee": "Monthly fee (£)"
   }
 }

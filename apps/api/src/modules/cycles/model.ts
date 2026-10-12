@@ -69,6 +69,12 @@ export const createCycleBody = t.Object({
 
 export const updateCycleBody = t.Partial(createCycleBody);
 
+export const cycleReportQuery = t.Object({
+  initiativeId: t.Numeric({ description: 'The client initiative to report on.' }),
+});
+
+export const CycleReportResponse = t.Object({ markdown: t.String() });
+
 export const transferCycleBody = t.Object({
   targetCycleId: t.Nullable(
     t.Integer({

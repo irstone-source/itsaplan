@@ -177,6 +177,14 @@
       "internal": "内部"
     },
     "hint": "每个事项的价值等于其时间估算（天）乘以此费率。留空则不为这项工作计价。",
-    "save": "保存"
+    "save": "保存",
+    "revenueClass": "Revenue",
+    "noClass": "Not set",
+    "classes": {
+      "committed": "Committed",
+      "new": "New",
+      "management": "Management"
+    },
+    "monthlyFee": "Monthly fee (£)"
   }
 }

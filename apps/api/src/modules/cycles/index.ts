@@ -17,6 +17,8 @@ import {
   StartNextCycleResponse,
   TransferCycleResponse,
   completedCyclesQuery,
+  cycleReportQuery,
+  CycleReportResponse,
   createCycleBody,
   cycleParams,
   listCyclesQuery,
@@ -36,6 +38,7 @@ import {
   startNextCycle,
 } from './service';
 import { getCycleBillables } from './billables';
+import { getCycleClientReport } from './report';
 import {
   AddPlaybookResponse,
   CyclePlaybookResponse,
@@ -165,6 +168,25 @@ export const cycleRoutes = new Elysia({
       ...mcpTool('get_cycle_billables'),
     },
   })
+
+  .get(
+    '/cycles/:cycleId/report',
+    ({ params, query }) => getCycleClientReport(params.cycleId, query.initiativeId),
+    {
+      params: cycleParams,
+      query: cycleReportQuery,
+      cycle: 'read',
+      response: { 200: CycleReportResponse, ...commonErrors },
+      detail: {
+        summary: "Get a client's cycle report",
+        description:
+          "One client initiative's work in the cycle as markdown to send the client: the " +
+          'tickets completed with their value, what is still in progress, and the value ' +
+          'delivered against the value planned.',
+        ...mcpTool('get_cycle_client_report'),
+      },
+    },
+  )
 
   .get('/cycles/:cycleId/playbook', ({ params }) => getCyclePlaybook(params.cycleId), {
     params: cycleParams,

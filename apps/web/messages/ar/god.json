@@ -349,7 +349,9 @@
     "hoursPerDay": "ساعات في اليوم",
     "hoursPerDayHint": "عدد ساعات التقدير التي تشكّل يومًا قابلًا للفوترة.",
     "internalDayRate": "السعر اليومي الداخلي (£)",
-    "internalDayRateHint": "تكلفة يوم عمل على المشاريع الداخلية. اتركه فارغًا لعدم احتساب تكلفة العمل الداخلي."
+    "internalDayRateHint": "تكلفة يوم عمل على المشاريع الداخلية. اتركه فارغًا لعدم احتساب تكلفة العمل الداخلي.",
+    "reservePercent": "Reserved capacity (%)",
+    "reservePercentHint": "Share of each cycle kept free for step-change work nobody has planned yet."
   },
   "tracker": {
     "saved": "تم حفظ إعدادات المتتبِّع",

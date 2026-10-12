@@ -349,7 +349,9 @@
     "hoursPerDay": "Jam per hari",
     "hoursPerDayHint": "Berapa jam estimasi yang membentuk satu hari yang dapat ditagih.",
     "internalDayRate": "Tarif harian internal (£)",
-    "internalDayRateHint": "Biaya satu hari kerja pada proyek internal. Kosongkan agar pekerjaan internal tidak dihitung biayanya."
+    "internalDayRateHint": "Biaya satu hari kerja pada proyek internal. Kosongkan agar pekerjaan internal tidak dihitung biayanya.",
+    "reservePercent": "Reserved capacity (%)",
+    "reservePercentHint": "Share of each cycle kept free for step-change work nobody has planned yet."
   },
   "tracker": {
     "saved": "Pengaturan pelacak disimpan",

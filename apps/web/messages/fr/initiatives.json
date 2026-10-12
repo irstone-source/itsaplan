@@ -177,6 +177,14 @@
       "internal": "Interne"
     },
     "hint": "Chaque ticket vaut son estimation en jours multipliée par ce tarif. Laissez vide pour ne pas valoriser ce travail.",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "revenueClass": "Revenue",
+    "noClass": "Not set",
+    "classes": {
+      "committed": "Committed",
+      "new": "New",
+      "management": "Management"
+    },
+    "monthlyFee": "Monthly fee (£)"
   }
 }

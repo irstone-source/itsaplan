@@ -92,6 +92,31 @@
     "toGo": "{amount} to go",
     "targetMet": "Target met",
     "breakdown": "Breakdown",
-    "save": "Save"
+    "save": "Save",
+    "capacity": "Capacity",
+    "planned": "{planned} of {capacity} planned",
+    "reserve": "{percent}% reserve",
+    "free": "{time} free",
+    "overbooked": "{time} into the reserve",
+    "byClass": "By revenue",
+    "classes": {
+      "committed": "Committed",
+      "new": "New",
+      "management": "Management",
+      "internal": "Internal",
+      "unclassified": "Unclassified"
+    },
+    "copyReport": "Copy client report",
+    "reportCopied": "Client report copied"
+  },
+  "playbook": {
+    "title": "Repeatable work",
+    "due": "{count, plural, =0 {Nothing due this month} one {# item due this month} other {# items due this month}}",
+    "addAll": "Add all due",
+    "add": "Add",
+    "adHoc": "Ad hoc",
+    "inCycle": "{count, plural, one {# already in this cycle} other {# already in this cycle}}",
+    "added": "{count, plural, one {# item added to the cycle} other {# items added to the cycle}}",
+    "manage": "Edit playbook"
   }
 }

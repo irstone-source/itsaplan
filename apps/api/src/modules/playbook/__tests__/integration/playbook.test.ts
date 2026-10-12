@@ -259,4 +259,35 @@ describe('Playbook', () => {
       reserveMinutes: 1200,
     });
   });
+
+  it('reports a client cycle as markdown, delivered first', async () => {
+    const { god } = await setup();
+    const { con, october, gsg } = await scaffold(god);
+    const [ads, page] = await Promise.all([
+      con.playbook.post({ initiativeId: gsg.id, title: 'Ad management', pricePence: 150000 }),
+      con.playbook.post({ initiativeId: gsg.id, title: 'Malvern page', pricePence: 25000 }),
+    ]);
+    const added = await god.api
+      .cycles({ cycleId: october })
+      .playbook.post({ itemIds: [ads.data!.id, page.data!.id] });
+    const columns = (await con.get()).data!.columns;
+    const done = columns.find((c) => c.stateType === 'completed')!.id;
+    const pageIssue = added.data!.created.find((c) => c.itemId === page.data!.id)!.issueId;
+    await god.api.issues({ issueId: pageIssue }).patch({ columnId: done });
+
+    const res = await god.api
+      .cycles({ cycleId: october })
+      .report.get({ query: { initiativeId: gsg.id } });
+    expect(res.status).toBe(200);
+    const md = res.data!.markdown;
+    expect(md).toStartWith('# GSG — leads — October 2026');
+    expect(md).toContain('## Delivered (1)\n\n- Malvern page (CON-');
+    expect(md).toContain('## Still in progress (1)');
+    expect(md).toContain('**Delivered value:** £250 of £1,750 planned.');
+
+    const missing = await god.api
+      .cycles({ cycleId: october })
+      .report.get({ query: { initiativeId: 999999 } });
+    expect(missing.status).toBe(404);
+  });
 });

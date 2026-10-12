@@ -349,7 +349,9 @@
     "hoursPerDay": "每天小时数",
     "hoursPerDayHint": "多少小时的估算构成一个计费日。",
     "internalDayRate": "内部日费率（£）",
-    "internalDayRateHint": "内部项目一天工作的成本。留空则不计算内部工作的成本。"
+    "internalDayRateHint": "内部项目一天工作的成本。留空则不计算内部工作的成本。",
+    "reservePercent": "Reserved capacity (%)",
+    "reservePercentHint": "Share of each cycle kept free for step-change work nobody has planned yet."
   },
   "tracker": {
     "saved": "追踪设置已保存",

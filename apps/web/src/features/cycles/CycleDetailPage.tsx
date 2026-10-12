@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCycleQuery } from '@/services/cycles.service';
 import CycleBillables from './components/detail/CycleBillables';
 import CycleHeader from './components/detail/CycleHeader';
+import CyclePlaybookPanel from './components/detail/CyclePlaybookPanel';
 import CycleIssuesBoard from './components/detail/CycleIssuesBoard';
 
 // One cycle: its header over the board of the issues planned into it.
@@ -28,6 +29,9 @@ export default function CycleDetailPage({ cycleId }: { cycleId: number }) {
     <div className="flex min-h-0 flex-1 flex-col">
       <CycleHeader cycle={cycle} projectKey={projectKey} />
       <CycleBillables cycleId={cycle.id} projectKey={projectKey} />
+      {cycle.status !== 'completed' && (
+        <CyclePlaybookPanel cycleId={cycle.id} projectKey={projectKey} />
+      )}
       <CycleIssuesBoard cycle={cycle} />
     </div>
   );

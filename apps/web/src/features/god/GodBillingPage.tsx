@@ -35,6 +35,7 @@ function BillingForm({ settings }: { settings: BillingSettings }) {
   const [pounds, setPounds] = useState(
     settings.internalDayRatePence != null ? String(settings.internalDayRatePence / 100) : '',
   );
+  const [reserve, setReserve] = useState(String(settings.reservePercent ?? 20));
   const save = useMutation({
     mutationFn: updateBillingSettings,
     onSuccess: (data) => {
@@ -46,17 +47,23 @@ function BillingForm({ settings }: { settings: BillingSettings }) {
 
   const hoursPerDay = Number(hours);
   const internalDayRatePence = pounds.trim() === '' ? null : Math.round(Number(pounds) * 100);
+  const reservePercent = Number(reserve);
   const valid =
+    Number.isInteger(reservePercent) &&
+    reservePercent >= 0 &&
+    reservePercent <= 100 &&
     hoursPerDay >= 1 &&
     hoursPerDay <= 24 &&
     (internalDayRatePence == null ||
       (Number.isFinite(internalDayRatePence) && internalDayRatePence >= 0));
   const dirty =
-    hoursPerDay !== settings.hoursPerDay || internalDayRatePence !== settings.internalDayRatePence;
+    hoursPerDay !== settings.hoursPerDay ||
+    internalDayRatePence !== settings.internalDayRatePence ||
+    reservePercent !== (settings.reservePercent ?? 20);
 
   async function submit() {
     try {
-      await save.mutateAsync({ hoursPerDay, internalDayRatePence });
+      await save.mutateAsync({ hoursPerDay, internalDayRatePence, reservePercent });
       toast.success(t('saved'));
     } catch {
       // The failure already surfaced through the global mutation error toast.
@@ -89,6 +96,18 @@ function BillingForm({ settings }: { settings: BillingSettings }) {
                 placeholder="£"
                 value={pounds}
                 onChange={(e) => setPounds(e.target.value)}
+              />
+            }
+          />
+          <SettingsRow
+            title={t('reservePercent')}
+            description={t('reservePercentHint')}
+            control={
+              <Input
+                inputMode="numeric"
+                className="w-24"
+                value={reserve}
+                onChange={(e) => setReserve(e.target.value)}
               />
             }
           />

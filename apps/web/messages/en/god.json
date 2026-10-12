@@ -349,7 +349,9 @@
     "hoursPerDay": "Hours per day",
     "hoursPerDayHint": "How many hours of estimate make one billable day.",
     "internalDayRate": "Internal day rate (£)",
-    "internalDayRateHint": "The cost of a day of work on internal projects. Leave empty to not cost internal work."
+    "internalDayRateHint": "The cost of a day of work on internal projects. Leave empty to not cost internal work.",
+    "reservePercent": "Reserved capacity (%)",
+    "reservePercentHint": "Share of each cycle kept free for step-change work nobody has planned yet."
   },
   "tracker": {
     "saved": "Tracker settings saved",

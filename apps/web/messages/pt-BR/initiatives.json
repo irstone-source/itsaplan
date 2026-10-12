@@ -177,6 +177,14 @@
       "internal": "Interno"
     },
     "hint": "Cada item vale sua estimativa de tempo em dias vezes esta diária. Deixe vazio para não valorar este trabalho.",
-    "save": "Salvar"
+    "save": "Salvar",
+    "revenueClass": "Revenue",
+    "noClass": "Not set",
+    "classes": {
+      "committed": "Committed",
+      "new": "New",
+      "management": "Management"
+    },
+    "monthlyFee": "Monthly fee (£)"
   }
 }

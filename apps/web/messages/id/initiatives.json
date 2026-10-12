@@ -177,6 +177,14 @@
       "internal": "Internal"
     },
     "hint": "Setiap tugas bernilai estimasi waktunya dalam hari dikali tarif ini. Kosongkan agar pekerjaan ini tidak dinilai.",
-    "save": "Simpan"
+    "save": "Simpan",
+    "revenueClass": "Revenue",
+    "noClass": "Not set",
+    "classes": {
+      "committed": "Committed",
+      "new": "New",
+      "management": "Management"
+    },
+    "monthlyFee": "Monthly fee (£)"
   }
 }

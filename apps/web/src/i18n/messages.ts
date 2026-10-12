@@ -15,6 +15,7 @@ import performance from '../../messages/en/performance.json';
 import finance from '../../messages/en/finance.json';
 import tracker from '../../messages/en/tracker.json';
 import releases from '../../messages/en/releases.json';
+import playbook from '../../messages/en/playbook.json';
 import inbox from '../../messages/en/inbox.json';
 import initiatives from '../../messages/en/initiatives.json';
 import invite from '../../messages/en/invite.json';
@@ -51,6 +52,7 @@ const coreMessages = {
   finance,
   tracker,
   releases,
+  playbook,
   auth,
   common,
   nav,

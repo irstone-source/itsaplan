@@ -1,4 +1,5 @@
 import { request } from '@/lib/api/core/client';
+import type { PlaybookItem } from '@/lib/api/endpoints/playbook';
 import { pageQuery, type Page, type PageParams } from '@/lib/api/core/paging';
 
 // A time-boxed period of work (a sprint). status follows from the dates against
@@ -29,6 +30,8 @@ export interface Cycle {
   endDate: string;
   // What the cycle's work should be worth (pence), for planning against.
   targetPence: number | null;
+  // Team minutes available, or null for working days × hours per day × members.
+  capacityMinutes: number | null;
   // When the cycle was finished ahead of its planned end date, or null. endDate
   // keeps the date it was planned to run until either way.
   completedAt: string | null;
@@ -49,6 +52,7 @@ export interface CyclePatch {
   name?: string;
   goal?: string;
   targetPence?: number | null;
+  capacityMinutes?: number | null;
   startDate?: string;
   endDate?: string;
 }
@@ -70,6 +74,8 @@ export const listCompletedCycles = (projectKey: string, params: PageParams) =>
 export const getCycle = (id: number) => request<Cycle>(`/cycles/${id}`);
 
 export type BillableKind = 'billable' | 'internal';
+
+export type BillableClass = 'committed' | 'new' | 'management' | 'internal' | 'unclassified';
 
 // What the cycle's work is worth once done (all amounts in pence).
 export interface CycleBillables {
@@ -93,10 +99,25 @@ export interface CycleBillables {
     kind: BillableKind;
     billingModel: string | null;
     dayRatePence: number | null;
+    revenueClass: string | null;
     valuePence: number;
     donePence: number;
     issueCount: number;
   }[];
+  byClass: {
+    revenueClass: BillableClass;
+    valuePence: number;
+    estimatedMinutes: number;
+    issueCount: number;
+  }[];
+  capacity: {
+    capacityMinutes: number;
+    overridden: boolean;
+    reservePercent: number;
+    reserveMinutes: number;
+    plannedMinutes: number;
+    freeMinutes: number;
+  };
   issues: {
     id: number;
     identifier: string;
@@ -111,6 +132,25 @@ export interface CycleBillables {
 }
 
 export const getCycleBillables = (id: number) => request<CycleBillables>(`/cycles/${id}/billables`);
+
+// The playbook items the cycle's month makes due and that are not in it yet, the
+// ad-hoc ones, and those already added.
+export interface CyclePlaybook {
+  due: PlaybookItem[];
+  adHoc: PlaybookItem[];
+  added: { itemId: number; issueId: number }[];
+}
+
+export const getCycleClientReport = (id: number, initiativeId: number) =>
+  request<{ markdown: string }>(`/cycles/${id}/report?initiativeId=${initiativeId}`);
+
+export const getCyclePlaybook = (id: number) => request<CyclePlaybook>(`/cycles/${id}/playbook`);
+
+export const addPlaybookToCycle = (id: number, itemIds: number[]) =>
+  request<{ created: { itemId: number; issueId: number }[]; skipped: number[] }>(
+    `/cycles/${id}/playbook`,
+    { method: 'POST', body: JSON.stringify({ itemIds }) },
+  );
 
 export const createCycle = (projectKey: string, input: NewCycleInput) =>
   request<Cycle>(`/projects/${projectKey}/cycles`, {

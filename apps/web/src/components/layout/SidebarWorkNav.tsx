@@ -14,6 +14,7 @@ import {
   Trophy,
   Activity,
   Tag,
+  Repeat,
 } from 'lucide-react';
 import {
   allWorkPath,
@@ -28,6 +29,7 @@ import {
   notesPath,
   projectPath,
   releasesPath,
+  playbookPath,
   viewPath,
 } from '@/utils/paths';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -161,6 +163,15 @@ export default function SidebarWorkNav({
               icon={Target}
               label={t('initiatives')}
               active={pathname.includes('/initiatives')}
+              disabled={disabled}
+            />
+          )}
+          {features.initiatives && can('initiatives', 'read') && (
+            <SidebarNavItem
+              href={projectKey ? playbookPath(projectKey) : '#'}
+              icon={Repeat}
+              label={t('playbook')}
+              active={pathname.endsWith('/playbook')}
               disabled={disabled}
             />
           )}

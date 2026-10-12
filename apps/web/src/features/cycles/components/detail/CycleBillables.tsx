@@ -7,9 +7,11 @@ import { ChevronDown, TriangleAlert } from 'lucide-react';
 import { getCycleBillables } from '@/lib/api/endpoints/cycles';
 import { qk } from '@/services/queryKeys';
 import { formatPence } from '@/utils/money';
-import { formatMinutes } from '@/utils/estimate';
+import CycleBillablesClasses from './CycleBillablesClasses';
 import CycleBillablesStat from './CycleBillablesStat';
 import CycleBillablesTarget from './CycleBillablesTarget';
+import CycleCapacity from './CycleCapacity';
+import CycleClientReportButton from './CycleClientReportButton';
 
 // What the cycle's work is worth once every issue is done, against the cycle's
 // target: client work at each client's day rate, less internal work at the internal
@@ -69,7 +71,7 @@ export default function CycleBillables({
           />
         )}
         <CycleBillablesStat label={t('done')} value={formatPence(totals.billableDonePence)} />
-        <CycleBillablesStat label={t('estimated')} value={formatMinutes(totals.estimatedMinutes)} />
+        <CycleCapacity capacity={data.capacity} />
         {(totals.unestimated > 0 || totals.unpriced > 0) && (
           <span className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
             <TriangleAlert className="size-3.5" />
@@ -100,11 +102,21 @@ export default function CycleBillables({
             </thead>
             <tbody>
               {data.groups.map((g) => {
-                const sign = g.kind === 'internal' ? '−' : '';
+                const sign = g.kind === 'internal' && g.valuePence > 0 ? '−' : '';
                 return (
                   <tr key={`${g.kind}-${g.initiativeId}`} className="border-t">
-                    <td className="max-w-56 truncate py-1.5">
-                      {g.title} <span className="text-muted-foreground">· {g.issueCount}</span>
+                    <td className="max-w-56 py-1.5">
+                      <span className="flex items-center gap-1">
+                        <span className="truncate">
+                          {g.title} <span className="text-muted-foreground">· {g.issueCount}</span>
+                        </span>
+                        {g.kind === 'billable' && g.initiativeId != null && (
+                          <CycleClientReportButton
+                            cycleId={cycleId}
+                            initiativeId={g.initiativeId}
+                          />
+                        )}
+                      </span>
                     </td>
                     <td className="py-1.5 text-end text-muted-foreground tabular-nums">
                       {g.dayRatePence != null ? formatPence(g.dayRatePence) : t('noRate')}
@@ -122,6 +134,8 @@ export default function CycleBillables({
               })}
             </tbody>
           </table>
+
+          <CycleBillablesClasses byClass={data.byClass} />
 
           {gaps.length > 0 && (
             <div className="text-xs">

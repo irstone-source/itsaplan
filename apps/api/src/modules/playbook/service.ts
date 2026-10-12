@@ -14,6 +14,9 @@ import { HttpError } from '#shared/lib';
 import { createIssue } from '#modules/issues/service';
 import { getProjectById } from '#modules/projects/service';
 
+// Revenue classes in the order clients are listed and their work offered.
+const CLASS_ORDER = ['committed', 'new', 'management'];
+
 export interface PlaybookItemRow {
   id: number;
   initiativeId: number;
@@ -111,7 +114,7 @@ export async function listPlaybook(projectId: number): Promise<PlaybookGroup[]> 
     .select()
     .from(initiative)
     .where(inArray(initiative.id, [...new Set(items.map((i) => i.initiativeId))]));
-  const order = (c: string | null) => ['committed', 'new', 'management'].indexOf(c ?? '') + 1 || 4;
+  const order = (c: string | null) => CLASS_ORDER.indexOf(c ?? '') + 1 || 4;
   return initiatives
     .map((i) => {
       const own = items.filter((item) => item.initiativeId === i.id);
@@ -241,6 +244,24 @@ async function addedToCycle(cycleId: number) {
     .where(and(eq(issue.cycleId, cycleId), isNotNull(issue.playbookItemId)));
 }
 
+// Items ordered by their initiative's revenue class (committed, new, management,
+// then the rest), keeping their own order within each.
+async function byRevenue(items: PlaybookItemRow[]): Promise<PlaybookItemRow[]> {
+  if (items.length === 0) return items;
+  const rows = await db
+    .select({ id: initiative.id, revenueClass: initiative.revenueClass })
+    .from(initiative)
+    .where(inArray(initiative.id, [...new Set(items.map((i) => i.initiativeId))]));
+  const rank = new Map(rows.map((r) => [r.id, CLASS_ORDER.indexOf(r.revenueClass ?? '') + 1 || 4]));
+  return items
+    .map((item, index) => ({ item, index }))
+    .sort(
+      (a, b) =>
+        rank.get(a.item.initiativeId)! - rank.get(b.item.initiativeId)! || a.index - b.index,
+    )
+    .map(({ item }) => item);
+}
+
 // The playbook as it stands for one cycle: what its month makes due and is not in it
 // yet, the ad-hoc items, and what is already in it. The month is the start date's.
 export async function getCyclePlaybook(cycleId: number) {
@@ -251,7 +272,7 @@ export async function getCyclePlaybook(cycleId: number) {
     issueId: a.issueId,
   }));
   const inCycle = new Set(added.map((a) => a.itemId));
-  const items = (await selectItems(c.projectId)).filter((i) => i.active);
+  const items = await byRevenue((await selectItems(c.projectId)).filter((i) => i.active));
   return {
     due: items.filter((i) => isDue(i, month) && !inCycle.has(i.id)),
     adHoc: items.filter((i) => i.cadence === 'ad_hoc' && !inCycle.has(i.id)),

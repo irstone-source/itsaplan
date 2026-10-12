@@ -15,6 +15,11 @@ export interface InitiativeProgress {
 export const BILLING_MODELS = ['day_rate', 'retainer', 'rev_share', 'internal'] as const;
 export type BillingModel = (typeof BILLING_MODELS)[number];
 
+// committed: retained income that must be delivered; new: a new client; management:
+// running the consultancy (the MGM initiative).
+export const REVENUE_CLASSES = ['committed', 'new', 'management'] as const;
+export type RevenueClass = (typeof REVENUE_CLASSES)[number];
+
 export interface Initiative {
   id: number;
   projectId: number;
@@ -28,6 +33,9 @@ export interface Initiative {
   billingModel: BillingModel | null;
   // Pence. An issue's value is its estimate in days times this rate.
   dayRatePence: number | null;
+  revenueClass: RevenueClass | null;
+  // Pence. The retainer fee the playbook items are priced against.
+  monthlyFeePence: number | null;
   position: number;
   createdAt: string;
   updatedAt: string;
@@ -76,6 +84,8 @@ export interface NewInitiativeInput {
   targetDate?: string | null;
   billingModel?: BillingModel | null;
   dayRatePence?: number | null;
+  revenueClass?: RevenueClass | null;
+  monthlyFeePence?: number | null;
   labelIds?: number[];
 }
 
@@ -89,6 +99,8 @@ export interface InitiativePatch {
   targetDate?: string | null;
   billingModel?: BillingModel | null;
   dayRatePence?: number | null;
+  revenueClass?: RevenueClass | null;
+  monthlyFeePence?: number | null;
   labelIds?: number[];
 }
 

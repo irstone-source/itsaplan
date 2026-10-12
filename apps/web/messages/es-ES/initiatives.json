@@ -177,6 +177,14 @@
       "internal": "Interno"
     },
     "hint": "Cada tarea vale su estimación de tiempo en días por esta tarifa. Déjalo vacío para no valorar este trabajo.",
-    "save": "Guardar"
+    "save": "Guardar",
+    "revenueClass": "Revenue",
+    "noClass": "Not set",
+    "classes": {
+      "committed": "Committed",
+      "new": "New",
+      "management": "Management"
+    },
+    "monthlyFee": "Monthly fee (£)"
   }
 }

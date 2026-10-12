@@ -5,7 +5,9 @@ import { useTranslations } from 'next-intl';
 import { PoundSterling } from 'lucide-react';
 import {
   BILLING_MODELS,
+  REVENUE_CLASSES,
   type BillingModel,
+  type RevenueClass,
   type Initiative,
   type InitiativePatch,
 } from '@/lib/api/endpoints/initiatives';
@@ -33,24 +35,35 @@ export default function InitiativeRatePill({
   const [open, setOpen] = useState(false);
   const [pounds, setPounds] = useState('');
   const [model, setModel] = useState<BillingModel>('day_rate');
+  const [revenueClass, setRevenueClass] = useState<RevenueClass | 'none'>('none');
+  const [fee, setFee] = useState('');
 
   function start(next: boolean) {
     if (next) {
       setPounds(initiative.dayRatePence != null ? String(initiative.dayRatePence / 100) : '');
       setModel(initiative.billingModel ?? 'day_rate');
+      setRevenueClass(initiative.revenueClass ?? 'none');
+      setFee(initiative.monthlyFeePence != null ? String(initiative.monthlyFeePence / 100) : '');
     }
     setOpen(next);
   }
 
   function save() {
+    const monthlyFeePence = fee.trim() === '' ? null : Math.round(Number(fee) * 100);
+    if (monthlyFeePence != null && (!Number.isFinite(monthlyFeePence) || monthlyFeePence < 0))
+      return;
+    const revenue = {
+      revenueClass: revenueClass === 'none' ? null : revenueClass,
+      monthlyFeePence,
+    };
     if (model === 'internal') {
-      onPatch({ dayRatePence: null, billingModel: 'internal' });
+      onPatch({ dayRatePence: null, billingModel: 'internal', ...revenue });
       setOpen(false);
       return;
     }
     const value = pounds.trim() === '' ? null : Math.round(Number(pounds) * 100);
     if (value != null && (!Number.isFinite(value) || value < 0)) return;
-    onPatch({ dayRatePence: value, billingModel: value == null ? null : model });
+    onPatch({ dayRatePence: value, billingModel: value == null ? null : model, ...revenue });
     setOpen(false);
   }
 
@@ -71,6 +84,11 @@ export default function InitiativeRatePill({
                 · {t(`models.${initiative.billingModel}`)}
               </span>
             )}
+          {initiative.revenueClass && (
+            <span className="text-muted-foreground">
+              · {t(`classes.${initiative.revenueClass}`)}
+            </span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-64 space-y-3">
@@ -102,6 +120,37 @@ export default function InitiativeRatePill({
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className="space-y-1">
+          <span className="text-xs text-muted-foreground">{t('revenueClass')}</span>
+          <Select
+            value={revenueClass}
+            onValueChange={(v) => setRevenueClass(v as RevenueClass | 'none')}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">{t('noClass')}</SelectItem>
+              {REVENUE_CLASSES.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {t(`classes.${c}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground" htmlFor="initiative-monthly-fee">
+            {t('monthlyFee')}
+          </label>
+          <Input
+            id="initiative-monthly-fee"
+            inputMode="decimal"
+            value={fee}
+            onChange={(e) => setFee(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && save()}
+          />
         </div>
         <p className="text-xs text-muted-foreground">{t('hint')}</p>
         <div className="flex justify-end">

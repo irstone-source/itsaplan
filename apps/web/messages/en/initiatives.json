@@ -177,6 +177,14 @@
       "internal": "Internal"
     },
     "hint": "Each issue is valued at its time estimate in days times this rate. Leave empty to not value this work.",
-    "save": "Save"
+    "save": "Save",
+    "revenueClass": "Revenue",
+    "noClass": "Not set",
+    "classes": {
+      "committed": "Committed",
+      "new": "New",
+      "management": "Management"
+    },
+    "monthlyFee": "Monthly fee (£)"
   }
 }
