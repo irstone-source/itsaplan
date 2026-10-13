@@ -25,6 +25,7 @@ export interface PlaybookItemRow {
   pricePence: number;
   billing: string;
   estimateMinutes: number | null;
+  measure: string;
   cadence: string;
   quarterMonth: number;
   typeId: number | null;
@@ -41,6 +42,8 @@ export interface PlaybookGroup {
   revenueClass: string | null;
   monthlyFeePence: number | null;
   monthlyPricedPence: number;
+  monthlyMinutes: number | null;
+  plannedMinutes: number;
   items: PlaybookItemRow[];
 }
 
@@ -51,6 +54,7 @@ export interface PlaybookItemInput {
   pricePence?: number;
   billing?: string;
   estimateMinutes?: number | null;
+  measure?: string;
   cadence?: string;
   quarterMonth?: number;
   typeId?: number | null;
@@ -87,6 +91,7 @@ async function selectItems(projectId: number, ids?: number[]): Promise<PlaybookI
     pricePence: r.pricePence,
     billing: r.billing,
     estimateMinutes: r.estimateMinutes,
+    measure: r.measure,
     cadence: r.cadence,
     quarterMonth: r.quarterMonth,
     typeId: r.typeId,
@@ -97,11 +102,12 @@ async function selectItems(projectId: number, ids?: number[]): Promise<PlaybookI
   }));
 }
 
-// What an item adds to a month: its price when monthly, a third when quarterly.
-function monthlyShare(item: PlaybookItemRow): number {
-  if (!item.active || item.billing === 'non_billable') return 0;
-  if (item.cadence === 'monthly') return item.pricePence;
-  if (item.cadence === 'quarterly') return Math.round(item.pricePence / 3);
+// What an amount of an item comes to in an average month: all of it when monthly,
+// a third when quarterly, nothing when ad hoc or paused.
+function perMonth(item: PlaybookItemRow, amount: number): number {
+  if (!item.active) return 0;
+  if (item.cadence === 'monthly') return amount;
+  if (item.cadence === 'quarterly') return Math.round(amount / 3);
   return 0;
 }
 
@@ -124,7 +130,16 @@ export async function listPlaybook(projectId: number): Promise<PlaybookGroup[]> 
         billingModel: i.billingModel,
         revenueClass: i.revenueClass,
         monthlyFeePence: i.monthlyFeePence,
-        monthlyPricedPence: own.reduce((sum, item) => sum + monthlyShare(item), 0),
+        monthlyPricedPence: own.reduce(
+          (sum, item) =>
+            sum + (item.billing === 'non_billable' ? 0 : perMonth(item, item.pricePence)),
+          0,
+        ),
+        monthlyMinutes: i.monthlyMinutes,
+        plannedMinutes: own.reduce(
+          (sum, item) => sum + perMonth(item, item.estimateMinutes ?? 0),
+          0,
+        ),
         items: own,
       };
     })
@@ -181,6 +196,7 @@ export async function createPlaybookItem(
       pricePence: input.pricePence ?? 0,
       billing: input.billing ?? 'billable',
       estimateMinutes: input.estimateMinutes ?? null,
+      measure: input.measure ?? '',
       cadence: input.cadence ?? 'monthly',
       quarterMonth: input.quarterMonth ?? 1,
       typeId: input.typeId ?? null,
@@ -334,7 +350,9 @@ export async function addPlaybookToCycle(
         initiativeId: item.initiativeId,
         typeId: item.typeId,
         title: item.title,
-        description: item.description,
+        description: item.measure
+          ? `${item.description}${item.description ? '\n\n' : ''}**Measure:** ${item.measure}`
+          : item.description,
         estimateMinutes: item.estimateMinutes,
         valueOverridePence: valueFor(item, project.internal || internal.has(item.initiativeId)),
         labelIds: item.labelIds,

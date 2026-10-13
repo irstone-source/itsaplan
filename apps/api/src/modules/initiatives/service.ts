@@ -31,6 +31,7 @@ export interface InitiativeRow {
   dayRatePence: number | null;
   revenueClass: string | null;
   monthlyFeePence: number | null;
+  monthlyMinutes: number | null;
   position: number;
   createdAt: string;
   updatedAt: string;
@@ -101,6 +102,7 @@ function mapInitiative(
     dayRatePence: row.dayRatePence,
     revenueClass: row.revenueClass,
     monthlyFeePence: row.monthlyFeePence,
+    monthlyMinutes: row.monthlyMinutes,
     position: num(row.position),
     createdAt: iso(row.createdAt),
     updatedAt: iso(row.updatedAt),
@@ -302,6 +304,7 @@ export interface NewInitiativeInput {
   dayRatePence?: number | null;
   revenueClass?: string | null;
   monthlyFeePence?: number | null;
+  monthlyMinutes?: number | null;
   labelIds?: number[];
 }
 
@@ -370,6 +373,7 @@ export async function createInitiative(
       dayRatePence: input.dayRatePence ?? null,
       revenueClass: input.revenueClass ?? null,
       monthlyFeePence: input.monthlyFeePence ?? null,
+      monthlyMinutes: input.monthlyMinutes ?? null,
       position: Number(posRow.pos),
     })
     .returning({ id: initiative.id });
@@ -391,6 +395,7 @@ export interface InitiativePatch {
   dayRatePence?: number | null;
   revenueClass?: string | null;
   monthlyFeePence?: number | null;
+  monthlyMinutes?: number | null;
   labelIds?: number[];
 }
 
@@ -438,6 +443,7 @@ export async function updateInitiative(
   if (patch.dayRatePence !== undefined) set.dayRatePence = patch.dayRatePence;
   if (patch.revenueClass !== undefined) set.revenueClass = patch.revenueClass;
   if (patch.monthlyFeePence !== undefined) set.monthlyFeePence = patch.monthlyFeePence;
+  if (patch.monthlyMinutes !== undefined) set.monthlyMinutes = patch.monthlyMinutes;
 
   if (Object.keys(set).length > 0) {
     set.updatedAt = sql`now()` as unknown as Date;

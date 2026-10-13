@@ -15,6 +15,8 @@ export interface PlaybookItem {
   pricePence: number;
   billing: PlaybookBilling;
   estimateMinutes: number | null;
+  // How the outcome is judged, e.g. "Cost per deal toward £750".
+  measure: string;
   cadence: PlaybookCadence;
   // The month of each quarter (1-3) a quarterly item falls due in.
   quarterMonth: number;
@@ -33,6 +35,9 @@ export interface PlaybookGroup {
   monthlyFeePence: number | null;
   // Active monthly items plus a third of the quarterly ones.
   monthlyPricedPence: number;
+  // Minutes allocated a month, and the active items' estimates per month.
+  monthlyMinutes: number | null;
+  plannedMinutes: number;
   items: PlaybookItem[];
 }
 
@@ -68,6 +73,7 @@ export interface PlaybookImportRow {
   cadence: string;
   quarterMonth: string;
   estimateHours: string;
+  measure: string;
 }
 
 export interface PlaybookImportAction {

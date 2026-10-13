@@ -36,6 +36,8 @@ export interface Initiative {
   revenueClass: RevenueClass | null;
   // Pence. The retainer fee the playbook items are priced against.
   monthlyFeePence: number | null;
+  // Team minutes a month allocated to the client.
+  monthlyMinutes: number | null;
   position: number;
   createdAt: string;
   updatedAt: string;
@@ -101,6 +103,7 @@ export interface InitiativePatch {
   dayRatePence?: number | null;
   revenueClass?: RevenueClass | null;
   monthlyFeePence?: number | null;
+  monthlyMinutes?: number | null;
   labelIds?: number[];
 }
 

@@ -64,6 +64,7 @@ export const InitiativeResponse = t.Object({
   dayRatePence: t.Nullable(t.Number()),
   revenueClass: t.Nullable(t.String()),
   monthlyFeePence: t.Nullable(t.Number()),
+  monthlyMinutes: t.Nullable(t.Number()),
   position: t.Number(),
   createdAt: t.String(),
   updatedAt: t.String(),
@@ -151,6 +152,14 @@ export const createInitiativeBody = t.Object({
   ),
   monthlyFeePence: t.Optional(
     t.Nullable(t.Integer({ minimum: 0, description: 'Retainer fee per month in pence, or null.' })),
+  ),
+  monthlyMinutes: t.Optional(
+    t.Nullable(
+      t.Integer({
+        minimum: 0,
+        description: 'Team minutes a month allocated to the client (6-hour days), or null.',
+      }),
+    ),
   ),
   labelIds: t.Optional(
     t.Array(t.Integer(), { description: 'Label ids to attach. From get_project.labels.' }),

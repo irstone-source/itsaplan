@@ -3,6 +3,7 @@ import type { PlaybookGroup } from '@/lib/api/endpoints/playbook';
 import { Badge } from '@/components/ui/badge';
 import { formatPence } from '@/utils/money';
 import { CLASS_BADGE } from '../utils/format';
+import PlaybookHoursBand from './PlaybookHoursBand';
 import PlaybookItemRow from './PlaybookItemRow';
 
 // One client: its revenue class, what its items are priced at per month against
@@ -58,6 +59,7 @@ export default function PlaybookGroupCard({
           )}
         </div>
       </header>
+      <PlaybookHoursBand group={group} />
       <table className="w-full text-sm">
         <thead className="text-xs text-muted-foreground">
           <tr>

@@ -18,6 +18,7 @@ export const PlaybookItemResponse = t.Object({
   pricePence: t.Number(),
   billing: t.String(),
   estimateMinutes: t.Nullable(t.Number()),
+  measure: t.String(),
   cadence: t.String(),
   quarterMonth: t.Number(),
   typeId: t.Nullable(t.Number()),
@@ -35,6 +36,10 @@ export const PlaybookGroupResponse = t.Object({
   monthlyFeePence: t.Nullable(t.Number()),
   // What the active monthly items and a third of the quarterly ones are priced at.
   monthlyPricedPence: t.Number(),
+  // The team minutes allocated a month, and what the active items plan: monthly
+  // estimates plus a third of the quarterly ones.
+  monthlyMinutes: t.Nullable(t.Number()),
+  plannedMinutes: t.Number(),
   items: t.Array(PlaybookItemResponse),
 });
 
@@ -49,6 +54,7 @@ export const createPlaybookItemBody = t.Object({
   estimateMinutes: t.Optional(
     t.Nullable(t.Integer({ minimum: 0, description: 'For capacity only, never for value.' })),
   ),
+  measure: t.Optional(t.String({ description: 'How the outcome is judged.' })),
   cadence: t.Optional(cadence),
   quarterMonth: t.Optional(
     t.Integer({ minimum: 1, maximum: 3, description: 'Month of the quarter (1-3) it is due.' }),
@@ -84,6 +90,7 @@ export const importPlaybookBody = t.Object({
       cadence: t.Optional(t.String({ description: 'monthly, quarterly or ad_hoc.' })),
       quarterMonth: t.Optional(t.String({ description: 'Month of the quarter, 1-3.' })),
       estimateHours: t.Optional(t.String()),
+      measure: t.Optional(t.String()),
     }),
     { maxItems: 500 },
   ),

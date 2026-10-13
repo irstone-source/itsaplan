@@ -13,7 +13,8 @@
     "cadence": "Cadence",
     "quarterMonth": "Quarter month",
     "estimate": "Estimate (h)",
-    "active": "Active"
+    "active": "Active",
+    "measure": "Result measure"
   },
   "billing": {
     "billable": "Billable",
@@ -58,5 +59,13 @@
       "item": "Item",
       "skip": "Skip"
     }
+  },
+  "measurePlaceholder": "e.g. Cost per deal toward £750",
+  "hours": {
+    "allocated": "{allocated} a month: floor {floor}, ceiling {ceiling}, buffer {buffer}",
+    "inside": "{planned} planned, inside the band",
+    "under": "{planned} planned, under the floor",
+    "over": "{planned} planned, over the ceiling",
+    "rates": "{full} / {ceiling} / {floor} an hour at 100 / 80 / 60%"
   }
 }

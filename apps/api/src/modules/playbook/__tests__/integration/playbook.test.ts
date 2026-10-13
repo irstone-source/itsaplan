@@ -80,6 +80,11 @@ describe('Playbook', () => {
       monthlyPricedPence: 150000 + 20000,
     });
     expect(res.data![0]!.items).toHaveLength(3);
+    // 10 h of monthly work is not set here; the quarterly review's 0 estimate adds nothing.
+    expect(res.data![0]!.plannedMinutes).toBe(0);
+    await god.api.initiatives({ initiativeId: gsg.id }).patch({ monthlyMinutes: 27 * 60 });
+    const again = await con.playbook.get();
+    expect(again.data![0]!.monthlyMinutes).toBe(1620);
   });
 
   it('lets a project member maintain the playbook and refuses a non-member', async () => {
@@ -124,6 +129,7 @@ describe('Playbook', () => {
         title: 'Ad management',
         pricePence: 150000,
         estimateMinutes: 240,
+        measure: 'Cost per deal toward £750',
       })
     ).data!;
     const review = (
@@ -189,6 +195,7 @@ describe('Playbook', () => {
     expect(await issueOf(ads.id)).toMatchObject({
       title: 'Ad management',
       estimateMinutes: 240,
+      description: '**Measure:** Cost per deal toward £750',
       valueOverridePence: 150000,
       initiative: { id: gsg.id },
       cycle: { id: october },

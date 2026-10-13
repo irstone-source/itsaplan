@@ -185,6 +185,7 @@
       "new": "New",
       "management": "Management"
     },
-    "monthlyFee": "Monthly fee (£)"
+    "monthlyFee": "Monthly fee (£)",
+    "monthlyHours": "Hours a month"
   }
 }

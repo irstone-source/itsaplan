@@ -6,7 +6,13 @@ import { addUser, joinProject, setup } from '../../../god/__tests__/helpers';
 
 const ROWS = [
   { client: 'GSG', deliverable: 'Town page', price: '250', billing: 'retainer', cadence: 'ad_hoc' },
-  { client: 'gsg', deliverable: 'Ad management', price: '£1,500', estimateHours: '10' },
+  {
+    client: 'gsg',
+    deliverable: 'Ad management',
+    price: '£1,500',
+    estimateHours: '10',
+    measure: 'Cost per deal toward £750',
+  },
   { client: 'Cotswold Wellness', deliverable: 'Six blog posts', price: '1200' },
   { client: 'Nobody', deliverable: 'Lost' },
 ];
@@ -35,21 +41,21 @@ describe('Playbook import', () => {
       'FGE — installs → committed',
       'Cotswold Wellness — launch → new',
     ]);
-    expect(kinds('label')).toHaveLength(1);
+    expect(kinds('label').map((a) => a.text)).toEqual(['MGM', 'scope change']);
     expect(kinds('initiative').map((a) => a.text)).toEqual(['MGM — Consulting management']);
-    // 7 MGM items, 2 quarterly reviews, 3 rows.
-    expect(kinds('item')).toHaveLength(12);
+    // 7 MGM items, a quarterly and a monthly review per committed client, 3 rows.
+    expect(kinds('item')).toHaveLength(14);
     expect(kinds('skip').map((a) => a.text)).toEqual([
       'Nobody: no initiative match "Nobody — …" (Lost)',
     ]);
     expect((await con.playbook.get()).data).toEqual([]);
 
     const applied = await asJo.playbook.import.post({ rows: ROWS, setup: true, apply: true });
-    expect(applied.data!.actions.filter((a) => a.kind === 'item')).toHaveLength(12);
+    expect(applied.data!.actions.filter((a) => a.kind === 'item')).toHaveLength(14);
     const groups = (await con.playbook.get()).data!;
     expect(groups.map((g) => [g.title, g.revenueClass, g.items.length])).toEqual([
-      ['FGE — installs', 'committed', 1],
-      ['GSG — leads', 'committed', 3],
+      ['FGE — installs', 'committed', 2],
+      ['GSG — leads', 'committed', 4],
       ['Cotswold Wellness — launch', 'new', 1],
       ['MGM — Consulting management', 'management', 7],
     ]);
@@ -59,13 +65,17 @@ describe('Playbook import', () => {
       billing: 'billable',
       cadence: 'monthly',
       estimateMinutes: 600,
+      measure: 'Cost per deal toward £750',
     });
     expect(gsg.items.find((i) => i.title === 'Quarterly strategic review')).toMatchObject({
       cadence: 'quarterly',
       quarterMonth: 1,
     });
     const fge = groups.find((g) => g.title === 'FGE — installs')!;
-    expect(fge.items[0]).toMatchObject({ title: 'Quarterly strategic review', quarterMonth: 2 });
+    expect(fge.items.find((i) => i.cadence === 'quarterly')).toMatchObject({
+      title: 'Quarterly strategic review',
+      quarterMonth: 2,
+    });
     const mgm = groups.find((g) => g.revenueClass === 'management')!;
     expect(mgm.items[0]!.labelIds).toHaveLength(1);
 

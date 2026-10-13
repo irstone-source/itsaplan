@@ -38,6 +38,7 @@ export default function PlaybookItemRow({
   const update = useUpdatePlaybookItem(projectKey);
   const remove = useDeletePlaybookItem(projectKey);
   const [title, setTitle] = useState(item.title);
+  const [measure, setMeasure] = useState(item.measure);
   const [price, setPrice] = useState(String(item.pricePence / 100));
   const [hours, setHours] = useState(
     item.estimateMinutes != null ? String(item.estimateMinutes / 60) : '',
@@ -55,6 +56,9 @@ export default function PlaybookItemRow({
       <tr className={`border-t ${item.active ? '' : 'text-muted-foreground'}`}>
         <td className="px-4 py-2" dir="auto">
           {item.title}
+          {item.measure && (
+            <span className="block text-xs text-muted-foreground">{item.measure}</span>
+          )}
         </td>
         <td className="px-2 py-2 text-end tabular-nums">{formatPence(item.pricePence)}</td>
         <td className="px-2 py-2">{t(`billing.${item.billing}`)}</td>
@@ -76,6 +80,14 @@ export default function PlaybookItemRow({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onBlur={() => title.trim() && title !== item.title && save({ title: title.trim() })}
+        />
+        <Input
+          className="mt-1 h-7 border-dashed text-xs text-muted-foreground"
+          dir="auto"
+          placeholder={t('fields.measure')}
+          value={measure}
+          onChange={(e) => setMeasure(e.target.value)}
+          onBlur={() => measure !== item.measure && save({ measure: measure.trim() })}
         />
       </td>
       <td className="px-2 py-1.5">

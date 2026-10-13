@@ -43,6 +43,7 @@ const COLUMNS: Record<keyof PlaybookImportRow, string[]> = {
   cadence: ['cadence', 'frequency'],
   quarterMonth: ['quarter_month'],
   estimateHours: ['estimate_hours', 'estimate', 'hours'],
+  measure: ['measure', 'result_measure', 'result'],
 };
 
 // The rows of a playbook CSV, and the lines whose cells outnumber the header: an
@@ -71,6 +72,7 @@ export function readPlaybookCsv(text: string): { rows: PlaybookImportRow[]; shif
       cadence: get('cadence'),
       quarterMonth: get('quarterMonth'),
       estimateHours: get('estimateHours'),
+      measure: get('measure'),
     });
   }
   return { rows, shifted };

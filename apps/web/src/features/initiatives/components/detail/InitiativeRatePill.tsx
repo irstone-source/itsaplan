@@ -37,6 +37,7 @@ export default function InitiativeRatePill({
   const [model, setModel] = useState<BillingModel>('day_rate');
   const [revenueClass, setRevenueClass] = useState<RevenueClass | 'none'>('none');
   const [fee, setFee] = useState('');
+  const [hours, setHours] = useState('');
 
   function start(next: boolean) {
     if (next) {
@@ -44,6 +45,7 @@ export default function InitiativeRatePill({
       setModel(initiative.billingModel ?? 'day_rate');
       setRevenueClass(initiative.revenueClass ?? 'none');
       setFee(initiative.monthlyFeePence != null ? String(initiative.monthlyFeePence / 100) : '');
+      setHours(initiative.monthlyMinutes != null ? String(initiative.monthlyMinutes / 60) : '');
     }
     setOpen(next);
   }
@@ -52,9 +54,12 @@ export default function InitiativeRatePill({
     const monthlyFeePence = fee.trim() === '' ? null : Math.round(Number(fee) * 100);
     if (monthlyFeePence != null && (!Number.isFinite(monthlyFeePence) || monthlyFeePence < 0))
       return;
+    const monthlyMinutes = hours.trim() === '' ? null : Math.round(Number(hours) * 60);
+    if (monthlyMinutes != null && (!Number.isFinite(monthlyMinutes) || monthlyMinutes < 0)) return;
     const revenue = {
       revenueClass: revenueClass === 'none' ? null : revenueClass,
       monthlyFeePence,
+      monthlyMinutes,
     };
     if (model === 'internal') {
       onPatch({ dayRatePence: null, billingModel: 'internal', ...revenue });
@@ -149,6 +154,19 @@ export default function InitiativeRatePill({
             inputMode="decimal"
             value={fee}
             onChange={(e) => setFee(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && save()}
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground" htmlFor="initiative-monthly-hours">
+            {t('monthlyHours')}
+          </label>
+          <Input
+            id="initiative-monthly-hours"
+            inputMode="decimal"
+            placeholder="27"
+            value={hours}
+            onChange={(e) => setHours(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && save()}
           />
         </div>

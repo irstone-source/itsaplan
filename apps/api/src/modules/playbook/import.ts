@@ -12,6 +12,7 @@ export interface ImportRow {
   cadence?: string;
   quarterMonth?: string;
   estimateHours?: string;
+  measure?: string;
 }
 
 export interface ImportAction {
@@ -62,7 +63,8 @@ const CADENCE = ['monthly', 'quarterly', 'ad_hoc'];
 
 // A playbook loaded from rows of a spreadsheet. With `setup`, it also gives the
 // known clients their revenue class, creates the MGM initiative, label and items,
-// and a quarterly strategic review per committed client, a month apart. An item
+// a quarterly strategic review and a monthly outcome review per committed client
+// (the quarterly ones a month apart), and the scope change label. An item
 // whose title its initiative already has is skipped, so a rerun adds nothing new.
 // Without `apply` it only reports what it would do.
 export async function importPlaybook(
@@ -167,7 +169,25 @@ export async function importPlaybook(
         quarterMonth: month,
         estimateMinutes: 240,
       });
+      await addItem(i, {
+        title: 'Monthly outcome review',
+        description:
+          'Outcomes delivered, hours against allocation, effective rate, margin and scope changes; then the client report.',
+        billing: 'retainer',
+        cadence: 'monthly',
+        estimateMinutes: 60,
+      });
       month = (month % 3) + 1;
+    }
+
+    // Requests outside a client's outcome list are tagged with this label.
+    const [scope] = await db
+      .select({ id: label.id })
+      .from(label)
+      .where(and(eq(label.projectId, projectId), eq(label.name, 'scope change')));
+    if (!scope) {
+      actions.push({ kind: 'label', text: 'scope change' });
+      if (apply) await createLabel({ projectId, name: 'scope change', color: '#c8772b' });
     }
   }
 
@@ -196,6 +216,7 @@ export async function importPlaybook(
       quarterMonth: quarterMonth >= 1 && quarterMonth <= 3 ? quarterMonth : 1,
       estimateMinutes:
         hours != null && Number.isFinite(hours) && hours >= 0 ? Math.round(hours * 60) : null,
+      measure: row.measure?.trim() ?? '',
     });
   }
   return { actions };

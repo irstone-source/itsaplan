@@ -37,6 +37,7 @@ export default function PlaybookAddDialog({ projectKey }: { projectKey: string }
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [hours, setHours] = useState('');
+  const [measure, setMeasure] = useState('');
   const [billing, setBilling] = useState<PlaybookBilling>('billable');
   const [cadence, setCadence] = useState<PlaybookCadence>('monthly');
   const { data: initiatives } = useInitiativeOptionsQuery(open ? projectKey : null);
@@ -51,6 +52,7 @@ export default function PlaybookAddDialog({ projectKey }: { projectKey: string }
         title: title.trim(),
         pricePence: poundsToPence(price) ?? 0,
         estimateMinutes: hoursToMinutes(hours),
+        measure: measure.trim(),
         billing,
         cadence,
       },
@@ -60,6 +62,7 @@ export default function PlaybookAddDialog({ projectKey }: { projectKey: string }
           setTitle('');
           setPrice('');
           setHours('');
+          setMeasure('');
         },
       },
     );
@@ -105,6 +108,16 @@ export default function PlaybookAddDialog({ projectKey }: { projectKey: string }
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && submit()}
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="playbook-measure">{t('fields.measure')}</Label>
+            <Input
+              id="playbook-measure"
+              dir="auto"
+              placeholder={t('measurePlaceholder')}
+              value={measure}
+              onChange={(e) => setMeasure(e.target.value)}
             />
           </div>
           <div className="space-y-1.5">

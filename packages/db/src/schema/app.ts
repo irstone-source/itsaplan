@@ -1440,6 +1440,9 @@ export const initiative = pgTable(
     revenueClass: text('revenue_class'),
     // The retainer fee per month, which the playbook items are priced against.
     monthlyFeePence: integer('monthly_fee_pence'),
+    // The team minutes a month the client's work is allocated, split into a floor,
+    // a ceiling and a buffer released to internal work.
+    monthlyMinutes: integer('monthly_minutes'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -1454,6 +1457,7 @@ export const initiative = pgTable(
       sql`${t.revenueClass} IN ('committed', 'new', 'management')`,
     ),
     check('initiative_monthly_fee_check', sql`${t.monthlyFeePence} >= 0`),
+    check('initiative_monthly_minutes_check', sql`${t.monthlyMinutes} >= 0`),
     check(
       'initiative_status_check',
       sql`${t.status} IN ('proposed', 'planned', 'active', 'completed', 'canceled')`,
@@ -1902,6 +1906,8 @@ export const playbookItem = pgTable(
     pricePence: integer('price_pence').notNull().default(0),
     billing: text('billing').notNull().default('billable'),
     estimateMinutes: integer('estimate_minutes'),
+    // How the outcome is judged, e.g. "Cost per deal toward £750".
+    measure: text('measure').notNull().default(''),
     cadence: text('cadence').notNull().default('monthly'),
     quarterMonth: integer('quarter_month').notNull().default(1),
     typeId: integer('type_id').references(() => issueType.id, { onDelete: 'set null' }),

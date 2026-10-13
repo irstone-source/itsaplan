@@ -71,7 +71,8 @@ Rates (from the 12-week resource plan, 6 hours = 1 day):
 | Tracker | Sidebar → Tracker; God mode → Tracker | Growth measures per company and loop (Rev, Cap) on a project or initiative, a coloured cell per week or month: green/amber/red by the thresholds, black when the figure is missing, a person marker when unverified, a flag when a streak needs a focus meeting. Targets follow a versioned rule (set amount, linear, compounding, gate, shelf, leapfrog, or the Finance cycle targets); billings and completed tickets fill themselves. Scope: `boolean-tracker.md` |
 | Finance | Sidebar → Finance (owner only) | The year's revenue target, spread over one project's cycles by working days; per month the cycle target, break-even, pool % and billings |
 | Playbook | Sidebar → Playbook | Each client's repeatable deliverables with an outcome price, billing (billable, retainer, non-billable), cadence (monthly, quarterly in month 1–3 of the quarter, ad hoc) and an estimate used for capacity only. Each client shows what its items are priced at per month against its monthly retainer fee |
-| Revenue class and fee | Initiative £/day pill | Committed (retained income that must be delivered), New (a new client) or Management (MGM, running the consultancy), and the monthly retainer fee |
+| Revenue class, fee and hours | Initiative £/day pill | Committed (retained income that must be delivered), New (a new client) or Management (MGM, running the consultancy), the monthly retainer fee, and the hours a month allocated to the client |
+| Hours band | Playbook, under each client | The allocation split into a 60% floor, an 80% ceiling and a 20% buffer released to internal work; the hours the items plan against it (green inside, amber under the floor or over the ceiling); the fee an hour at 100, 80 and 60% of the allocation |
 | Repeatable work | Top of every open cycle page | The playbook items the cycle's month makes due, grouped committed → new → management, to add in one go or one by one; an item is added once per cycle. Each becomes a ticket under its initiative, valued at its price |
 | Capacity and reserve | Cycle strip; God mode → Billing | Planned hours against capacity (working days × hours per day × the project's people, or a figure set on the cycle), with a reserve (20% by default) kept free for step-change work nobody has planned; the breakdown splits value and hours by revenue class |
 | Client report | Cycle breakdown → the copy icon on a client | The client's delivered tickets with their value and what is still in progress, as markdown to paste to them |
@@ -97,7 +98,10 @@ priority when capacity is short: committed clients, then new clients, then every
 is £250 however long it takes). For a retainer client, price the items until they add up to
 the monthly fee; the bar on the client shows what is still unpriced or over. A non-billable
 item adds nothing to billings and is a cost to challenge. Each committed client has a
-quarterly strategic review, a month apart from the others.
+quarterly strategic review, a month apart from the others, and a monthly outcome review.
+Each deliverable can carry a result measure ("Cost per deal toward £750"), which goes
+into the ticket's description. Tag requests outside a client's outcome list with the
+"scope change" label.
 
 **MGM.** The initiative "MGM — Consulting management" (label MGM, billing model Internal,
 revenue class Management) holds the running of the consultancy: billing and invoicing, the
@@ -106,7 +110,7 @@ and a quarterly portfolio review. Its tickets are costed at the internal day rat
 as their own line in the cycle breakdown.
 
 **Loading a playbook from a CSV.** Playbook → Import CSV. Columns: client, deliverable,
-price, billing, cadence, quarter month, estimate hours (client = the part of the initiative
+price, billing, cadence, quarter month, estimate hours, measure (client = the part of the initiative
 title before " — "). With "Also set up MGM…" ticked it also marks the known clients
 committed or new, creates the MGM initiative, label and items, and a quarterly review per
 committed client. Choosing the file shows every change first; Apply writes them; a second
