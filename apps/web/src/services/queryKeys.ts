@@ -109,6 +109,15 @@ export const qk = {
     ['noteBoards', projectKey, 'board', boardId] as const,
   noteBoardAccessCandidates: (projectKey: string) =>
     ['noteBoards', projectKey, 'accessCandidates'] as const,
+  agentAnalytics: (teamId: number, days: number, projectId: number | null) =>
+    ['agentAnalytics', teamId, days, projectId] as const,
+  workspaceAgentAnalytics: (workspaceId: number, days: number) =>
+    ['workspaceAgentAnalytics', workspaceId, days] as const,
+  // The model prices of a workspace: the models it uses, and pages of the built-in table.
+  modelPrices: (workspaceId: number) => ['modelPrices', workspaceId] as const,
+  usedModelPrices: (workspaceId: number) => ['modelPrices', workspaceId, 'used'] as const,
+  modelPriceCatalog: (workspaceId: number, params: unknown) =>
+    ['modelPrices', workspaceId, 'catalog', params] as const,
   analytics: (projectKey: string, kind: string, params?: unknown) =>
     ['analytics', projectKey, kind, params ?? {}] as const,
   analyticsForProject: (projectKey: string) => ['analytics', projectKey] as const,
@@ -266,6 +275,8 @@ export const qk = {
   notifications: (projectKey: string, filters?: unknown) =>
     ['notifications', projectKey, filters ?? {}] as const,
   notificationsUnread: (projectKey: string) => ['notificationsUnread', projectKey] as const,
+  // The unread count across every project (the app icon badge).
+  notificationsUnreadTotal: ['notificationsUnreadTotal'] as const,
   // The signed-in user's WebAuthn passkeys (account security page).
   passkeys: ['passkeys'] as const,
   // The signed-in user's connected external accounts (accounts page): the linked
@@ -294,6 +305,7 @@ export const qk = {
   finance: (start: string | undefined) => ['finance', start ?? 'latest'] as const,
   tracker: (filters: object) => ['tracker', filters] as const,
   trackerSettings: ['trackerSettings'] as const,
+  instanceAgentSettings: ['instanceAgentSettings'] as const,
   instanceStorageSettings: ['instanceStorageSettings'] as const,
   // The upload limits as read by the upload UI (open to any signed-in user).
   storageSettings: ['storageSettings'] as const,

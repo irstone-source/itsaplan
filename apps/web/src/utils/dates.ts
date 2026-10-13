@@ -104,7 +104,7 @@ export function formatDateTime(value: string): string {
     ...(thisYear ? {} : { year: 'numeric' }),
     hour: '2-digit',
     minute: '2-digit',
-    hour12: false,
+    hour12: displayLocale === 'ko',
     ...zoneOption(),
   });
 }
@@ -153,11 +153,21 @@ export function fromZonedParts(day: string, time: string): string {
 
 // "Jul 2, 14:05 – 16:30" for a range, rendered in the user's zone; the day is
 // repeated on the end when it falls on another one. Without an end it is a
-// single moment.
+// single moment. A same-day end is only the time, on the same clock as the start,
+// so a Korean range reads "오후 11:36 – 오후 11:46" rather than a picker "HH:mm".
 export function formatDateTimeRange(start: string, end: string | null): string {
   if (!end) return formatDateTime(start);
   if (dayKey(start) !== dayKey(end)) return `${formatDateTime(start)} – ${formatDateTime(end)}`;
-  return `${formatDateTime(start)} – ${toZonedParts(end)?.time ?? end}`;
+  const endDate = new Date(end);
+  const endTime = Number.isNaN(endDate.getTime())
+    ? end
+    : endDate.toLocaleTimeString(displayLocale, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: displayLocale === 'ko',
+        ...zoneOption(),
+      });
+  return `${formatDateTime(start)} – ${endTime}`;
 }
 
 // "July 2, 2026" for a moment in time, rendered in the user's zone.

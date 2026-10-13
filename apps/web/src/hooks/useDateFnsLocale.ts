@@ -11,6 +11,7 @@ import {
   ptBR,
   id,
   es,
+  ko,
   type Locale as DateFnsLocale,
 } from 'date-fns/locale';
 
@@ -27,6 +28,7 @@ const LOCALES: Record<string, DateFnsLocale> = {
   'pt-BR': ptBR,
   id,
   'es-ES': es,
+  ko,
 };
 
 export function useDateFnsLocale(): DateFnsLocale {

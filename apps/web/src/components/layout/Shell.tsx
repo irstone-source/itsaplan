@@ -13,6 +13,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useSettingsNavGroups } from '@/hooks/useSettingsNavGroups';
 import { useShellProject } from '@/hooks/useShellProject';
 import { useShellRoute } from '@/hooks/useShellRoute';
+import { useAppBadge } from '@/hooks/useAppBadge';
 import { useProjectRouteSync } from '@/hooks/useProjectRouteSync';
 import { projectPath, issuePath } from '@/utils/paths';
 import { defaultsFromFilters, type NewIssueDefaults } from '@/utils/project';
@@ -28,6 +29,7 @@ import ShellOverlays from '@/components/layout/ShellOverlays';
 import { ChatPanel } from '@/features/ai-chat/components/panel/ChatPanel';
 import { useChatPanel } from '@/features/ai-chat/hooks/useChatPanel';
 import { useTranslations } from 'next-intl';
+import { ShellNotice } from '@/cloud';
 
 // The layout for /:team/:projectKey and its children (the work items view and the
 // settings pages). It owns the project data, the view editor and the
@@ -57,6 +59,7 @@ export default function Shell({
     errorMsg,
     forbidden,
   } = useShellProject(projectKey, route.activeViewId);
+  useAppBadge(projects.map((item) => item.id));
   const teamId = project?.project.teamId;
   const issueRefs = useMemo(
     () => projects.filter((item) => item.teamId === teamId).map((item) => item.ref),
@@ -181,6 +184,7 @@ export default function Shell({
             chatActive={chatPanel.open}
             onToggleChat={chatPanel.toggle}
           />
+          <ShellNotice />
 
           {errorMsg && !forbidden && (
             <div className="border-b border-destructive/50 bg-destructive/10 px-4 py-2 text-sm text-destructive">

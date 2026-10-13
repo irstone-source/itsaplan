@@ -1,0 +1,62 @@
+{
+  "title": "Playbook",
+  "description": "The repeatable deliverables of each client, priced by outcome. Add the ones a month needs from its cycle.",
+  "empty": "No playbook items yet",
+  "emptyDescription": "Add the deliverables you repeat for a client, with the price the client pays for the outcome.",
+  "add": "Add item",
+  "client": "Client",
+  "noInitiatives": "Create a client initiative first.",
+  "fields": {
+    "title": "Deliverable",
+    "price": "Price (£)",
+    "billing": "Billing",
+    "cadence": "Cadence",
+    "quarterMonth": "Quarter month",
+    "estimate": "Estimate (h)",
+    "active": "Active"
+  },
+  "billing": {
+    "billable": "Billable",
+    "retainer": "Retainer",
+    "non_billable": "Non-billable"
+  },
+  "cadence": {
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "ad_hoc": "Ad hoc"
+  },
+  "quarterMonth": "Month {month} of quarter",
+  "classes": {
+    "committed": "Committed",
+    "new": "New",
+    "management": "Management"
+  },
+  "priced": "{priced} a month priced",
+  "pricedOfFee": "{priced} of {fee} monthly fee priced",
+  "overFee": "{amount} over the fee",
+  "underFee": "{amount} of the fee unpriced",
+  "created": "Item added",
+  "saved": "Item saved",
+  "deleted": "Item deleted",
+  "delete": "Delete item",
+  "inactive": "Paused",
+  "quarterMonthShort": "Month {month}",
+  "import": {
+    "open": "Import CSV",
+    "title": "Import repeatable tasks",
+    "description": "A CSV with the columns client, deliverable, price, billing, cadence, quarter month and estimate hours. Client is the first part of the initiative title (GSG for \"GSG — leads\"). Nothing is written until you press Apply, and items already in the playbook are skipped.",
+    "setup": "Also set up MGM (consulting management) and a quarterly strategic review per committed client, and mark the known clients committed or new",
+    "willDo": "{count, plural, =0 {Nothing new to add} one {# change} other {# changes}}",
+    "skipped": "{count, plural, one {# skipped} other {# skipped}}",
+    "shifted": "Row left out, a comma in a price shifted its columns (quote the price): {line}",
+    "apply": "{count, plural, =0 {Apply} other {Apply # changes}}",
+    "done": "{count, plural, one {# change made} other {# changes made}}",
+    "kinds": {
+      "class": "Revenue",
+      "label": "Label",
+      "initiative": "Initiative",
+      "item": "Item",
+      "skip": "Skip"
+    }
+  }
+}

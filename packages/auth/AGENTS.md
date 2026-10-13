@@ -103,10 +103,10 @@ own check of `emailAndPassword.requireEmailVerification`.
 
 ## Generic OIDC
 
-`genericOAuth({ config: [oidcOptions] })` adds one OIDC/OAuth2 provider, discovered from
-the well-known document the operator points it at in god mode (`app_secret` key
-`auth.oidc`). It adds `/sign-in/oauth2` and `/oauth2/callback/:providerId`, and reuses the
-`account` table, so it adds none of its own.
+One OIDC/OAuth2 provider, discovered from the well-known document the operator points it
+at in god mode (`app_secret` key `auth.oidc`). It is a social provider with the id
+`OIDC_PROVIDER_ID` (`"oidc"`): sign-in is `/sign-in/social` with that provider, the
+callback is `/callback/oidc`, and it reuses the `account` table, so it adds none.
 
 A provider per workspace is not built on this one. A sign-in through it joins the account
 that already holds the address, which is safe only because the provider is the instance
@@ -114,16 +114,21 @@ owner's: a workspace owner's provider could name any address. It needs the works
 prove it owns the address's domain first, and is left to a hosted module, which adds its
 settings section through `useWorkspaceSections` in the web app's `@/cloud` seam.
 
-`providerId` is the constant `OIDC_PROVIDER_ID` (`"oidc"`): it is what the `account` rows
-store, and better-auth materialises the provider list once at startup, so the config array
-can neither grow nor be re-keyed afterwards. That is also why there is exactly one
-provider. `oidcOptions` is refreshed per request by `refreshOidcOptions()` in
-`hooks.before` — the same by-reference rule as `googleOptions`: assign its fields, never
-replace the object.
+`providerId` is a constant because it is what the `account` rows store, and the rows hold
+the OIDC `sub` (`accountSubject`). genericOAuth reads the discovery document once, when
+its plugin starts, while this provider changes in god mode without a restart. So
+better-auth holds a proxy (`oidcProvider`, registered by the `instanceOidc` plugin), and
+`refreshOidcProvider()` in `hooks.before` builds the real provider with genericOAuth from
+the stored settings whenever they change, on both halves of the round trip.
 
-`/oauth2/link` is in `disabledPaths`. No screen offers linking an OIDC identity to the
-signed-in account, and better-auth already attaches a sign-in to a matching confirmed
-address on its own.
+The redirect URI registered with the identity provider is `OIDC_REDIRECT_URI`,
+`/api/auth/oauth2/callback/oidc`. The api passes that path on to better-auth's
+`/api/auth/callback/oidc`, so the URI the identity providers hold stays valid.
+
+Signing out leaves the session at the identity provider alone (`disableProviderLogout`).
+No screen offers linking an OIDC identity to the signed-in account, so `hooks.before`
+refuses `/link-social` for it; better-auth already attaches a sign-in to a matching
+confirmed address on its own.
 
 ## Turning password authentication off
 
@@ -144,7 +149,10 @@ What a provider says about a person is kept per workspace in `scim_user`, writte
 `apps/api`. How far it reaches is `workspaceScim()`, which a hosted build turns on with
 `setWorkspaceScim()`. Off, as on a self-hosted instance, SCIM is the instance's: only the
 instance workspace's token opens it, and it also writes `active`, one more
-`additionalField` on the user table (nullable, so every check is `active !== false`). An
+`additionalField` on the user table (nullable, so every check is `active !== false`).
+God mode writes `active` too, from the users table, while no provider manages accounts
+(`accountsManagedByScim`: SCIM per workspace, or the instance workspace's SCIM set up with
+a token); while one does, `apps/api` answers god's switch with 409. An
 account with `active` false (`isAccountDeactivated`) is refused at sign-in by the
 `session.create.before` hook with `ACCOUNT_DEACTIVATED`, which covers every sign-in method
 at once; `apps/api` refuses the sessions and keys it already holds. On, a workspace's
@@ -224,10 +232,29 @@ a request may carry a key.
 
 ## MCP OAuth
 
-`mcp()` serves OAuth 2.1 to MCP clients and adds the `oauth_application`,
-`oauth_access_token` and `oauth_consent` tables. Dynamic registration takes `client_name` as
-optional (RFC 7591) while the table requires a name, so `hooks.before` names a client that
-sends none `MCP client`.
+`mcp()` from `@better-auth/mcp` serves OAuth 2.1 to MCP clients, with `jwt()` signing the
+access tokens. It adds the `oauth_client`, `oauth_resource`, `oauth_client_resource`,
+`oauth_refresh_token`, `oauth_access_token`, `oauth_consent`, `oauth_client_assertion`
+and `jwks` tables, and writes the MCP resource (`<API_URL>/mcp`) into `oauth_resource`
+at startup. Any client registers itself (RFC 7591), as ChatGPT and Claude do; the
+provider asks the person for consent the first time a client asks for their account.
+Only `authorization_code` and `refresh_token` are granted, so every token acts for a
+person.
+
+The issuer is `API_URL` itself, path included, so the tokens and the discovery documents
+name the URL a client reaches. The api serves the documents at the root of its origin
+(`oauthAuthorizationServerMetadata`, `openIdConfiguration`,
+`oauthProtectedResourceMetadata`), and the endpoints in them get the path back the way the
+links in auth emails do.
+
+`verifyMcpAccessToken` checks a token against the instance's own keys in-process, then
+reads what a JWT cannot carry: the account must not be deactivated, and a token issued in
+a session ends with that session, as better-auth's introspection has it. That is what
+makes deactivation, which deletes the sessions, end every MCP token at once.
+
+better-auth accepts a plain-HTTP MCP resource only on a loopback host, so any other
+instance without HTTPS leaves `mcp()` and `jwt()` out and serves MCP to personal API keys
+only.
 
 ## OpenAPI reference
 
@@ -245,14 +272,20 @@ not required for it.
   the web app owns its own `auth-client.ts`.
 - Changing the config (plugins, fields) can change the DB tables → run `bun run auth:generate`
   (writes `packages/db/src/schema/auth.ts`), then `db:generate` + `db:migrate`.
-- Config is env-driven: `API_URL` (backend origin, used as better-auth `baseURL`),
-  `BETTER_AUTH_SECRET`, `APP_URL` (frontend origin(s), comma-separated). `API_URL` and
-  `APP_URL` are mandatory and have no default — importing this module throws
-  when either is missing. Do not add a localhost fallback: cookies, the passkey
-  relying party, the cookie domain and every link in an authentication email are
-  derived from them, so a wrong value fails silently at runtime instead of at startup.
-  The parsed `trustedOrigins` list (from `APP_URL`) is exported so the api's CORS uses
-  the same value.
-- **Cross-domain prod:** default cookies are `sameSite: "lax"`. If frontend/backend run on
-  different domains, switch to `sameSite: "none"` + `secure: true`; for subdomains use
-  `advanced.crossSubDomainCookies`.
+- Config is env-driven: `API_URL` (public URL of the backend), `BETTER_AUTH_SECRET`,
+  `APP_URL` (frontend origin(s), comma-separated). `API_URL` and `APP_URL` are mandatory
+  and have no default — importing this module throws when either is missing. Do not add
+  a localhost fallback: cookies, the passkey relying party, the cookie domain and every
+  link in an authentication email are derived from them, so a wrong value fails silently
+  at runtime instead of at startup. The parsed `trustedOrigins` list (from `APP_URL`) is
+  exported so the api's CORS uses the same value.
+- **`API_URL` with a path** (the api under a path of the web's host): better-auth's
+  `baseURL` gets only the origin, because a path there replaces its `/api/auth` base path
+  and the api's fixed mount stops matching. Every public URL built from it — the OAuth
+  redirect URIs, the links in auth emails, the MCP resource and discovery documents — gets
+  the path back through `apiPublicUrl` / `withPublicOrigin`.
+- **Cookies:** `sameSite: "lax"`. Web and api on sibling subdomains share the cookie through
+  `advanced.crossSubDomainCookies` on the parent domain of `APP_URL` (`COOKIE_DOMAIN`
+  overrides it). On one host the cookie has no domain, and over HTTPS the session cookies
+  are named `__Host-better-auth.*`. If frontend/backend run on different domains, switch
+  to `sameSite: "none"` + `secure: true`.

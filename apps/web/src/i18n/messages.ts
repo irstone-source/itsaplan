@@ -1,4 +1,5 @@
 import account from '../../messages/en/account.json';
+import agentAnalytics from '../../messages/en/agentAnalytics.json';
 import aiChat from '../../messages/en/aiChat.json';
 import allWork from '../../messages/en/allWork.json';
 import apiKeys from '../../messages/en/apiKeys.json';
@@ -83,6 +84,7 @@ const coreMessages = {
   god,
   newProject,
   teams,
+  agentAnalytics,
   updates,
   whatsNew,
 };

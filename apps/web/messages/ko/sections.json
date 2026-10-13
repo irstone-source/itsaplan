@@ -1,0 +1,125 @@
+{
+  "account": {
+    "profile": "프로필",
+    "preferences": "환경 설정",
+    "accounts": "계정",
+    "security": "보안",
+    "api-keys": "API 키"
+  },
+  "godGroups": {
+    "management": "관리",
+    "instance": "인스턴스"
+  },
+  "god": {
+    "users": {
+      "label": "사용자",
+      "description": "이 인스턴스의 모든 계정을 관리합니다. 전체 역할, 이메일 인증 여부 및 각 사용자가 접근할 수 있는 프로젝트를 확인할 수 있습니다."
+    },
+    "teams": {
+      "label": "팀",
+      "description": "이 인스턴스의 모든 팀을 관리합니다. 각 팀이 소유한 프로젝트와 소속 멤버를 확인할 수 있습니다."
+    },
+    "projects": {
+      "label": "프로젝트",
+      "description": "이 인스턴스의 모든 프로젝트를 관리합니다. 각 프로젝트의 구성, 최근 활동 및 접근 가능한 사용자를 확인할 수 있습니다."
+    },
+    "general": {
+      "label": "일반",
+      "description": "개인 워크스페이스, 새 프로젝트 기본값 및 AI 에이전트 추적 설정을 관리합니다."
+    },
+    "authentication": {
+      "label": "인증",
+      "description": "이 인스턴스의 회원가입 허용 범위, 계정 인증 방법 및 로그인 공급자를 설정합니다."
+    },
+    "hotkeys": {
+      "label": "키보드 단축키",
+      "description": "이 인스턴스의 모든 사용자에게 적용되는 명령별 단축키를 설정합니다. 각 사용자는 환경 설정에서 자신의 단축키를 변경할 수 있습니다."
+    },
+    "storage": {
+      "label": "저장소",
+      "description": "업로드할 수 있는 개별 파일 크기, 허용되는 첨부 파일 유형 및 프로젝트별 저장 용량을 설정합니다."
+    },
+    "telegram": {
+      "label": "Telegram",
+      "description": "사용자가 Telegram 계정을 연결할 봇과 자체 봇을 설정하지 않은 프로젝트에서 알림을 전송할 봇을 설정합니다."
+    },
+    "email": {
+      "label": "이메일 서비스 공급자",
+      "description": "비밀번호 재설정, 이메일 인증 및 로그인 링크 전송에 사용할 이메일 공급자를 설정합니다."
+    },
+    "auth-provider": {
+      "label": "인증 서비스 공급자",
+      "description": "사용자가 로그인할 때 사용할 수 있는 외부 계정을 설정합니다."
+    },
+    "scim": {
+      "label": "SCIM",
+      "description": "ID 공급자가 이 인스턴스의 계정을 생성, 업데이트 및 비활성화하고 그룹을 통해 프로젝트 접근 권한을 부여할 수 있도록 설정합니다."
+    },
+    "branding": {
+      "label": "Branding",
+      "description": "The product name, accent colour and logo everyone on this instance sees."
+    },
+    "billing": {
+      "label": "Billing",
+      "description": "How time estimates become money: hours per day and the internal day rate."
+    },
+    "tracker": {
+      "label": "Tracker",
+      "description": "The growth tracker's rules: colour thresholds, focus meeting streaks, loops, companies and who sets targets."
+    }
+  },
+  "settings": {
+    "general": {
+      "label": "일반",
+      "description": "프로젝트 이름, 설명 및 표시할 섹션을 설정합니다."
+    },
+    "states": {
+      "label": "상태",
+      "description": "이슈가 진행되는 워크플로 상태를 설정합니다. 각 상태는 하나의 열로 표시됩니다."
+    },
+    "issue-types": {
+      "label": "이슈 유형",
+      "description": "프로젝트에서 사용할 이슈 유형과 유형별 필드를 설정합니다."
+    },
+    "labels": {
+      "label": "라벨",
+      "description": "프로젝트의 이슈를 분류하고 필터링하는 데 사용할 라벨을 설정합니다."
+    },
+    "custom-fields": {
+      "label": "사용자 지정 필드",
+      "description": "이슈에 표시할 추가 필드를 설정합니다. 모든 이슈에 적용하거나 특정 이슈 유형에만 적용할 수 있습니다."
+    },
+    "issue-templates": {
+      "label": "이슈 템플릿",
+      "description": "새 이슈를 생성할 때 사용할 제목, 설명 및 속성의 기본값을 설정합니다."
+    },
+    "configuration": {
+      "label": "설정",
+      "description": "상위 이슈와 함께 하위 이슈를 종료하는 방식과 오래된 이슈를 보관하는 시점을 설정합니다."
+    },
+    "actions": {
+      "label": "액션",
+      "description": "한 번의 클릭으로 이슈의 필드를 변경하는 버튼을 설정합니다."
+    },
+    "schedules": {
+      "label": "일정",
+      "description": "AI 에이전트 작업을 정해진 일정에 따라 반복 실행합니다."
+    },
+    "webhooks": {
+      "label": "웹훅",
+      "description": "프로젝트 이벤트를 외부 URL로 전송하고 웹훅별 시크릿으로 서명합니다."
+    },
+    "git": {
+      "label": "저장소",
+      "description": "GitHub, GitLab, Gitea, Forgejo 또는 Bitbucket에서 Pull Request가 병합되면 연결된 이슈를 종료합니다."
+    },
+    "import-export": {
+      "label": "가져오기/내보내기",
+      "description": "셀프 호스팅 Plane 인스턴스에서 이슈, 댓글 및 라벨을 가져오거나 이 프로젝트의 데이터를 JSON으로 내보냅니다."
+    },
+    "ai-agents": {
+      "label": "AI 에이전트",
+      "description": "이 프로젝트에서 작업하는 AI 에이전트를 관리합니다."
+    }
+  }
+}

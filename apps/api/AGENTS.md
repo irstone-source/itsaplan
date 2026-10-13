@@ -117,8 +117,8 @@ Enforced declaratively through macros, never imperative calls in handlers.
   `getTeamAccess` in `shared/access.ts` merge the membership with the grant, and every
   guard reads them. The lists that decide what the caller sees — `listProjects`, the
   team list, `readRevs` — take the reached teams the same way, and answer `via:
-  'workspace'` for what the caller reaches only through the workspace. Everything that
-  asks whether *someone else* is a member — assignees, mentions, watchers, notification
+'workspace'` for what the caller reaches only through the workspace. Everything that
+  asks whether _someone else_ is a member — assignees, mentions, watchers, notification
   recipients, seats, the last-owner check, SCIM — still reads the rows, so a workspace
   manager is in none of the member lists, gets no notifications and takes no seat.
 - **`:projectKey` routes:** `.use(guards)` and set `permission: ["<resource>",
@@ -129,7 +129,7 @@ Enforced declaratively through macros, never imperative calls in handlers.
   options (e.g. `workItem: "edit"`). `GET /issues/:issueId` instead asserts
   `assertPermission` on the fetched row, and spreads `requiresPermission([...])` into its
   `detail` so the MCP tool table still reports what it requires. `GET
-  /projects/:projectKey/issues/:sequenceNumber` does the same for an old number that
+/projects/:projectKey/issues/:sequenceNumber` does the same for an old number that
   resolved to an issue now in another project. `POST /issues/:issueId/move` checks the
   target project in the `moveTarget` macro, which reads `projectId` from the body.
 - Every guard publishes the pair it asserts as `x-permission` on the route's OpenAPI
@@ -172,7 +172,7 @@ Enforced declaratively through macros, never imperative calls in handlers.
   `:userId` use `memberSelfOrAdmin` instead: that member acts on their own row —
   leaving the project, saying what they do in it — with no member permission at all.
   The one standing the member permission does not carry is `owner`: an owner bypasses
-  the matrix, so adding one, promoting to one and *inviting* one all go through the
+  the matrix, so adding one, promoting to one and _inviting_ one all go through the
   same rule — an owner of the project, or an owner or manager of the team that owns it
   (`assertProjectAdmin`, and `mayGrantInviteRanks` for the invite). The team rank is
   stricter still: only a team owner grants, takes or invites `owner` and `manager`
@@ -203,10 +203,51 @@ Two decisions a reader would otherwise propose again:
   flag on the user. An agent is reachable through its team or not at all.
 - **The `ai_agents` permissions are administrative.** A role granting `create` or `edit`
   can make an agent, attach it to the projects the caller sees, and read its key — so
-  granting either is granting everything an agent of those projects can reach.
+  granting either is granting everything an agent of those projects can reach. What the
+  agents spent is a resource of its own, `agent_usage`, read only, so reading it
+  administers nothing.
 - **An agent's role is its `project_member` row**, per project, set from the project's
   member list like a person's. Attaching an agent joins it on the team's default role;
   `members/` refuses to make it an owner, since an owner bypasses the matrix.
+
+Runs of an internal agent are traced. `runtime/observability.ts` holds the one Mastra
+container of the process: an agent built for a run writes no spans on its own, so every
+one is registered with it, and its exporter writes the spans into Mastra's own table on
+the application database. A run names what it belongs to in the trace metadata — the
+agent, the team, the project, the issue and the schedule, and either the queued run with
+its trigger or, for a chat run, the person who asked — which is what `runtime/traces.ts`
+filters on, since the spans carry no foreign keys of ours. How long they are kept is the
+instance setting under god mode (`app_setting` key `agents`); `runtime/trace-retention.ts`
+applies it from the api's background loop. The window applies to whole runs: the sweep
+finds the root spans past it and deletes their traces whole, and the same sweep drops
+the traces of a deleted team.
+
+The same traces back the agent dashboard (`runtime/analytics.ts`) at
+`GET /teams/:teamId/agent-analytics`: runs, tokens and cost by model, agent, project and
+day, over a window and the same span before it. Its owner and managers read every project
+of the team; anyone else the projects where their role grants `agent_usage` `read`
+(`projectsWithPermission` in `shared/access.ts`), since a role is set per project and a
+team-wide figure would show the others. The response names those projects
+(`readableProjects`), and `projectId` narrows the dashboard to one of them.
+`GET /workspaces/:workspaceId/agent-analytics` reads it over every team of a workspace,
+with the teams compared, for its owner and its admins.
+
+Cost is applied in the api, not read from a span. Mastra computes it in a metrics
+pipeline that needs an analytics store its Postgres adapter does not implement, so the
+spans arrive with raw token counts and `runtime/model-pricing.ts` prices them from the
+table `@mastra/observability` bundles for that pipeline (`dist/metrics/pricing-data.jsonl`).
+Its provider ids are the registry `AI_PROVIDERS` mirrors, so a credential's integration
+key matches it directly. The file is outside the package's exports map: a release that
+moves it leaves the table empty, an unpriced call reports no cost, and the dashboard shows
+the tokens without an amount.
+
+A workspace sets its own price for any model in `model_price`, which the dashboards of its
+teams read before the table (`ownPrices` in `analytics.ts`): a model the table lacks, such
+as one behind an OpenAI-compatible proxy, or one bought at another rate. The cost is
+worked out when a dashboard is read, so a price also recounts past calls.
+`modules/agents/prices` serves the list to the workspace's owner and its admins: the
+models it called in the last 90 days with those no price covers first, and the whole
+table, paged, each beside the workspace's own price.
 
 Over MCP the team is resolved from the API key rather than asked for (`mcp/server.ts`):
 an agent's key acts in its own team, a person with one team in theirs, and a person in
@@ -233,11 +274,30 @@ undoes one.
   (`modules/agents/schedules/extension.ts`): schedule types of its own beside `cron` and
   `status`; the `options` it keeps on a schedule, checked on every write and, with the id
   maps, on a project copy; and which issues start a schedule's run. `queueScheduleRuns`
-  (`issue-runs.ts`) queues the runs of its types on issues, with the trigger `event`.
+  (`issue-runs.ts`) queues the runs of its types on issues, with the trigger `event`. A
+  schedule of a type or with options no installed extension reads (`isScheduleSupported`)
+  stays as it is, so it works again once the extension is back, but starts no run and
+  answers 409 to an update; only a delete goes through.
 - `setRunAdmission` (`modules/agents/core/run-admission.ts`): the seconds a claimed run
   waits before it starts, asked in the poller and in a runner's claim.
 - `onProjectEvent` (`modules/webhooks/emit.ts`): every issue and comment event the
   webhooks get, inside the request that caused it.
+
+Functions with no setter, for the routes such a build adds:
+
+- `getAgentAnalytics({ teamIds, projectIds }, days)`
+  (`modules/agents/core/runtime/analytics.ts`): the agent dashboard over any set of
+  teams, or some of their projects.
+- `tracedRuns(scope, from)`, `analyticsWindow(days)` (same file): the runs the dashboard
+  is read from, with the whole trace metadata, and its window, for figures of the
+  build's own.
+- `workspaceScope(workspaceId)`, `onlyProject(scope, projectId)` (same file): the scope
+  of the workspace dashboard, and a scope narrowed to one project as the team dashboard
+  does it.
+- `estimateCost(provider, model, usage, calls, own)` (`runtime/model-pricing.ts`): what
+  model calls cost, with `own` from `ownPrices(scope)` (`analytics.ts`) so a workspace's
+  prices count.
+- `projectsWithPermission` (`shared/access.ts`): the projects a member may read.
 
 ## SCIM
 
@@ -281,6 +341,13 @@ links it. The group mappings and the settings are routes of `modules/workspaces/
   A deactivated account (`user.active` false, written alongside `scim_user.active`) keeps
   its teams and projects but cannot sign in, and `isAccountDeactivated` makes
   `authContext`, `/me` and the MCP key check refuse what it already holds.
+  God mode writes `user.active` too (`POST /god/users/:userId/deactivate` and
+  `/reactivate` in `modules/god/`) while no provider manages accounts
+  (`accountsManagedByScim` from `@repo/auth`), and answers 409 while one does. Deactivating
+  there also deletes the account's sessions, its MCP OAuth tokens and the pending invites
+  it created; its API keys are kept and answer 401 until it is reactivated. The instance
+  owner and an agent's account are refused (403). The user list and detail carry
+  `activeLock` (`owner`, `agent` or `scim`), the reason the switch is locked, or null.
 - **On, as in a hosted build, SCIM is each workspace's.** A workspace's provider decides who
   is in the workspace, not who has an account, so the same person can be linked by several
   workspaces. It sees the accounts it linked and the people in the workspace's teams

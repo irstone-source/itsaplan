@@ -17,6 +17,8 @@
       "cron": "Sesuai jadwal",
       "status": "Saat issue masuk ke status"
     },
+    "moreTypes": "Lebih banyak pemicu di Cloud dan Pro",
+    "moreTypesHint": "Issue baru, penugasan, label, dan komentar",
     "taskOptional": "Tugas (opsional)",
     "issueTaskPlaceholder": "Tulis kriteria penerimaan di deskripsi issue.",
     "issueTaskHint": "Agen menerima issue dan apa yang terjadi padanya. Tambahkan apa yang harus dilakukan.",
@@ -46,6 +48,8 @@
     "runsSuffix": "{description} UTC",
     "statusActive": "Aktif",
     "statusPaused": "Dijeda",
+    "unavailable": "Perlu Cloud atau Pro",
+    "unavailableHint": "Dibuat dengan Cloud atau Pro. Disimpan apa adanya, tetapi tidak berjalan di sini.",
     "viewTask": "Lihat tugas",
     "noRunsShort": "Belum pernah dijalankan",
     "pause": "Jeda jadwal",

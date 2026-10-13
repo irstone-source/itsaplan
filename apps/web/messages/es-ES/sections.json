@@ -17,7 +17,7 @@
     },
     "teams": {
       "label": "Equipos",
-      "description": "Todos los equipos de esta instancia: los proyectos que posee cada uno, y quién pertene a él."
+      "description": "Todos los equipos de esta instancia: los proyectos que posee cada uno, y quién pertenece a él."
     },
     "projects": {
       "label": "Proyectos",
@@ -25,7 +25,7 @@
     },
     "general": {
       "label": "General",
-      "description": "Espacios de trabajo personales y valores por defecto para los proyectos nuevos."
+      "description": "Espacios de trabajo personales, valores por defecto para los proyectos nuevos y trazas de agentes."
     },
     "branding": {
       "label": "Marca",

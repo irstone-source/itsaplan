@@ -1034,22 +1034,29 @@
     {
       "idx": 147,
       "version": "7",
-      "when": 1791485447283,
-      "tag": "0147_cambray",
+      "when": 1791744496755,
+      "tag": "0147_model_price",
       "breakpoints": true
     },
     {
       "idx": 148,
       "version": "7",
-      "when": 1791499880216,
-      "tag": "0148_git_release",
+      "when": 1791907056751,
+      "tag": "0148_drop_mcp_oauth_tables",
       "breakpoints": true
     },
     {
       "idx": 149,
       "version": "7",
-      "when": 1791804225200,
-      "tag": "0149_playbook",
+      "when": 1791907060303,
+      "tag": "0149_oauth_provider_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 150,
+      "version": "7",
+      "when": 1791916789295,
+      "tag": "0150_cambray",
       "breakpoints": true
     }
   ]

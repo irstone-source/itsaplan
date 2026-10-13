@@ -19,7 +19,8 @@
       "signIn": "Sign-in",
       "projects": "Projects",
       "lastSeen": "Last seen",
-      "email": "Email"
+      "email": "Email",
+      "active": "Active"
     },
     "registered": "joined {date}",
     "roleGod": "God",
@@ -30,7 +31,20 @@
     "verified": "Verified",
     "notVerified": "Not verified",
     "open": "Open account",
-    "showAccess": "Show project access"
+    "showAccess": "Show project access",
+    "activeAria": "Account active: {email}",
+    "activeState": {
+      "on": "Active",
+      "off": "Inactive"
+    },
+    "activeLock": {
+      "owner": "The instance owner is always active.",
+      "agent": "An agent's account follows its agent.",
+      "scim": "Your identity provider (SCIM) decides which accounts are active."
+    },
+    "deactivateTitle": "Deactivate {email}?",
+    "deactivateBody": "They are signed out at once and cannot sign in or use their API keys until you turn the account back on. Their MCP connections and the invites they sent are removed. Nothing else is deleted.",
+    "deactivateConfirm": "Deactivate"
   },
   "userPanel": {
     "instanceOwner": "Instance owner",
@@ -171,7 +185,13 @@
     "workspacesSaved": "Workspace settings saved",
     "workspaces": "Workspaces",
     "personalWorkspaces": "A workspace for everyone",
-    "personalWorkspacesHint": "Every account gets a workspace of its own, named after the person. Off, people work only in the workspaces they are added to."
+    "personalWorkspacesHint": "Every account gets a workspace of its own, named after the person. Off, people work only in the workspaces they are added to.",
+    "agents": "Agents",
+    "agentsSaved": "Agent settings saved",
+    "traceRetention": "Keep run traces",
+    "traceRetentionHint": "Each agent run records its model and tool calls. Usage dashboards count only the runs still kept.",
+    "traceDays": "{days, plural, one {# day} other {# days}}",
+    "traceForever": "Forever"
   },
   "authentication": {
     "saved": "Authentication settings saved",

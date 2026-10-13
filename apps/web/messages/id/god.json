@@ -19,7 +19,8 @@
       "signIn": "Masuk",
       "projects": "Proyek",
       "lastSeen": "Terakhir dilihat",
-      "email": "Email"
+      "email": "Email",
+      "active": "Aktif"
     },
     "registered": "bergabung {date}",
     "roleGod": "God",
@@ -30,7 +31,20 @@
     "verified": "Terverifikasi",
     "notVerified": "Belum terverifikasi",
     "open": "Buka akun",
-    "showAccess": "Tampilkan akses proyek"
+    "showAccess": "Tampilkan akses proyek",
+    "activeAria": "Akun aktif: {email}",
+    "activeState": {
+      "on": "Aktif",
+      "off": "Nonaktif"
+    },
+    "activeLock": {
+      "owner": "Pemilik instans selalu aktif.",
+      "agent": "Akun agen mengikuti agennya.",
+      "scim": "Penyedia identitas Anda (SCIM) menentukan akun mana yang aktif."
+    },
+    "deactivateTitle": "Nonaktifkan {email}?",
+    "deactivateBody": "Orang ini langsung dikeluarkan dan tidak bisa masuk atau memakai kunci API-nya sampai Anda mengaktifkan akunnya lagi. Koneksi MCP dan undangan yang dikirimnya dihapus. Tidak ada yang lain yang dihapus.",
+    "deactivateConfirm": "Nonaktifkan"
   },
   "userPanel": {
     "instanceOwner": "Pemilik instance",
@@ -171,7 +185,13 @@
     "workspacesSaved": "Pengaturan workspace disimpan",
     "workspaces": "Workspace",
     "personalWorkspaces": "Workspace untuk setiap orang",
-    "personalWorkspacesHint": "Setiap akun mendapat workspace sendiri dengan nama pemiliknya. Jika nonaktif, orang hanya bekerja di workspace tempat mereka ditambahkan."
+    "personalWorkspacesHint": "Setiap akun mendapat workspace sendiri dengan nama pemiliknya. Jika nonaktif, orang hanya bekerja di workspace tempat mereka ditambahkan.",
+    "agents": "Agen",
+    "agentsSaved": "Pengaturan agen disimpan",
+    "traceRetention": "Simpan trace eksekusi",
+    "traceRetentionHint": "Setiap eksekusi agen mencatat panggilan ke model dan alat. Dasbor penggunaan hanya menghitung eksekusi yang masih disimpan.",
+    "traceDays": "{days} hari",
+    "traceForever": "Selamanya"
   },
   "authentication": {
     "saved": "Pengaturan autentikasi disimpan",

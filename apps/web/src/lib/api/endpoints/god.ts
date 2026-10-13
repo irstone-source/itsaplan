@@ -142,6 +142,9 @@ export interface InstanceUser {
   isAgent: boolean;
   providers: string[];
   projectCount: number;
+  active: boolean;
+  // Why god cannot switch `active`, or null when it can.
+  activeLock: 'owner' | 'agent' | 'scim' | null;
   lastSeenAt: string | null;
   createdAt: string;
 }
@@ -273,6 +276,20 @@ export const updateInstanceProjectDefaults = (body: ProjectDefaults) =>
     body: JSON.stringify(body),
   });
 
+// What applies to every team's agents on this instance.
+export interface AgentSettings {
+  // Days a run trace is kept for. 0 keeps traces until they are deleted by hand.
+  traceRetentionDays: number;
+}
+
+export const getInstanceAgentSettings = () => request<AgentSettings>('/god/agent-settings');
+
+export const updateInstanceAgentSettings = (body: AgentSettings) =>
+  request<AgentSettings>('/god/agent-settings', {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+
 export const getInstanceStorageSettings = () => request<StorageSettings>('/god/storage-settings');
 
 export const updateInstanceStorageSettings = (patch: StorageSettingsPatch) =>
@@ -318,6 +335,11 @@ export const assignInstanceUserProjects = (userId: string, projectIds: number[])
 
 export const removeInstanceUserProject = (userId: string, projectId: number) =>
   request<InstanceUserDetail>(`/god/users/${userId}/projects/${projectId}`, { method: 'DELETE' });
+
+export const setInstanceUserActive = (userId: string, active: boolean) =>
+  request<InstanceUserDetail>(`/god/users/${userId}/${active ? 'reactivate' : 'deactivate'}`, {
+    method: 'POST',
+  });
 
 export const verifyInstanceUserEmail = (userId: string) =>
   request<InstanceUserDetail>(`/god/users/${userId}/verify-email`, { method: 'POST' });

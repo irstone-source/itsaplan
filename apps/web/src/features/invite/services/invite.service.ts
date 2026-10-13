@@ -78,9 +78,6 @@ export async function signInWithProviderForInvite(
   provider: 'google' | 'oidc',
 ): Promise<void> {
   const back = `${window.location.origin}/invite/${encodeURIComponent(token)}`;
-  const result =
-    provider === 'google'
-      ? await signIn.social({ provider: 'google', callbackURL: back, errorCallbackURL: back })
-      : await signIn.oauth2({ providerId: 'oidc', callbackURL: back, errorCallbackURL: back });
+  const result = await signIn.social({ provider, callbackURL: back, errorCallbackURL: back });
   if (result.error) throw new Error(result.error.message ?? '');
 }

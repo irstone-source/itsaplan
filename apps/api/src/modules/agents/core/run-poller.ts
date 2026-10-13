@@ -16,7 +16,7 @@ import {
   scheduleRunRetry,
   type ClaimedRun,
 } from './run-queue';
-import { runAgent } from './runtime';
+import { STEP_LIMIT_MESSAGE, runAgent } from './runtime';
 import { runThreadId } from './runtime/thread-ids';
 
 // Drains the agent_run queue. The runtime, the model credentials and the limits are
@@ -47,6 +47,7 @@ async function processRun(run: ClaimedRun): Promise<void> {
   // The issue's timeline entries are written here, where the agent's work actually
   // starts and ends. A failure that will be retried is not the end of the run, so only
   // the last attempt logs one.
+  const timeoutMs = runTimeoutMs(maxRunSeconds);
   try {
     await agentRunStarted(run);
     const result = await runAgent(run.agentId, run.projectId, framePrompt(run), {
@@ -54,9 +55,23 @@ async function processRun(run: ClaimedRun): Promise<void> {
       threadId: runThreadId(run),
       issueId: run.issueId,
       scheduleId: run.scheduleId,
+      runId: run.id,
+      trigger: run.trigger,
       contextPreamble: runModePreamble(run.trigger) + peopleContext(run),
-      abortSignal: AbortSignal.timeout(runTimeoutMs(maxRunSeconds)),
+      abortSignal: AbortSignal.timeout(timeoutMs),
     });
+    if (result.aborted) {
+      // Mastra resolves generate() on abort, so the partial text would read as a success.
+      // Not retried: a run that hits the time limit will hit it again.
+      await recordAgentRunFinished(run, 'failed');
+      await markRunFailed(run.id, `Timed out after ${Math.round(timeoutMs / 1000)}s`);
+      return;
+    }
+    if (result.stepLimit) {
+      await recordAgentRunFinished(run, 'failed');
+      await markRunFailed(run.id, STEP_LIMIT_MESSAGE);
+      return;
+    }
     await recordAgentRunFinished(run, 'success');
     await markRunSuccess(run.id, result.text, result.usage);
   } catch (error) {

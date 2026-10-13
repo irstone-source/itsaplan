@@ -1,7 +1,9 @@
 -- Cambray's own schema, in one migration that is safe to re-run: an instance that
--- already has these tables from the earlier Cambray migrations (0135-0140 before the
--- v1.4 upgrade) skips each statement. A column added to a table after it was first
--- created (north_star) has its own ADD COLUMN, since CREATE TABLE IF NOT EXISTS skips it.
+-- already has these tables from earlier Cambray migrations (0135-0140 before v1.4,
+-- 0147-0149 on v1.4) skips each statement. It is numbered after upstream's
+-- migrations so an upgrade applies upstream's first. A column added to a table
+-- after it was first created has its own ADD COLUMN, since CREATE TABLE IF NOT
+-- EXISTS skips it; a constraint is added inside a block that ignores a duplicate.
 CREATE TABLE IF NOT EXISTS "finance_year" (
 	"start_month" text PRIMARY KEY NOT NULL,
 	"revenue_target_pence" integer NOT NULL,
@@ -139,5 +141,110 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
   ALTER TABLE "initiative" ADD CONSTRAINT "initiative_day_rate_check" CHECK ("initiative"."day_rate_pence" >= 0);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "git_release" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"project_id" integer NOT NULL,
+	"provider" text NOT NULL,
+	"repository" text NOT NULL,
+	"tag" text NOT NULL,
+	"name" text NOT NULL,
+	"notes" text DEFAULT '' NOT NULL,
+	"url" text,
+	"prerelease" boolean DEFAULT false NOT NULL,
+	"target_commitish" text,
+	"published_at" timestamp with time zone,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "git_release_project_id_provider_repository_tag_unique" UNIQUE("project_id","provider","repository","tag")
+);
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "git_release" ADD CONSTRAINT "git_release_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "git_release_project_idx" ON "git_release" USING btree ("project_id","published_at" DESC NULLS LAST);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "playbook_item" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"project_id" integer NOT NULL,
+	"initiative_id" integer NOT NULL,
+	"title" text NOT NULL,
+	"description" text DEFAULT '' NOT NULL,
+	"price_pence" integer DEFAULT 0 NOT NULL,
+	"billing" text DEFAULT 'billable' NOT NULL,
+	"estimate_minutes" integer,
+	"cadence" text DEFAULT 'monthly' NOT NULL,
+	"quarter_month" integer DEFAULT 1 NOT NULL,
+	"type_id" integer,
+	"active" boolean DEFAULT true NOT NULL,
+	"position" double precision DEFAULT 0 NOT NULL,
+	"stripe_price_id" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "playbook_item_price_check" CHECK ("playbook_item"."price_pence" >= 0),
+	CONSTRAINT "playbook_item_estimate_check" CHECK ("playbook_item"."estimate_minutes" >= 0),
+	CONSTRAINT "playbook_item_billing_check" CHECK ("playbook_item"."billing" IN ('billable', 'retainer', 'non_billable')),
+	CONSTRAINT "playbook_item_cadence_check" CHECK ("playbook_item"."cadence" IN ('monthly', 'quarterly', 'ad_hoc')),
+	CONSTRAINT "playbook_item_quarter_month_check" CHECK ("playbook_item"."quarter_month" BETWEEN 1 AND 3)
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "playbook_item_label" (
+	"item_id" integer NOT NULL,
+	"label_id" integer NOT NULL,
+	CONSTRAINT "playbook_item_label_item_id_label_id_pk" PRIMARY KEY("item_id","label_id")
+);
+--> statement-breakpoint
+ALTER TABLE "cycle" ADD COLUMN IF NOT EXISTS "capacity_minutes" integer;
+--> statement-breakpoint
+ALTER TABLE "initiative" ADD COLUMN IF NOT EXISTS "revenue_class" text;
+--> statement-breakpoint
+ALTER TABLE "initiative" ADD COLUMN IF NOT EXISTS "monthly_fee_pence" integer;
+--> statement-breakpoint
+ALTER TABLE "issue" ADD COLUMN IF NOT EXISTS "playbook_item_id" integer;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "playbook_item" ADD CONSTRAINT "playbook_item_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "playbook_item" ADD CONSTRAINT "playbook_item_initiative_id_initiative_id_fk" FOREIGN KEY ("initiative_id") REFERENCES "public"."initiative"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "playbook_item" ADD CONSTRAINT "playbook_item_type_id_issue_type_id_fk" FOREIGN KEY ("type_id") REFERENCES "public"."issue_type"("id") ON DELETE set null ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "playbook_item_label" ADD CONSTRAINT "playbook_item_label_item_id_playbook_item_id_fk" FOREIGN KEY ("item_id") REFERENCES "public"."playbook_item"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "playbook_item_label" ADD CONSTRAINT "playbook_item_label_label_id_label_id_fk" FOREIGN KEY ("label_id") REFERENCES "public"."label"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "playbook_item_project_idx" ON "playbook_item" USING btree ("project_id","initiative_id","position");
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "issue" ADD CONSTRAINT "issue_playbook_item_id_playbook_item_id_fk" FOREIGN KEY ("playbook_item_id") REFERENCES "public"."playbook_item"("id") ON DELETE set null ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "issue_playbook_item_idx" ON "issue" USING btree ("playbook_item_id","cycle_id") WHERE "issue"."playbook_item_id" IS NOT NULL;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "initiative" ADD CONSTRAINT "initiative_revenue_class_check" CHECK ("initiative"."revenue_class" IN ('committed', 'new', 'management'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "initiative" ADD CONSTRAINT "initiative_monthly_fee_check" CHECK ("initiative"."monthly_fee_pence" >= 0);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;

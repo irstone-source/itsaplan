@@ -1,8 +1,10 @@
 import {
   auth,
   getSessionFromHeaders,
-  oAuthDiscoveryMetadata,
-  oAuthProtectedResourceMetadata,
+  oauthAuthorizationServerMetadata,
+  oauthProtectedResourceMetadata,
+  openIdConfiguration,
+  OIDC_PROVIDER_ID,
   trustedOrigins,
   getAuthSettings,
   hasConfiguredGoogle,
@@ -44,6 +46,11 @@ curl "${apiUrl}/projects" \\
 JSON errors use \`{ "error": "message" }\` and may also include a stable \`code\`. Pagination parameters and response envelopes are documented per operation.
 
 For agent clients, use the MCP endpoint at [${apiUrl}/mcp](${apiUrl}/mcp). SCIM, worker-internal routes, and repository webhooks use the separate credentials shown on their operations.`;
+
+// better-auth serves the OIDC callback at /callback/oidc; identity providers keep the
+// redirect URI they were registered with, which is this path.
+const LEGACY_OIDC_CALLBACK = `/api/auth/oauth2/callback/${OIDC_PROVIDER_ID}`;
+const OIDC_CALLBACK = `/api/auth/callback/${OIDC_PROVIDER_ID}`;
 
 // The assembled Elysia app, without `.listen()`. `index.ts` imports this and
 // binds the port; tests import it and pass it to Eden Treaty to drive routes in
@@ -148,6 +155,7 @@ export const app = new Elysia()
               'Repository integration: the inbound pull request webhook and its per-project settings',
           },
           { name: 'Agent Schedules', description: 'Recurring tasks for internal agents' },
+          { name: 'Model Prices', description: 'The prices a workspace costs model calls at' },
           { name: 'Dashboards', description: 'Saved analytics dashboards' },
           { name: 'Documents', description: 'Shared project Docs pages' },
           { name: 'Link previews', description: 'Public web link metadata' },
@@ -235,21 +243,32 @@ export const app = new Elysia()
   // OAuth discovery lives at the API origin because MCP clients resolve the
   // authorization server from protected-resource metadata before entering the
   // Better Auth base path.
+  //
+  // An issuer with a path is looked up with the path after the well-known segment
+  // (RFC 8414 §3), and some clients fall back to OpenID discovery, so each document
+  // answers under any suffix; the proxy decides which of these paths reach the api.
   .get('/.well-known/oauth-authorization-server', ({ request }) =>
-    oAuthDiscoveryMetadata(auth)(request),
+    oauthAuthorizationServerMetadata(request),
   )
-  .get('/.well-known/oauth-protected-resource/mcp', ({ request }) =>
-    oAuthProtectedResourceMetadata(auth)(request),
+  .get('/.well-known/oauth-authorization-server/*', ({ request }) =>
+    oauthAuthorizationServerMetadata(request),
   )
+  .get('/.well-known/openid-configuration', ({ request }) => openIdConfiguration(request))
+  .get('/.well-known/openid-configuration/*', ({ request }) => openIdConfiguration(request))
+  .get('/.well-known/oauth-protected-resource', () => oauthProtectedResourceMetadata())
+  .get('/.well-known/oauth-protected-resource/*', () => oauthProtectedResourceMetadata())
   // better-auth: forward every /api/auth/* request to its handler. The OIDC
   // callback gets one extra step afterwards: folding the provider's `groups` claim
   // into the SCIM group tables, so a group mapped to a project in god mode grants
   // access on an OIDC-only instance too, not just one that also runs a SCIM sync.
   .all('/api/auth/*', async ({ request }) => {
-    const response = await auth.handler(request);
-    if (new URL(request.url).pathname.startsWith('/api/auth/oauth2/callback/')) {
-      await syncOidcGroupsAfterCallback(response);
+    const url = new URL(request.url);
+    if (url.pathname === LEGACY_OIDC_CALLBACK) {
+      url.pathname = OIDC_CALLBACK;
+      request = new Request(url.href, request);
     }
+    const response = await auth.handler(request);
+    if (url.pathname === OIDC_CALLBACK) await syncOidcGroupsAfterCallback(response);
     return response;
   })
   // Example protected handler: read the session from better-auth.
@@ -259,7 +278,8 @@ export const app = new Elysia()
       const session = await getSessionFromHeaders(request.headers);
       // A deactivated account is not signed in as far as the app is concerned:
       // every planner route answers 401 for it, and this is what the screens ask
-      // first. Deactivation arrives over SCIM, after the session was opened.
+      // first. Deactivation arrives over SCIM or from god mode, after the session
+      // was opened.
       if (!session || isAccountDeactivated(session.user)) {
         return { authenticated: false };
       }

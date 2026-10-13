@@ -15,6 +15,9 @@ export const scheduleRunParams = t.Object({
 });
 
 export const scheduleStatus = t.UnionEnum(['active', 'paused'], {
+  // t.UnionEnum defaults to its first value, which would resume a paused schedule on a
+  // PATCH that leaves the status out; the update is partial.
+  default: undefined,
   description: "'active' runs, 'paused' does not run until it is set back to 'active'.",
 });
 
@@ -98,6 +101,11 @@ export const AgentScheduleResponse = t.Object({
   canTrigger: t.Boolean({
     description:
       "Whether you may run or stop this schedule; an 'owner'-scoped agent serves its owner only.",
+  }),
+  supported: t.Boolean({
+    description:
+      'False for a schedule whose type or options come from Cloud or Pro and are not on this ' +
+      'instance. It is kept as it is but starts no run and cannot be updated, only deleted.',
   }),
   createdAt: t.String(),
   updatedAt: t.String(),

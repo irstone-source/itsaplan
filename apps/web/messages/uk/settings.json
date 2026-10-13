@@ -17,6 +17,8 @@
       "cron": "За розкладом",
       "status": "Коли задача потрапляє в статус"
     },
+    "moreTypes": "Більше тригерів у Cloud і Pro",
+    "moreTypesHint": "Нові задачі, призначення, мітки й коментарі",
     "taskOptional": "Задача (необов'язково)",
     "issueTaskPlaceholder": "Опиши критерії приймання в описі задачі.",
     "issueTaskHint": "Агент отримує задачу і те, що з нею сталося. Додай, що з нею зробити.",
@@ -46,6 +48,8 @@
     "runsSuffix": "{description} UTC",
     "statusActive": "Активний",
     "statusPaused": "На паузі",
+    "unavailable": "Потрібен Cloud або Pro",
+    "unavailableHint": "Створено в Cloud або Pro. Збережено як є, але тут не запускається.",
     "viewTask": "Переглянути задачу",
     "noRunsShort": "Запусків ще немає",
     "pause": "Призупинити розклад",

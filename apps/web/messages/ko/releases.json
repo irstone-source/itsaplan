@@ -1,0 +1,11 @@
+{
+  "title": "Releases",
+  "description": "Each release published on a connected repository, with the work items its pull requests shipped.",
+  "empty": "No releases yet",
+  "emptyDescription": "Publish a release on a connected GitHub repository. Work items whose merged pull requests appear in its notes are marked as shipped.",
+  "candidate": "Release candidate",
+  "released": "Released",
+  "unpublished": "Not published",
+  "shipped": "{count, plural, =0 {No linked work items} one {# work item shipped} other {# work items shipped}}",
+  "viewOnGithub": "View release"
+}

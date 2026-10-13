@@ -19,7 +19,8 @@
       "signIn": "Inicio de sesión",
       "projects": "Proyectos",
       "lastSeen": "Última actividad",
-      "email": "Correo"
+      "email": "Correo",
+      "active": "Activa"
     },
     "registered": "se unió el {date}",
     "roleGod": "Dios",
@@ -30,7 +31,20 @@
     "verified": "Verificado",
     "notVerified": "No verificado",
     "open": "Abrir la cuenta",
-    "showAccess": "Mostrar el acceso a proyectos"
+    "showAccess": "Mostrar el acceso a proyectos",
+    "activeAria": "Cuenta activa: {email}",
+    "activeState": {
+      "on": "Activa",
+      "off": "Inactiva"
+    },
+    "activeLock": {
+      "owner": "El propietario de la instancia siempre está activo.",
+      "agent": "La cuenta de un agente sigue a su agente.",
+      "scim": "Tu proveedor de identidad (SCIM) decide qué cuentas están activas."
+    },
+    "deactivateTitle": "¿Desactivar {email}?",
+    "deactivateBody": "Se cierra su sesión al momento y no podrá entrar ni usar sus claves de API hasta que vuelvas a activar la cuenta. Se quitan sus conexiones MCP y las invitaciones que envió. No se borra nada más.",
+    "deactivateConfirm": "Desactivar"
   },
   "userPanel": {
     "instanceOwner": "Propietario de la instancia",
@@ -153,7 +167,7 @@
     "members": "Miembros",
     "searchMembers": "Buscar miembros",
     "noMembersTitle": "Sin miembros",
-    "noMembersHint": "Todavía no pertene nadie a este equipo.",
+    "noMembersHint": "Todavía no pertenece nadie a este equipo.",
     "noMemberMatches": "Ningún miembro coincide con esta búsqueda.",
     "roles": {
       "owner": "Propietario",
@@ -171,7 +185,13 @@
     "workspacesSaved": "Ajustes de espacios de trabajo guardados",
     "workspaces": "Espacios de trabajo",
     "personalWorkspaces": "Un espacio de trabajo para cada persona",
-    "personalWorkspacesHint": "Cada cuenta recibe un espacio de trabajo propio con el nombre de la persona. Desactivado, cada persona trabaja solo en los espacios de trabajo a los que se le ha añadido."
+    "personalWorkspacesHint": "Cada cuenta recibe un espacio de trabajo propio con el nombre de la persona. Desactivado, cada persona trabaja solo en los espacios de trabajo a los que se le ha añadido.",
+    "agents": "Agentes",
+    "agentsSaved": "Ajustes de agentes guardados",
+    "traceRetention": "Conservar trazas de ejecución",
+    "traceRetentionHint": "Cada ejecución de un agente registra sus llamadas al modelo y a las herramientas. Los paneles de consumo solo cuentan las ejecuciones conservadas.",
+    "traceDays": "{days, plural, one {# día} other {# días}}",
+    "traceForever": "Siempre"
   },
   "authentication": {
     "saved": "Los ajustes de autenticación se han guardado",
@@ -217,7 +237,7 @@
     "avatarHint": "La foto de perfil que las personas suben para su cuenta.",
     "mimeTypes": "Tipos de adjunto aceptados",
     "mimeTypesHint": "Un tipo de contenido por línea. Déjalo vacío para aceptar cualquier fichero.",
-    "mimeTypesNote": "Una línea es un tipo completo (application/pdf) o un comodín (image/*). Los ficheros ya guardados se mantienen digalo que diga la lista.",
+    "mimeTypesNote": "Una línea es un tipo completo (application/pdf) o un comodín (image/*). Los ficheros ya guardados se mantienen diga lo que diga la lista.",
     "quota": "Cuota del proyecto",
     "quotaHint": "Almacenamiento total de adjuntos que puede usar un proyecto. 0 significa sin límite.",
     "quotaMb": "Almacenamiento por proyecto (MB)",
@@ -249,7 +269,7 @@
     "username": "Nombre de usuario",
     "password": "Contraseña",
     "passwordPlaceholder": "Contraseña de SMTP",
-    "timeout": "Expiry (s)",
+    "timeout": "Tiempo de espera (s)",
     "optional": "Opcional",
     "apiKey": "Clave de API",
     "teamNotifications": "Notificaciones del equipo",

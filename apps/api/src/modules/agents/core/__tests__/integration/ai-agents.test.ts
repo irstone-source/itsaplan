@@ -386,6 +386,25 @@ describe('ai agents', () => {
     expect(upd.data).toMatchObject({ triggerOnMention: true, triggerOnAssign: true });
   });
 
+  // The "@" menu reads this to leave out the agents a mention would not start.
+  it("tells the project's assignees which agents answer a mention", async () => {
+    const { asOwner } = await setup();
+    await createAgent(asOwner, 'MKT', { name: 'Listens', username: 'listens', kind: 'internal' });
+    await createAgent(asOwner, 'MKT', {
+      name: 'Deaf',
+      username: 'deaf',
+      kind: 'internal',
+      triggerOnMention: false,
+    });
+
+    const project = await asOwner.projects({ projectKey: 'MKT' }).get();
+    const byHandle = new Map(project.data!.assignees.map((a) => [a.username, a]));
+
+    expect(byHandle.get('listens')?.respondsToMention).toBe(true);
+    expect(byHandle.get('deaf')?.respondsToMention).toBe(false);
+    expect(project.data!.assignees.find((a) => a.kind === 'member')?.respondsToMention).toBeNull();
+  });
+
   it("attaches an agent to a project on the team's default role", async () => {
     const { asOwner } = await setup();
     const roles = await listProjectRoles(asOwner, 'MKT');
@@ -1029,11 +1048,14 @@ describe('ai agents', () => {
 
   // An agent is set up and talked to entirely over MCP. What stays out serves the chat
   // UI: the streamed run and the caller's own thread history, plus this agent's run
-  // history — the analytics routes carry the project-wide run feed MCP reads instead.
+  // history and the traces of those runs — the analytics routes carry the project-wide
+  // run feed MCP reads instead.
   it('exposes agent management and the run to MCP', () => {
     const untagged = untaggedRoutes((route) => route.includes('/ai-agents'));
     expect(untagged).toEqual([
       'GET /teams/:teamId/ai-agents/:agentId/runs',
+      'GET /teams/:teamId/ai-agents/:agentId/traces',
+      'GET /teams/:teamId/ai-agents/:agentId/traces/:traceId',
       'POST /projects/:projectKey/ai-agents/:agentId/run/stream',
       'GET /projects/:projectKey/ai-agents/:agentId/threads',
       'PUT /projects/:projectKey/ai-agents/:agentId/threads/:threadId/favorite',
