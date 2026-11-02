@@ -16,10 +16,12 @@ import {
   Tag,
   Repeat,
   Timer,
+  Hourglass,
 } from 'lucide-react';
 import {
   allWorkPath,
   todayPath,
+  myTimePath,
   performancePath,
   trackerPath,
   cyclesPath,
@@ -136,6 +138,13 @@ export default function SidebarWorkNav({
             icon={CalendarCheck}
             label={t('today')}
             active={pathname === todayPath()}
+            disabled={false}
+          />
+          <SidebarNavItem
+            href={myTimePath()}
+            icon={Hourglass}
+            label={t('myTime')}
+            active={pathname === myTimePath()}
             disabled={false}
           />
           <SidebarNavItem

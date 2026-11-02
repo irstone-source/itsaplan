@@ -116,6 +116,9 @@ export const allocateBody = t.Object({
 
 export const splitBody = t.Object({ at: t.String({ description: 'ISO time inside the block' }) });
 
+// The two blocks a split gives, in time order.
+export const SplitResponse = t.Array(TimeBlockResponse);
+
 export const captureBody = t.Object({
   projectKey: t.String(),
   title: t.String({ minLength: 1, maxLength: 300 }),

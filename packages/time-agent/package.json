@@ -1,0 +1,27 @@
+{
+  "name": "@repo/time-agent",
+  "version": "0.1.0",
+  "description": "Desktop agent that reads ActivityWatch (and macOS call history) and sends time blocks to Plan",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "bin": {
+    "plan-time": "./dist/plan-time.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "bun build src/cli.ts --target=node --outfile dist/plan-time.mjs --banner '/* eslint-disable */' && cp dist/plan-time.mjs ../../apps/web/public/plan-time.mjs && prettier --write ../../apps/web/public/plan-time.mjs",
+    "lint": "eslint .",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@types/bun": "latest",
+    "@types/node": "^26.6.5",
+    "eslint": "^9.39.0",
+    "typescript": "^6.0.3"
+  }
+}

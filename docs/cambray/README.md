@@ -13,9 +13,9 @@ the instance holds, how the team uses it, and how it is changed and deployed.
 | Sign-in | Google (Cambray Workspace accounts). Email and password sign-in is off. |
 | Brand | "Cambray", accent #00E5CC, ring mark on a dark tile (`scripts/cambray-mark-tile.svg`); light theme: the press kit "Dark on Light" ink mark (#1A1A1A) on a white tile (`scripts/cambray-mark-tile-light.svg`) |
 | Hosting | Railway project `itsaplan`: services `api`, `web`, `worker`, `bot`, `postgres` |
-| Code | github.com/irstone-source/itsaplan, branch `feat/v1.4-cambray` (`feat/v1.2-branding-today` is the pre-v1.4 line) |
+| Code | github.com/irstone-source/itsaplan, branch `feat/v1.5-cambray` (`feat/v1.4-cambray` is the pre-v1.5 line) |
 | Images | built in the public mirror github.com/irstone-source/itsaplan-images (AGPL source) |
-| Version | upstream v1.4.0 plus the Cambray changes, released as `v1.4.0-cambray.N` |
+| Version | upstream v1.5.0 plus the Cambray changes, released as `v1.5.0-cambray.N` |
 
 ## 2. How the work is organised
 
@@ -75,7 +75,10 @@ Rates (from the 12-week resource plan, 6 hours = 1 day):
 | Finance | Sidebar → Finance (owner only) | The year's revenue target, spread over one project's cycles by working days; per month the cycle target, break-even, pool % and billings |
 | Playbook | Sidebar → Playbook | Each client's repeatable deliverables with an outcome price, billing (billable, retainer, non-billable), cadence (monthly, quarterly in month 1–3 of the quarter, ad hoc) and an estimate used for capacity only. Each client shows what its items are priced at per month against its monthly retainer fee |
 | Revenue class, fee and hours | Initiative £/day pill | Committed (retained income that must be delivered), New (a new client) or Management (MGM, running the consultancy), the monthly retainer fee, and the hours a month allocated to the client |
-| Hours limit | Playbook, under each client; Time page | Hours tracked in Rize this month against the client's limit: red flag at 60%, down tools at 70% |
+| Hours limit | Playbook, under each client; Time page | Hours this month (captured time, plus Rize while it is on) against the client's limit: red flag at 60%, down tools at 70% |
+| My time | Sidebar → My time (`/time/my`) | Yesterday's blocks of activity and calls from your own computer, each with a suggested ticket or client and its confidence: accept, change, split, ignore or capture as a task; "Confirm suggested" for everything at 85 or more; a Rules tab for the mappings learned from your corrections. Only you see your blocks; a past week is read-only |
+| Time capture setup | Sidebar → My time → Setup (`/time/setup`); Today banner | Four checked steps: install ActivityWatch, create an API key, install the `plan-time` agent (served at `/plan-time.mjs`), first sync; plus iPhone calls on a Mac with `--calls`. Scope: `time-capture.md`; staff notice: `time-capture-notice.md` |
+| Team setup | Time page (owners) | Who has a device, when it was last seen, confirmed and pending hours this week |
 | Repeatable work | Top of every open cycle page | The playbook items the cycle's month makes due, grouped committed → new → management, to add in one go or one by one; an item is added once per cycle. Each becomes a ticket under its initiative, valued at its price |
 | Capacity and reserve | Cycle strip; God mode → Billing | Planned hours against capacity (working days × hours per day × the project's people, or a figure set on the cycle), with a reserve (20% by default) kept free for step-change work nobody has planned; the breakdown splits value and hours by revenue class |
 | Client report | Cycle breakdown → the copy icon on a client | The client's delivered tickets with their value and what is still in progress, as markdown to paste to them |
@@ -132,13 +135,32 @@ them (God mode → Users → Add to projects).
 
 ## 5. Automation
 
-- **Rize sync** (God mode → Integrations → Rize): with a Rize team admin's API key saved,
+- **Time capture** (`plan-time` on each person's computer): every 15 minutes the agent
+  reads ActivityWatch (and, with `--calls`, the iPhone calls iCloud syncs to a Mac), merges
+  the raw activity into blocks of app, window title, website domain, start and end, drops
+  idle time and the person's private list, and posts the blocks to the api with the person's
+  API key. The api suggests a ticket or a client for each block: a ticket id in the title,
+  then a rule, then the person's in-progress ticket, then a call whose contact matches a
+  client. The person reviews the day in **My time** (or in Claude through the MCP tools
+  `get_my_time`, `allocate_time_block`, `split_time_block`, `capture_task_from_time`,
+  `confirm_my_day`, `list_time_rules`, `add_time_rule`); a confirmed block with a ticket
+  mirrors as logged time on it. A block of a past week (before Monday 00:00 London) is
+  read-only to its person. The api deletes pending blocks after 30 days and ignored blocks
+  after 7, once an hour. Design: `time-capture.md`.
+- **Today banner**: with no device seen in the last 24 hours, Today shows "Set up time
+  capture", which opens the Setup page; dismissing it hides it for 7 days on that browser.
+- **Team setup** (Time page, owners): each project member with their devices, when each
+  was last seen, and confirmed and pending hours this week.
+- **Rize sync** (God mode → Integrations → Rize): dormant. Time capture is the source of
+  time; the sync stays in the code and still runs while a key is saved. With a Rize team
+  admin's API key saved,
   the api copies the team's Rize time every 15 minutes (the last 3 days; 60 days the first
   time and on "Sync now"). Each entry is matched to a person by email, to a ticket by an
   identifier in its task or title (`CON-14 — …`), and to a client initiative through its
   ticket or through the Rize client map on the Time page. A matched entry shows as logged
   time on its ticket. An entry deleted in Rize goes on the next sync.
-- **Time page** (Consulting → Time): each client's tracked hours this month against its
+- **Time page** (Consulting → Time): each client's hours this month (confirmed blocks per
+  initiative, through the ticket or set on the block, plus any Rize minutes) against its
   "Hours a month" limit, with a **red flag at 60%** and **down tools at 70%**; the Rize
   clients and the initiative each counts toward; and the entries not tied to a ticket,
   each with "Tie to ticket". A link made by hand is kept on later syncs. The Playbook

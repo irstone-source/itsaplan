@@ -1,7 +1,7 @@
 {
   "title": "Time",
-  "description": "Time tracked in Rize, tied to tickets and to each client's monthly limit. A red flag at 60% of the limit; down tools at 70%.",
-  "summary": "{tracked} tracked this month: {matched} tied to tickets, {loose} not yet",
+  "description": "Time captured on each person's computer and confirmed in My time, tied to tickets and to each client's monthly limit. A red flag at 60% of the limit; down tools at 70%.",
+  "summary": "{tracked} confirmed this month: {matched} on tickets, {loose} on a client only",
   "clients": "Clients",
   "noClients": "No client time or limits this month.",
   "ofLimit": "{tracked} of {limit}",

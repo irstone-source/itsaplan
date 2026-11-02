@@ -195,3 +195,10 @@ export const performancePath = () => '/performance';
 export const financePath = () => '/finance';
 
 export const trackerPath = () => '/tracker';
+
+// Time capture: the viewer's own blocks to review, and the agent setup steps.
+export const myTimePath = () => '/time/my';
+
+export const timeSetupPath = () => '/time/setup';
+
+export const apiKeysPath = () => '/account/api-keys';

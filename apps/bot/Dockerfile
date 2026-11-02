@@ -20,6 +20,7 @@ COPY packages/mailer/package.json ./packages/mailer/
 COPY packages/net/package.json ./packages/net/
 COPY packages/storage/package.json ./packages/storage/
 COPY packages/runner/package.json ./packages/runner/
+COPY packages/time-agent/package.json ./packages/time-agent/
 COPY packages/eslint-config/package.json ./packages/eslint-config/
 # --filter bot installs only the bot workspace and its dependency closure.
 # INSTALL_FLAGS defaults to --production; the test gate overrides it to "".

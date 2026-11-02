@@ -75,5 +75,7 @@
   "tracker": "Suivi",
   "releases": "Releases",
   "playbook": "Playbook",
-  "time": "Time"
+  "time": "Time",
+  "myTime": "My time",
+  "timeSetup": "Time capture setup"
 }

@@ -18,6 +18,7 @@ import tracker from '../../messages/en/tracker.json';
 import releases from '../../messages/en/releases.json';
 import playbook from '../../messages/en/playbook.json';
 import time from '../../messages/en/time.json';
+import timecap from '../../messages/en/timecap.json';
 import inbox from '../../messages/en/inbox.json';
 import initiatives from '../../messages/en/initiatives.json';
 import invite from '../../messages/en/invite.json';
@@ -56,6 +57,7 @@ const coreMessages = {
   releases,
   playbook,
   time,
+  timecap,
   auth,
   common,
   nav,

@@ -6,6 +6,7 @@ import { getToday, type TodayBucket } from '@/lib/api/endpoints/today';
 import { qk } from '@/services/queryKeys';
 import SectionPageSkeleton from '@/components/common/skeleton/SectionPageSkeleton';
 import TodayRow from './components/TodayRow';
+import TodaySetupBanner from './components/TodaySetupBanner';
 
 const BUCKETS: TodayBucket[] = ['overdue', 'due', 'started', 'cycle', 'scheduled'];
 
@@ -27,6 +28,7 @@ export default function TodayPage() {
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-6">
+        <TodaySetupBanner />
         {items.length === 0 && (
           <p className="py-12 text-center text-sm text-muted-foreground">{t('empty')}</p>
         )}

@@ -11,9 +11,11 @@ import {
   writeSecret,
   getSetting,
   setSetting,
+  timeBlock,
 } from '@repo/db';
-import { and, asc, desc, eq, gte, inArray, isNull, lt, notInArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lt, notInArray, or, sql } from 'drizzle-orm';
 import { HttpError, iso } from '#shared/lib';
+import { confirmedSecondsByInitiative } from '#modules/timecap/service';
 import { fetchTimeEntries, type RizeEntry } from './client';
 import { issueRefs, timeState, type TimeState } from './match';
 
@@ -277,17 +279,7 @@ export async function getTimeOverview(projectId: number, month: string): Promise
     .where(eq(initiative.projectId, projectId))
     .orderBy(asc(initiative.title));
   const ids = initiatives.map((i) => i.id);
-  const sums = ids.length
-    ? await db
-        .select({
-          initiativeId: rizeTimeEntry.initiativeId,
-          seconds: sql<number>`coalesce(sum(${rizeTimeEntry.seconds}), 0)::int`,
-        })
-        .from(rizeTimeEntry)
-        .where(and(inMonth, inArray(rizeTimeEntry.initiativeId, ids)))
-        .groupBy(rizeTimeEntry.initiativeId)
-    : [];
-  const tracked = new Map(sums.map((s) => [s.initiativeId, Math.round(s.seconds / 60)]));
+  const tracked = await trackedMinutes(ids, start, end);
   const [totals] = await db
     .select({
       all: sql<number>`coalesce(sum(${rizeTimeEntry.seconds}), 0)::int`,
@@ -295,6 +287,24 @@ export async function getTimeOverview(projectId: number, month: string): Promise
     })
     .from(rizeTimeEntry)
     .where(inMonth);
+  // Captured time confirmed this month to this project's tickets or initiatives.
+  const [captured] = await db
+    .select({
+      all: sql<number>`coalesce(sum(${timeBlock.seconds}), 0)::int`,
+      matched: sql<number>`coalesce(sum(${timeBlock.seconds}) filter (where ${timeBlock.issueId} is not null), 0)::int`,
+    })
+    .from(timeBlock)
+    .leftJoin(issue, eq(issue.id, timeBlock.issueId))
+    .where(
+      and(
+        eq(timeBlock.status, 'confirmed'),
+        gte(timeBlock.startedAt, start),
+        lt(timeBlock.startedAt, end),
+        ids.length
+          ? or(eq(issue.projectId, projectId), inArray(timeBlock.initiativeId, ids))
+          : eq(issue.projectId, projectId),
+      ),
+    );
   const unmatched = await db
     .select()
     .from(rizeTimeEntry)
@@ -322,8 +332,8 @@ export async function getTimeOverview(projectId: number, month: string): Promise
           state: timeState(minutes, i.monthlyMinutes),
         };
       }),
-    trackedMinutes: Math.round((totals?.all ?? 0) / 60),
-    matchedMinutes: Math.round((totals?.matched ?? 0) / 60),
+    trackedMinutes: Math.round(((totals?.all ?? 0) + (captured?.all ?? 0)) / 60),
+    matchedMinutes: Math.round(((totals?.matched ?? 0) + (captured?.matched ?? 0)) / 60),
     unmatched: unmatched.map((u) => ({
       id: u.id,
       memberEmail: u.memberEmail,
@@ -341,11 +351,15 @@ export async function getTimeOverview(projectId: number, month: string): Promise
   };
 }
 
-// The minutes tracked this calendar month per initiative, for the Playbook.
-export async function trackedThisMonth(initiativeIds: number[]): Promise<Map<number, number>> {
+// The minutes per initiative in [start, end): the Rize entries plus the confirmed
+// captured blocks (a block's own initiative, else its ticket's). Initiatives with
+// no time are left out.
+async function trackedMinutes(
+  initiativeIds: number[],
+  start: Date,
+  end: Date,
+): Promise<Map<number, number>> {
   if (initiativeIds.length === 0) return new Map();
-  const now = new Date();
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const rows = await db
     .select({
       initiativeId: rizeTimeEntry.initiativeId,
@@ -353,8 +367,24 @@ export async function trackedThisMonth(initiativeIds: number[]): Promise<Map<num
     })
     .from(rizeTimeEntry)
     .where(
-      and(gte(rizeTimeEntry.startedAt, start), inArray(rizeTimeEntry.initiativeId, initiativeIds)),
+      and(
+        gte(rizeTimeEntry.startedAt, start),
+        lt(rizeTimeEntry.startedAt, end),
+        inArray(rizeTimeEntry.initiativeId, initiativeIds),
+      ),
     )
     .groupBy(rizeTimeEntry.initiativeId);
-  return new Map(rows.map((r) => [r.initiativeId!, Math.round(r.seconds / 60)]));
+  const seconds = new Map(rows.map((r) => [r.initiativeId!, r.seconds]));
+  for (const [id, s] of await confirmedSecondsByInitiative(initiativeIds, start, end)) {
+    seconds.set(id, (seconds.get(id) ?? 0) + s);
+  }
+  return new Map([...seconds].filter(([, s]) => s > 0).map(([id, s]) => [id, Math.round(s / 60)]));
+}
+
+// The minutes tracked this calendar month per initiative, for the Playbook.
+export async function trackedThisMonth(initiativeIds: number[]): Promise<Map<number, number>> {
+  const now = new Date();
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+  return trackedMinutes(initiativeIds, start, end);
 }

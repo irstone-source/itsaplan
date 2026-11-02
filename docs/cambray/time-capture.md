@@ -1,6 +1,6 @@
 # Time capture: automatic tracking, daily review, tickets
 
-Status: planned 2 Nov 2026, building as v1.5.0-cambray.3.
+Status: built 2 Nov 2026, released as v1.5.0-cambray.3.
 
 ## 1. What it is for
 
@@ -99,8 +99,8 @@ a block offers "Always ignore". An owner can promote a personal rule to a team r
   bundled to a single file, `apps/web/public/plan-time.mjs`, so Plan serves it at
   `https://plan.cambray.co/plan-time.mjs`.
 - **Install.** `curl -fsSL https://plan.cambray.co/plan-time.mjs -o ~/.local/bin/plan-time.mjs`,
-  then `node ~/.local/bin/plan-time.mjs setup`. Setup asks for the Plan URL and an API key
-  and stores the key:
+  then `node ~/.local/bin/plan-time.mjs setup https://plan-api.cambray.co`. Setup asks for
+  the API URL (the argument fills it in), an API key and a device name, and stores the key:
   - in the macOS Keychain as `itsaplan_time_key`
   - elsewhere in `~/.config/plan-time/credentials` with mode 0600
   - a device name

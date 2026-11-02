@@ -4,6 +4,7 @@ import { processAgentRuns } from '#modules/agents/core/run-poller';
 import { pruneAgentTraces } from '#modules/agents/core/runtime/trace-retention';
 import { sweepStaleIssues } from '#modules/issues/auto-archive';
 import { syncRizeIfConnected } from '#modules/rize/service';
+import { pruneBlocks } from '#modules/timecap/service';
 import { db } from '@repo/db';
 import { sql } from 'drizzle-orm';
 
@@ -23,6 +24,14 @@ export function startBackgroundJobs(): void {
   startLoop('auto-archive', autoArchive, () => intEnv('AUTO_ARCHIVE_INTERVAL_MS', 3_600_000));
   startLoop('agent-traces', pruneTraces, () => intEnv('AGENT_TRACE_PRUNE_INTERVAL_MS', 3_600_000));
   startLoop('rize-sync', syncRize, () => intEnv('RIZE_SYNC_INTERVAL_MS', 900_000));
+  startLoop('time-blocks', pruneTimeBlocks, () =>
+    intEnv('TIME_BLOCK_PRUNE_INTERVAL_MS', 3_600_000),
+  );
+}
+
+async function pruneTimeBlocks(): Promise<void> {
+  const deleted = await pruneBlocks();
+  if (deleted > 0) console.log(`[background] pruned ${deleted} unconfirmed time blocks`);
 }
 
 // One replica syncs at a time: the others find the advisory lock taken and skip.

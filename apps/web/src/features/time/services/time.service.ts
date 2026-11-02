@@ -1,7 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getTimeOverview, linkTimeEntry, mapRizeClient } from '@/lib/api/endpoints/rize';
+import { getTeamTime } from '@/lib/api/endpoints/timecap';
 
 const timeKey = (projectKey: string, month: string) => ['time', projectKey, month] as const;
+
+export function useTeamTime(projectKey: string | null) {
+  return useQuery({
+    queryKey: ['time', projectKey ?? '', 'team'] as const,
+    queryFn: ({ signal }) => getTeamTime(projectKey!, signal),
+    enabled: projectKey != null,
+  });
+}
 
 export function useTimeOverview(projectKey: string | null, month: string) {
   return useQuery({

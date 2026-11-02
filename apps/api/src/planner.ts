@@ -47,6 +47,7 @@ import { financeRoutes } from './modules/finance';
 import { trackerRoutes } from './modules/tracker';
 import { playbookRoutes } from './modules/playbook';
 import { rizeGodRoutes, timeRoutes } from './modules/rize';
+import { timecapRoutes, timecapTeamRoutes } from './modules/timecap';
 import { notificationSettingsRoutes } from './modules/notification-settings';
 import { notificationPreferenceRoutes } from './modules/notification-preferences';
 import { userPreferenceRoutes } from './modules/user-preferences';
@@ -138,6 +139,8 @@ export const planner = new Elysia({ name: 'planner' })
   .use(playbookRoutes)
   .use(rizeGodRoutes)
   .use(timeRoutes)
+  .use(timecapRoutes)
+  .use(timecapTeamRoutes)
   .use(notificationSettingsRoutes)
   .use(notificationPreferenceRoutes)
   .use(userPreferenceRoutes)

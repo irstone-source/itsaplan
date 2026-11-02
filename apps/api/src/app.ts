@@ -133,6 +133,10 @@ export const app = new Elysia()
             description: 'Time tracked in Rize, tied to tickets and client limits',
           },
           {
+            name: 'Time capture',
+            description: 'Activity blocks from the time capture agent, reviewed by their person',
+          },
+          {
             name: 'Playbook',
             description: 'Repeatable, outcome-priced deliverables per client initiative',
           },
