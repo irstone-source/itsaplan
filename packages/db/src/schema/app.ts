@@ -1979,6 +1979,97 @@ export const rizeTimeEntry = pgTable(
   ],
 );
 
+// A computer a person runs the time capture agent on, by the name the agent reports.
+export const timeDevice = pgTable(
+  'time_device',
+  {
+    id: serial('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    platform: text('platform').notNull(),
+    agentVersion: text('agent_version'),
+    // Whether ActivityWatch answered the agent at its last sync.
+    trackerOk: boolean('tracker_ok').notNull().default(true),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique().on(t.userId, t.name)],
+);
+
+// A merged stretch of a person's activity or a call, sent by the time capture agent.
+// Only its owner reads or changes it. issue_id / initiative_id are the allocation the
+// person confirmed; the suggested_* columns are what Plan proposed and why.
+export const timeBlock = pgTable(
+  'time_block',
+  {
+    id: serial('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    device: text('device').notNull().default(''),
+    source: text('source').notNull(),
+    sourceKey: text('source_key').notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    endedAt: timestamp('ended_at', { withTimezone: true }).notNull(),
+    seconds: integer('seconds').notNull(),
+    app: text('app').notNull().default(''),
+    title: text('title').notNull().default(''),
+    domain: text('domain'),
+    detail: jsonb('detail').notNull().default({}),
+    status: text('status').notNull().default('pending'),
+    issueId: integer('issue_id').references(() => issue.id, { onDelete: 'set null' }),
+    initiativeId: integer('initiative_id').references(() => initiative.id, {
+      onDelete: 'set null',
+    }),
+    suggestedIssueId: integer('suggested_issue_id').references(() => issue.id, {
+      onDelete: 'set null',
+    }),
+    suggestedInitiativeId: integer('suggested_initiative_id').references(() => initiative.id, {
+      onDelete: 'set null',
+    }),
+    confidence: integer('confidence').notNull().default(0),
+    reason: text('reason').notNull().default(''),
+    ruleId: integer('rule_id').references((): AnyPgColumn => timeRule.id, {
+      onDelete: 'set null',
+    }),
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique().on(t.userId, t.sourceKey),
+    check('time_block_source_check', sql`${t.source} IN ('activity', 'call', 'manual')`),
+    check('time_block_status_check', sql`${t.status} IN ('pending', 'confirmed', 'ignored')`),
+    check('time_block_seconds_check', sql`${t.seconds} >= 0`),
+    check('time_block_confidence_check', sql`${t.confidence} BETWEEN 0 AND 100`),
+    index('time_block_user_started_idx').on(t.userId, t.startedAt),
+  ],
+);
+
+// A learned mapping from a block to a ticket, an initiative or "ignore". user_id null
+// is a team rule, which a project owner promotes from a personal one.
+export const timeRule = pgTable(
+  'time_rule',
+  {
+    id: serial('id').primaryKey(),
+    userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
+    field: text('field').notNull(),
+    pattern: text('pattern').notNull(),
+    issueId: integer('issue_id').references(() => issue.id, { onDelete: 'cascade' }),
+    initiativeId: integer('initiative_id').references(() => initiative.id, {
+      onDelete: 'cascade',
+    }),
+    ignore: boolean('ignore').notNull().default(false),
+    hits: integer('hits').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check('time_rule_field_check', sql`${t.field} IN ('app', 'title', 'domain', 'contact')`),
+    index('time_rule_user_idx').on(t.userId),
+  ],
+);
+
 // Which client initiative a Rize client's time belongs to, by the Rize client's name.
 export const rizeClientMap = pgTable('rize_client_map', {
   rizeClient: text('rize_client').primaryKey(),
@@ -2140,6 +2231,10 @@ export const issueWorklog = pgTable(
     rizeEntryId: integer('rize_entry_id')
       .unique()
       .references((): AnyPgColumn => rizeTimeEntry.id, { onDelete: 'cascade' }),
+    // The confirmed time capture block this entry mirrors; time capture owns such a row.
+    timeBlockId: integer('time_block_id')
+      .unique()
+      .references((): AnyPgColumn => timeBlock.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
