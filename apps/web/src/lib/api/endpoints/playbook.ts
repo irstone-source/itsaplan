@@ -1,4 +1,5 @@
 import { request } from '@/lib/api/core/client';
+import type { TimeState } from '@/lib/api/endpoints/rize';
 
 export const PLAYBOOK_BILLING = ['billable', 'retainer', 'non_billable'] as const;
 export type PlaybookBilling = (typeof PLAYBOOK_BILLING)[number];
@@ -38,6 +39,9 @@ export interface PlaybookGroup {
   // Minutes allocated a month, and the active items' estimates per month.
   monthlyMinutes: number | null;
   plannedMinutes: number;
+  // Time tracked in Rize this month and where it stands against the limit.
+  trackedMinutes: number;
+  timeState: TimeState;
   items: PlaybookItem[];
 }
 

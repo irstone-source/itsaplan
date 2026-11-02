@@ -66,6 +66,10 @@
     "scim": {
       "label": "SCIM",
       "description": "Permita que um provedor de identidade crie, atualize e desative contas nesta instância e conceda acesso a projetos por seus grupos."
+    },
+    "rize": {
+      "label": "Rize",
+      "description": "Time tracking: the key that copies the team's Rize time into tickets."
     }
   },
   "settings": {

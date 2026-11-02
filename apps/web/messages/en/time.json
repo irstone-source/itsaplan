@@ -1,0 +1,26 @@
+{
+  "title": "Time",
+  "description": "Time tracked in Rize, tied to tickets and to each client's monthly limit. A red flag at 60% of the limit; down tools at 70%.",
+  "summary": "{tracked} tracked this month: {matched} tied to tickets, {loose} not yet",
+  "clients": "Clients",
+  "noClients": "No client time or limits this month.",
+  "ofLimit": "{tracked} of {limit}",
+  "noLimit": "{tracked}, no limit set",
+  "states": {
+    "none": "No limit",
+    "ok": "On track",
+    "flag": "Red flag",
+    "stop": "Down tools"
+  },
+  "mapTitle": "Rize clients",
+  "mapHint": "Time tracked under a Rize client counts toward the initiative it points at, even when it names no ticket.",
+  "mapped": "Rize client mapped",
+  "unmapped": "Not mapped",
+  "unmatchedTitle": "{count, plural, =0 {Not tied to a ticket} one {# entry not tied to a ticket} other {# entries not tied to a ticket}}",
+  "allMatched": "All of this month's time is tied to tickets.",
+  "untitled": "Untitled",
+  "noClient": "No client",
+  "link": "Tie to ticket",
+  "searchTicket": "CON-12 or a title",
+  "linked": "Tied to {ticket}"
+}

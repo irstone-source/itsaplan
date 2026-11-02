@@ -15,8 +15,8 @@ async function scaffold(owner: Actor) {
   const con = owner.api.projects({ projectKey: 'CON' });
   const cycle = (name: string, startDate: string, endDate: string) =>
     con.cycles.post({ name, startDate, endDate }).then((r) => r.data!.id);
-  const october = await cycle('October 2026', '2026-10-06', '2026-10-29');
-  const november = await cycle('November 2026', '2026-11-03', '2026-11-26');
+  const october = await cycle('October 2026', '2027-10-05', '2027-10-28');
+  const november = await cycle('November 2026', '2027-11-02', '2027-11-25');
   const gsg = (
     await con.initiatives.post({
       title: 'GSG — leads',

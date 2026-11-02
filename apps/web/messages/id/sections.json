@@ -66,6 +66,10 @@
     "scim": {
       "label": "SCIM",
       "description": "Izinkan penyedia identitas membuat, memperbarui, dan menonaktifkan akun di instance ini, serta memberikan akses proyek melalui grupnya."
+    },
+    "rize": {
+      "label": "Rize",
+      "description": "Time tracking: the key that copies the team's Rize time into tickets."
     }
   },
   "settings": {

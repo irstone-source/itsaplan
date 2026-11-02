@@ -13,6 +13,8 @@ import { and, asc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { HttpError } from '#shared/lib';
 import { createIssue } from '#modules/issues/service';
 import { getProjectById } from '#modules/projects/service';
+import { trackedThisMonth } from '#modules/rize/service';
+import { timeState, type TimeState } from '#modules/rize/match';
 
 // Revenue classes in the order clients are listed and their work offered.
 const CLASS_ORDER = ['committed', 'new', 'management'];
@@ -44,6 +46,8 @@ export interface PlaybookGroup {
   monthlyPricedPence: number;
   monthlyMinutes: number | null;
   plannedMinutes: number;
+  trackedMinutes: number;
+  timeState: TimeState;
   items: PlaybookItemRow[];
 }
 
@@ -120,6 +124,7 @@ export async function listPlaybook(projectId: number): Promise<PlaybookGroup[]> 
     .select()
     .from(initiative)
     .where(inArray(initiative.id, [...new Set(items.map((i) => i.initiativeId))]));
+  const tracked = await trackedThisMonth(initiatives.map((i) => i.id));
   const order = (c: string | null) => CLASS_ORDER.indexOf(c ?? '') + 1 || 4;
   return initiatives
     .map((i) => {
@@ -136,6 +141,8 @@ export async function listPlaybook(projectId: number): Promise<PlaybookGroup[]> 
           0,
         ),
         monthlyMinutes: i.monthlyMinutes,
+        trackedMinutes: tracked.get(i.id) ?? 0,
+        timeState: timeState(tracked.get(i.id) ?? 0, i.monthlyMinutes),
         plannedMinutes: own.reduce(
           (sum, item) => sum + perMonth(item, item.estimateMinutes ?? 0),
           0,

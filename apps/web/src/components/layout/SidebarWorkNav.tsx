@@ -15,6 +15,7 @@ import {
   Activity,
   Tag,
   Repeat,
+  Timer,
 } from 'lucide-react';
 import {
   allWorkPath,
@@ -30,6 +31,7 @@ import {
   projectPath,
   releasesPath,
   playbookPath,
+  timePath,
   viewPath,
 } from '@/utils/paths';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -172,6 +174,15 @@ export default function SidebarWorkNav({
               icon={Repeat}
               label={t('playbook')}
               active={pathname.endsWith('/playbook')}
+              disabled={disabled}
+            />
+          )}
+          {features.initiatives && can('initiatives', 'read') && (
+            <SidebarNavItem
+              href={projectKey ? timePath(projectKey) : '#'}
+              icon={Timer}
+              label={t('time')}
+              active={pathname.endsWith('/time')}
               disabled={disabled}
             />
           )}

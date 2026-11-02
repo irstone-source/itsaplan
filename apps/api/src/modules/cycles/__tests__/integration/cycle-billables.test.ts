@@ -19,8 +19,8 @@ async function project(api: Awaited<ReturnType<typeof setup>>['god']['api'], key
   const cycle = (
     await api.projects({ projectKey: key }).cycles.post({
       name: 'October 2026',
-      startDate: '2026-10-01',
-      endDate: '2026-10-31',
+      startDate: '2027-10-01',
+      endDate: '2027-10-31',
     })
   ).data!;
   return { col, cycleId: cycle.id };

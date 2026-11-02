@@ -66,6 +66,10 @@
     "scim": {
       "label": "SCIM",
       "description": "Let an identity provider create, update and deactivate accounts on this instance, and grant project access through its groups."
+    },
+    "rize": {
+      "label": "Rize",
+      "description": "Time tracking: the key that copies the team's Rize time into tickets."
     }
   },
   "settings": {

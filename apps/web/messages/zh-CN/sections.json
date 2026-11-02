@@ -66,6 +66,10 @@
     "scim": {
       "label": "SCIM",
       "description": "让身份提供方在此实例上创建、更新和停用账号，并通过其群组授予项目访问权限。"
+    },
+    "rize": {
+      "label": "Rize",
+      "description": "Time tracking: the key that copies the team's Rize time into tickets."
     }
   },
   "settings": {

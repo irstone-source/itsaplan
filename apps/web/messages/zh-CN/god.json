@@ -407,5 +407,20 @@
     "targetSettersHint": "目标和指标由实例所有者修改，或者也可由各指标的所有者修改。",
     "ownerOnly": "实例所有者",
     "measureOwner": "实例所有者和指标所有者"
+  },
+  "rize": {
+    "connection": "Rize connection",
+    "connectionHint": "A key from a Rize team admin (Rize → Settings → API) reads the whole team's time. It syncs every 15 minutes.",
+    "key": "API key",
+    "keySet": "A key is saved. Paste a new one to replace it; save it empty to disconnect.",
+    "keyMissing": "No key yet.",
+    "save": "Save",
+    "saved": "Rize key saved",
+    "sync": "Sync",
+    "lastSync": "Last sync {when}; {entries} entries copied",
+    "neverSynced": "Not synced yet.",
+    "syncNow": "Sync now",
+    "synced": "{synced} entries read, {matched} tied to tickets",
+    "error": "Last sync failed: {error}"
   }
 }

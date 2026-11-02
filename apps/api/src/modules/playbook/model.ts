@@ -40,6 +40,10 @@ export const PlaybookGroupResponse = t.Object({
   // estimates plus a third of the quarterly ones.
   monthlyMinutes: t.Nullable(t.Number()),
   plannedMinutes: t.Number(),
+  // Time tracked in Rize this calendar month, and where it stands against the limit:
+  // flag at 60%, stop (down tools) at 70%.
+  trackedMinutes: t.Number(),
+  timeState: t.UnionEnum(['none', 'ok', 'flag', 'stop']),
   items: t.Array(PlaybookItemResponse),
 });
 

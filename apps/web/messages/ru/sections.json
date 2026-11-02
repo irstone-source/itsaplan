@@ -66,6 +66,10 @@
     "scim": {
       "label": "SCIM",
       "description": "Позвольте поставщику удостоверений создавать, обновлять и отключать учётные записи на этом сервере и давать доступ к проектам через свои группы."
+    },
+    "rize": {
+      "label": "Rize",
+      "description": "Time tracking: the key that copies the team's Rize time into tickets."
     }
   },
   "settings": {

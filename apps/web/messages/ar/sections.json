@@ -66,6 +66,10 @@
     "scim": {
       "label": "SCIM",
       "description": "اسمح لمزوّد الهوية بإنشاء الحسابات وتحديثها وتعطيلها على هذا الخادم، ومنح الوصول إلى المشاريع عبر مجموعاته."
+    },
+    "rize": {
+      "label": "Rize",
+      "description": "Time tracking: the key that copies the team's Rize time into tickets."
     }
   },
   "settings": {

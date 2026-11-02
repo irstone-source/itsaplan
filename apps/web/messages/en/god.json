@@ -407,5 +407,20 @@
     "targetSettersHint": "Targets and measures are changed by the instance owner, or also by each measure's owner.",
     "ownerOnly": "The instance owner",
     "measureOwner": "The instance owner and the measure's owner"
+  },
+  "rize": {
+    "connection": "Rize connection",
+    "connectionHint": "A key from a Rize team admin (Rize → Settings → API) reads the whole team's time. It syncs every 15 minutes.",
+    "key": "API key",
+    "keySet": "A key is saved. Paste a new one to replace it; save it empty to disconnect.",
+    "keyMissing": "No key yet.",
+    "save": "Save",
+    "saved": "Rize key saved",
+    "sync": "Sync",
+    "lastSync": "Last sync {when}; {entries} entries copied",
+    "neverSynced": "Not synced yet.",
+    "syncNow": "Sync now",
+    "synced": "{synced} entries read, {matched} tied to tickets",
+    "error": "Last sync failed: {error}"
   }
 }

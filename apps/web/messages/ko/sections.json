@@ -66,6 +66,10 @@
     "tracker": {
       "label": "Tracker",
       "description": "The growth tracker's rules: colour thresholds, focus meeting streaks, loops, companies and who sets targets."
+    },
+    "rize": {
+      "label": "Rize",
+      "description": "Time tracking: the key that copies the team's Rize time into tickets."
     }
   },
   "settings": {

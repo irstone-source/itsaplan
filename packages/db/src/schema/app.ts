@@ -1943,6 +1943,50 @@ export const playbookItemLabel = pgTable(
   (t) => [primaryKey({ columns: [t.itemId, t.labelId] })],
 );
 
+// A time entry tracked in Rize, copied by the Rize sync. user_id, issue_id and
+// initiative_id are what it was matched to here: the person by email, the issue by an
+// identifier in the task or entry title, the client through rize_client_map. A
+// manual match (match_source 'manual') is kept on later syncs.
+export const rizeTimeEntry = pgTable(
+  'rize_time_entry',
+  {
+    id: serial('id').primaryKey(),
+    rizeId: text('rize_id').notNull().unique(),
+    memberEmail: text('member_email'),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    seconds: integer('seconds').notNull(),
+    title: text('title').notNull().default(''),
+    clientName: text('client_name'),
+    projectName: text('project_name'),
+    taskName: text('task_name'),
+    userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+    issueId: integer('issue_id').references(() => issue.id, { onDelete: 'set null' }),
+    initiativeId: integer('initiative_id').references(() => initiative.id, {
+      onDelete: 'set null',
+    }),
+    matchSource: text('match_source').notNull().default('none'),
+    syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check('rize_time_entry_seconds_check', sql`${t.seconds} >= 0`),
+    check(
+      'rize_time_entry_match_source_check',
+      sql`${t.matchSource} IN ('auto', 'manual', 'none')`,
+    ),
+    index('rize_time_entry_started_idx').on(t.startedAt),
+    index('rize_time_entry_initiative_idx').on(t.initiativeId, t.startedAt),
+  ],
+);
+
+// Which client initiative a Rize client's time belongs to, by the Rize client's name.
+export const rizeClientMap = pgTable('rize_client_map', {
+  rizeClient: text('rize_client').primaryKey(),
+  initiativeId: integer('initiative_id')
+    .notNull()
+    .references(() => initiative.id, { onDelete: 'cascade' }),
+});
+
 export const gitRelease = pgTable(
   'git_release',
   {
@@ -2092,6 +2136,10 @@ export const issueWorklog = pgTable(
     // enters yesterday's work today.
     spentOn: date('spent_on').notNull(),
     note: text('note'),
+    // The Rize time entry this entry mirrors; the Rize sync owns such a row.
+    rizeEntryId: integer('rize_entry_id')
+      .unique()
+      .references((): AnyPgColumn => rizeTimeEntry.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [

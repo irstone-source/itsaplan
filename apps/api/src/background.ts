@@ -3,6 +3,9 @@ import { agentRunConfig } from '#modules/agents/core/run-queue';
 import { processAgentRuns } from '#modules/agents/core/run-poller';
 import { pruneAgentTraces } from '#modules/agents/core/runtime/trace-retention';
 import { sweepStaleIssues } from '#modules/issues/auto-archive';
+import { syncRizeIfConnected } from '#modules/rize/service';
+import { db } from '@repo/db';
+import { sql } from 'drizzle-orm';
 
 // The api's background jobs, started by index.ts rather than assembled into the app,
 // so importing the app in a test starts nothing. Several api replicas run them without
@@ -19,6 +22,17 @@ export function startBackgroundJobs(): void {
   // is drained.
   startLoop('auto-archive', autoArchive, () => intEnv('AUTO_ARCHIVE_INTERVAL_MS', 3_600_000));
   startLoop('agent-traces', pruneTraces, () => intEnv('AGENT_TRACE_PRUNE_INTERVAL_MS', 3_600_000));
+  startLoop('rize-sync', syncRize, () => intEnv('RIZE_SYNC_INTERVAL_MS', 900_000));
+}
+
+// One replica syncs at a time: the others find the advisory lock taken and skip.
+async function syncRize(): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [lock] = await tx.execute<{ got: boolean }>(
+      sql`select pg_try_advisory_xact_lock(hashtext('rize-sync')) as got`,
+    );
+    if (lock?.got) await syncRizeIfConnected();
+  });
 }
 
 async function autoArchive(): Promise<void> {

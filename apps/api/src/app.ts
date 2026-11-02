@@ -129,6 +129,10 @@ export const app = new Elysia()
             description: 'The growth tracker: measures, targets and weekly figures',
           },
           {
+            name: 'Time',
+            description: 'Time tracked in Rize, tied to tickets and client limits',
+          },
+          {
             name: 'Playbook',
             description: 'Repeatable, outcome-priced deliverables per client initiative',
           },

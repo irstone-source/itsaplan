@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import {
   Activity,
+  Timer,
   Building2,
   FolderKanban,
   HardDrive,
@@ -106,6 +107,12 @@ export const GOD_SECTIONS: GodSection[] = godSections([
     slug: 'auth-provider',
     group: 'instance',
     icon: KeyRound,
+    integration: true,
+  },
+  {
+    slug: 'rize',
+    group: 'instance',
+    icon: Timer,
     integration: true,
   },
   {

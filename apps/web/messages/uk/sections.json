@@ -66,6 +66,10 @@
     "scim": {
       "label": "SCIM",
       "description": "Дозвольте постачальнику ідентифікації створювати, оновлювати та вимикати облікові записи на цьому сервері й надавати доступ до проєктів через свої групи."
+    },
+    "rize": {
+      "label": "Rize",
+      "description": "Time tracking: the key that copies the team's Rize time into tickets."
     }
   },
   "settings": {

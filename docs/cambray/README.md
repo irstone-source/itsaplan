@@ -21,16 +21,19 @@ the instance holds, how the team uses it, and how it is changed and deployed.
 
 | Project | Key | Holds | Who sees it |
 | --- | --- | --- | --- |
-| Consulting | CON | All consulting client work | Team |
-| Incubator | IPD | Product bets before launch | Team |
+| Consulting | CON | Client outcomes and their value, in monthly cycles | Team |
+| Loops | LOOPS | Cambray's loops: the unit of sale, built and sold one at a time | Team |
+| It's a Plan (Cambray) | PLAN | Development and releases of this instance (GitHub releases of `irstone-source/itsaplan`) | Team |
+| Bridge Intelligence | BRIDGE | The Bridge product | Ian (Alex and Tom later) |
+| Audience Intel | AI | The Audience Intel product | Team |
+| Signal | SIG | The Signal product | Team |
 | Administration | ADM | Bookkeeping, contracts, subscriptions, tooling | Team |
 | Finance | FIN | Cash flow, forecasts, invoicing, funding, tax | Ian |
-| Bridge Intelligence | BRIDGE | The Bridge company plan | Ian (Alex and Tom later) |
-| Cambray | CAM | Mixed work still to be sorted | Team |
 
-The old per-client boards (GSG, FGE, WSD, SGOLF, LANO, BIKEV) are empty: their issues moved
-to CON, each with a "Migrated from GSG-12" line, and the originals are archived. They are
-kept until they are deleted after a backup.
+Only outcomes and their value go in It's a Plan; day-to-day work stays in Slack. The
+projects and tickets were reset on 2 Nov 2026 (`scripts/cambray-reset.ts`, after a
+backup): every ticket was deleted and the old client, Incubator, Cambray and rev-os
+projects were removed. Consulting kept its cycles, initiatives, labels and playbook.
 
 ### Consulting (CON)
 
@@ -72,7 +75,7 @@ Rates (from the 12-week resource plan, 6 hours = 1 day):
 | Finance | Sidebar → Finance (owner only) | The year's revenue target, spread over one project's cycles by working days; per month the cycle target, break-even, pool % and billings |
 | Playbook | Sidebar → Playbook | Each client's repeatable deliverables with an outcome price, billing (billable, retainer, non-billable), cadence (monthly, quarterly in month 1–3 of the quarter, ad hoc) and an estimate used for capacity only. Each client shows what its items are priced at per month against its monthly retainer fee |
 | Revenue class, fee and hours | Initiative £/day pill | Committed (retained income that must be delivered), New (a new client) or Management (MGM, running the consultancy), the monthly retainer fee, and the hours a month allocated to the client |
-| Hours band | Playbook, under each client | The allocation split into a 60% floor, an 80% ceiling and a 20% buffer released to internal work; the hours the items plan against it (green inside, amber under the floor or over the ceiling); the fee an hour at 100, 80 and 60% of the allocation |
+| Hours limit | Playbook, under each client; Time page | Hours tracked in Rize this month against the client's limit: red flag at 60%, down tools at 70% |
 | Repeatable work | Top of every open cycle page | The playbook items the cycle's month makes due, grouped committed → new → management, to add in one go or one by one; an item is added once per cycle. Each becomes a ticket under its initiative, valued at its price |
 | Capacity and reserve | Cycle strip; God mode → Billing | Planned hours against capacity (working days × hours per day × the project's people, or a figure set on the cycle), with a reserve (20% by default) kept free for step-change work nobody has planned; the breakdown splits value and hours by revenue class |
 | Client report | Cycle breakdown → the copy icon on a client | The client's delivered tickets with their value and what is still in progress, as markdown to paste to them |
@@ -129,14 +132,22 @@ them (God mode → Users → Add to projects).
 
 ## 5. Automation
 
-- **Daily intake** (claude.ai routine `trig_01WYCwuAx9AbZc6SVCvEyfGP`, 10:00 UTC): reads the
-  Fathom standup and Slack, files work into CON under the right client initiative and the
-  current month's cycle, sets a time estimate only when the meeting states one, mirrors
-  real work as Rize tasks named with the issue id, and books focus blocks in Ian's calendar.
-  It never changes initiative goals, targets, rates or billing models.
-- **Slack**: the claude.ai Slack connector does not authorise in routine runs. The fix is a
-  read-only Slack app (`scripts/slack-intake-app-manifest.yml`) whose bot token goes in the
-  routine environment as `SLACK_BOT_TOKEN`. Not set up yet.
+- **Rize sync** (God mode → Integrations → Rize): with a Rize team admin's API key saved,
+  the api copies the team's Rize time every 15 minutes (the last 3 days; 60 days the first
+  time and on "Sync now"). Each entry is matched to a person by email, to a ticket by an
+  identifier in its task or title (`CON-14 — …`), and to a client initiative through its
+  ticket or through the Rize client map on the Time page. A matched entry shows as logged
+  time on its ticket. An entry deleted in Rize goes on the next sync.
+- **Time page** (Consulting → Time): each client's tracked hours this month against its
+  "Hours a month" limit, with a **red flag at 60%** and **down tools at 70%**; the Rize
+  clients and the initiative each counts toward; and the entries not tied to a ticket,
+  each with "Tie to ticket". A link made by hand is kept on later syncs. The Playbook
+  shows the same tracked hours and state under each client.
+- **Friday close** (a saved view in Consulting): the running cycle's tickets that are not
+  done or canceled, for the Friday morning close-off.
+- **Daily intake** (claude.ai routine `trig_01WYCwuAx9AbZc6SVCvEyfGP`): **disabled on 2 Nov
+  2026.** It filed Slack and standup actions into CON; the Rize sync and the Friday close
+  replace it. Its prompt is kept in the routine.
 
 ## 6. Changing and deploying
 
@@ -184,7 +195,6 @@ that were renumbered away. Rehearse on a restored production backup before shipp
 
 - The year's revenue target, break-even and pool % per month (Finance page).
 - Xero (collected cash) reconciliation of billings.
-- Rize sync: scoped in `rize-sync.md`, waiting on Ian's decisions there.
 - Growth tracker: phase 1 live; next are the hole-chasing tasks, the per-initiative agents and the RevOS, Rize and Xero sources (`boolean-tracker.md`).
 - Product revenue (subscriptions, customers onboarded) as initiatives with gates, and a revenue share on it.
 
