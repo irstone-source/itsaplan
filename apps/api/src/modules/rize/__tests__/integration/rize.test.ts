@@ -1,3 +1,4 @@
+import { createProject } from '#tests/helpers/app';
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { resetDb } from '#tests/helpers/db';
 import { addUser, joinProject, setup, type Actor } from '../../../god/__tests__/helpers';
@@ -42,7 +43,7 @@ function entry(
 }
 
 async function scaffold(god: Actor) {
-  await god.api.projects.post({ key: 'CON', name: 'Consulting' });
+  await createProject(god.api, { key: 'CON', name: 'Consulting' });
   const con = god.api.projects({ projectKey: 'CON' });
   const columns = (await con.get()).data!.columns;
   const fge = (await con.initiatives.post({ title: 'FGE — 32 sales a month', monthlyMinutes: 300 }))
@@ -136,7 +137,7 @@ describe('Rize sync', () => {
     expect((await member.api.god.rize.get()).status).toBe(403);
     expect((await member.api.god.rize.put({ apiKey: 'x' })).status).toBe(403);
 
-    await god.api.projects.post({ key: 'OTH', name: 'Other' });
+    await createProject(god.api, { key: 'OTH', name: 'Other' });
     const other = god.api.projects({ projectKey: 'OTH' });
     const col = (await other.get()).data!.columns[0]!.id;
     const foreign = (await other.issues.post({ columnId: col, title: 'x' })).data!;

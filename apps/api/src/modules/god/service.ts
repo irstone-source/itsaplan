@@ -23,6 +23,7 @@ import {
 } from '@repo/db';
 import {
   and,
+  asc,
   desc,
   eq,
   exists,
@@ -40,6 +41,7 @@ import { accountsManagedByScim } from '@repo/auth';
 import { HttpError, iso } from '#shared/lib';
 import { deleteAccount } from '#shared/account-deletion';
 import { assertSeatFree } from '#modules/teams/service';
+import { getDefaultRoleId } from '#modules/roles/service';
 import { countOwners, removeMember } from '#modules/members/service';
 import {
   defaultMemberPermissions,
@@ -78,7 +80,8 @@ export interface InstanceUserRow {
   active: boolean;
   // Why god cannot switch `active` here, or null when it can.
   activeLock: ActiveLock | null;
-  // The start of the most recent session, or null when the user never signed in.
+  // When the person last used the app, to the hour; null when they have not used it since
+  // the column was added.
   lastSeenAt: string | null;
   createdAt: string;
 }
@@ -124,7 +127,6 @@ interface UserFacts {
   agents: Set<string>;
   providers: Map<string, string[]>;
   projectCounts: Map<string, number>;
-  lastSeen: Map<string, Date>;
 }
 
 async function loadUserFacts(userIds: string[]): Promise<UserFacts> {
@@ -133,10 +135,9 @@ async function loadUserFacts(userIds: string[]): Promise<UserFacts> {
       agents: new Set(),
       providers: new Map(),
       projectCounts: new Map(),
-      lastSeen: new Map(),
     };
   }
-  const [agentRows, accountRows, memberRows, sessionRows] = await Promise.all([
+  const [agentRows, accountRows, memberRows] = await Promise.all([
     db.select({ userId: aiAgent.userId }).from(aiAgent).where(inArray(aiAgent.userId, userIds)),
     db
       .select({ userId: account.userId, providerId: account.providerId })
@@ -147,12 +148,6 @@ async function loadUserFacts(userIds: string[]): Promise<UserFacts> {
       .from(projectMember)
       .where(inArray(projectMember.userId, userIds))
       .groupBy(projectMember.userId),
-    // Session start times, reduced to the latest per user below. Aggregating in
-    // SQL would return the max as a driver-formatted string, not a Date.
-    db
-      .select({ userId: session.userId, createdAt: session.createdAt })
-      .from(session)
-      .where(inArray(session.userId, userIds)),
   ]);
 
   const providers = new Map<string, string[]>();
@@ -162,17 +157,10 @@ async function loadUserFacts(userIds: string[]): Promise<UserFacts> {
     providers.set(r.userId, list);
   }
 
-  const lastSeen = new Map<string, Date>();
-  for (const r of sessionRows) {
-    const current = lastSeen.get(r.userId);
-    if (!current || r.createdAt > current) lastSeen.set(r.userId, r.createdAt);
-  }
-
   return {
     agents: new Set(agentRows.map((r) => r.userId)),
     providers,
     projectCounts: new Map(memberRows.map((r) => [r.userId, r.count])),
-    lastSeen,
   };
 }
 
@@ -183,7 +171,7 @@ function activeLockOf(role: string, isAgent: boolean, scim: boolean): ActiveLock
 }
 
 function toRow(r: UserRow, facts: UserFacts, scim: boolean): InstanceUserRow {
-  const lastSeen = facts.lastSeen.get(r.id) ?? null;
+  const lastSeen = r.lastSeenAt ?? null;
   const role = r.role ?? 'user';
   const isAgent = facts.agents.has(r.id);
   return {
@@ -347,6 +335,8 @@ export async function assignInstanceUserProjects(
     .from(teamRole)
     .where(and(inArray(teamRole.teamId, teamIds), eq(teamRole.isDefault, true)));
   const defaultRoleOf = new Map(defaultRoles.map((r) => [r.teamId, r.id]));
+  // A team without a default role of its own joins people on the system default.
+  const systemDefault = await getDefaultRoleId();
 
   await db.transaction(async (tx) => {
     if (newTeamIds.length > 0) {
@@ -362,7 +352,7 @@ export async function assignInstanceUserProjects(
           projectId: p.id,
           userId,
           role: 'member' as const,
-          roleId: defaultRoleOf.get(p.teamId) ?? null,
+          roleId: defaultRoleOf.get(p.teamId) ?? systemDefault,
         })),
       )
       .onConflictDoNothing();
@@ -952,4 +942,36 @@ export async function listInstanceProjectOptions(): Promise<
     .from(project)
     .innerJoin(team, eq(team.id, project.teamId))
     .orderBy(team.name, project.name);
+}
+
+// The instance owner: the first account given the god role. Every other god can open
+// god mode; only the instance owner gives or takes the role.
+export async function instanceOwnerId(): Promise<string | null> {
+  const [owner] = await db
+    .select({ id: user.id })
+    .from(user)
+    .where(eq(user.role, 'god'))
+    .orderBy(asc(user.createdAt))
+    .limit(1);
+  return owner?.id ?? null;
+}
+
+// Gives an account god mode or takes it away. The caller must be the instance owner,
+// who cannot change their own role; an agent's bot user never has it, and a deactivated
+// account is not given it. Taking it away works on any account: a SCIM-deactivated
+// god cannot be reactivated from here, and the role must not stay with it.
+export async function setInstanceUserRole(
+  callerId: string,
+  userId: string,
+  role: 'god' | 'user',
+): Promise<InstanceUserDetail> {
+  if (callerId !== (await instanceOwnerId()))
+    throw new HttpError(403, 'Only the instance owner gives or takes god mode');
+  const target = await getInstanceUser(userId);
+  if (!target) throw new HttpError(404, 'User not found');
+  if (userId === callerId) throw new HttpError(409, 'The instance owner keeps god mode');
+  if (target.isAgent) throw new HttpError(409, "An agent's account cannot have god mode");
+  if (role === 'god' && !target.active) throw new HttpError(409, 'Reactivate the account first');
+  await db.update(user).set({ role }).where(eq(user.id, userId));
+  return (await getInstanceUser(userId))!;
 }

@@ -312,6 +312,7 @@ export default function IssueProperties({
                   imageAttachments={imageAttachments}
                   onSetField={onSetField}
                   readOnly={readOnly}
+                  mentions={{ projectKey: project.project.ref, on: 'issue', place: 'text' }}
                 />
               </div>
             );

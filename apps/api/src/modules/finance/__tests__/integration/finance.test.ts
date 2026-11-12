@@ -1,3 +1,4 @@
+import { createProject } from '#tests/helpers/app';
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { db, project } from '@repo/db';
 import { eq } from 'drizzle-orm';
@@ -21,7 +22,7 @@ describe('finance', () => {
 
   it('spreads the year target over the cycles starting in its months', async () => {
     const { god } = await setup();
-    await god.api.projects.post({ key: 'CON', name: 'Consulting' });
+    await createProject(god.api, { key: 'CON', name: 'Consulting' });
     const cycles = god.api.projects({ projectKey: 'CON' }).cycles;
     await cycles.post({ name: 'September 2026', startDate: '2026-09-28', endDate: '2026-09-30' });
     const oct = (

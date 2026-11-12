@@ -44,7 +44,14 @@
     },
     "deactivateTitle": "تعطيل {email}؟",
     "deactivateBody": "هيتقفل الدخول بتاعه فورًا ومش هيقدر يدخل أو يستخدم مفاتيح الـAPI لحد ما ترجّع تفعّل الحساب. هتتشال اتصالات MCP والدعوات اللي بعتها. مفيش حاجة تانية هتتمسح.",
-    "deactivateConfirm": "تعطيل"
+    "deactivateConfirm": "تعطيل",
+    "godMode": "God mode",
+    "godAria": "God mode for {email}",
+    "giveGodTitle": "Give {email} god mode?",
+    "giveGodConfirm": "Give god mode",
+    "giveGodBody": "They will see and change every instance setting, every user, Finance and the team's Performance. You stay the instance owner and can take it away again here.",
+    "godGiven": "{email} now has god mode",
+    "godTaken": "{email} no longer has god mode"
   },
   "userPanel": {
     "instanceOwner": "مالك النسخة",
@@ -177,6 +184,20 @@
     },
     "joined": "انضم في {date}"
   },
+  "roles": {
+    "newRole": "دور جديد",
+    "empty": "لا توجد أدوار نظام بعد.",
+    "default": "افتراضي",
+    "defaultUndeletable": "لا يمكن حذف الدور الافتراضي",
+    "columns": {
+      "role": "الدور",
+      "permissions": "الصلاحيات"
+    },
+    "edit": "تعديل الدور",
+    "delete": "حذف الدور",
+    "deleteTitle": "حذف الدور \"{name}\"",
+    "deleteDescription": "لا يمكن التراجع عن هذا الإجراء."
+  },
   "general": {
     "saved": "تم حفظ الإعدادات الافتراضية",
     "projectDefaults": "الإعدادات الافتراضية",
@@ -186,29 +207,55 @@
     "workspaces": "مساحات العمل",
     "personalWorkspaces": "مساحة عمل لكل شخص",
     "personalWorkspacesHint": "كل حساب بياخد مساحة عمل خاصة بيه باسم صاحبه. لو اتقفل، الناس بيشتغلوا بس في مساحات العمل اللي اتضافوا ليها.",
+    "invites": "الدعوات",
+    "inviteSearch": "اقتراح أشخاص عند الدعوة",
+    "inviteSearchHint": "لما مالك الفريق أو مديره يكتب عنوان في نافذة الدعوة، بتظهر الحسابات المطابقة من كل مساحات العمل على النسخة دي بالاسم والإيميل. لو اتقفل، لازم يكتب العنوان كامل.",
+    "invitesSaved": "اتحفظت إعدادات الدعوات",
     "agents": "الوكلاء",
     "agentsSaved": "تم حفظ إعدادات الوكلاء",
+    "embedding": "التضمين",
+    "embedSites": "المواقع الموثوقة",
+    "embedSitesHint": "تُفتح المهام واللوحات المُشارَكة علنًا داخل إطار على هذه المواقع فقط. افصل بين المواقع بفواصل.",
+    "embedSitesInvalid": "اكتب كل موقع بالشكل https://example.com، دون مسار.",
+    "embedSaved": "تم حفظ المواقع الموثوقة",
     "traceRetention": "مدة حفظ تتبّعات التشغيل",
     "traceRetentionHint": "كل تشغيل لوكيل يسجّل استدعاءات النموذج والأدوات. لوحات الاستهلاك تحتسب العمليات المحفوظة فقط.",
     "traceDays": "{days, plural, one {يوم واحد} two {يومان} few {# أيام} many {# يوماً} other {# يوم}}",
-    "traceForever": "دائماً"
+    "traceForever": "دائماً",
+    "maxRunTime": "أقصى وقت للتشغيل",
+    "maxRunTimeHint": "المدة التي يمكن أن يستغرقها تشغيل واحد للوكيل قبل إيقافه وحفظه كفاشل. لا يمكن أن يتجاوزه الحد الخاص بالوكيل.",
+    "runMinutes": "{minutes, plural, zero {# دقيقة} one {دقيقة واحدة} two {دقيقتان} few {# دقائق} many {# دقيقة} other {# دقيقة}}",
+    "runSeconds": "{seconds} ث",
+    "concurrentRuns": "التشغيلات المتزامنة",
+    "concurrentRunsHint": "عدد تشغيلات الوكلاء التي تعمل في الوقت نفسه على هذه النسخة. ينتظر الباقي في قائمة الانتظار. لا تُحتسب المحادثات والوكلاء الخارجيون. 0 يعني بلا حد.",
+    "concurrentRunsInvalid": "أدخل عددًا صحيحًا من 0 إلى {max}."
   },
   "authentication": {
     "saved": "تم حفظ إعدادات المصادقة",
     "registration": "التسجيل",
     "registrationHint": "مين اللي يقدر يعمل حساب على النسخة دي.",
+    "registrationPasswordlessNote": "يتولّى مزوّد تسجيل الدخول التسجيل واستعادة كلمة المرور.",
+    "inviteTtlDays": "مدة صلاحية الدعوات (بالأيام)",
+    "inviteTtlDaysHint": "بعد انقضاء هذه المدة يتوقف رابط الدعوة عن العمل، ومع التسجيل بالدعوة فقط لا يعود يسمح بالتسجيل. مع القيمة 0 لا تنتهي صلاحية الدعوات.",
+    "inviteTtlDaysInvalid": "أدخل عددًا صحيحًا من الأيام من 0 إلى {max}.",
+    "allowedEmailDomains": "نطاقات البريد المسموح بها",
+    "allowedEmailDomainsHint": "يمكن إنشاء حساب بعناوين من هذه النطاقات فقط. افصل بينها بفواصل، أو اترك الحقل فارغًا للسماح بأي عنوان. تحتفظ الحسابات الحالية بإمكانية الدخول.",
+    "allowedEmailDomainsInvalid": "يجب أن يكون كل نطاق بصيغة example.com، وبحد أقصى 100 نطاق.",
     "modes": {
       "open": {
         "label": "مفتوح",
-        "description": "أي حد يوصل لصفحة التسجيل يقدر يعمل حساب."
+        "description": "أي حد يوصل لصفحة التسجيل يقدر يعمل حساب.",
+        "descriptionPasswordless": "كل من يسجّل الدخول عبر المزوّد لأول مرة يحصل على حساب."
       },
       "invite": {
         "label": "بالدعوة فقط",
-        "description": "مفيش حساب يتعمل غير من خلال رابط دعوة."
+        "description": "مفيش حساب يتعمل غير من خلال رابط دعوة.",
+        "descriptionPasswordless": "لا يُنشأ حساب عند تسجيل الدخول عبر المزوّد إلا إذا كانت هناك دعوة معلّقة لهذا العنوان."
       },
       "closed": {
         "label": "مغلق",
-        "description": "مفيش حسابات جديدة خالص. الحسابات الموجودة هتفضل تسجّل دخول عادي."
+        "description": "مفيش حسابات جديدة خالص. الحسابات الموجودة هتفضل تسجّل دخول عادي.",
+        "descriptionPasswordless": "لا حسابات جديدة، حتى لمن يأتي من المزوّد. تستمر الحسابات الحالية في تسجيل الدخول."
       }
     },
     "signIn": "خيارات تسجيل الدخول",
@@ -278,7 +325,18 @@
     "testing": "جارٍ الإرسال…",
     "testHint": "أرسل رسالة حقيقية بالإعدادات الحالية من دون حفظها.",
     "testConfigureFirst": "فعّل مزوّدًا وأضف بيانات الاعتماد المطلوبة أولًا.",
-    "testSent": "تم إرسال رسالة اختبار إلى {email}"
+    "testSent": "تم إرسال رسالة اختبار إلى {email}",
+    "smtpAuth": "المصادقة",
+    "smtpAuthOptions": {
+      "password": "كلمة المرور",
+      "microsoft365": "Microsoft 365 (OAuth)"
+    },
+    "mailbox": "صندوق البريد",
+    "tenantId": "معرّف المستأجر (tenant)",
+    "clientId": "معرّف العميل",
+    "clientSecret": "سرّ العميل",
+    "clientSecretPlaceholder": "سرّ تسجيل التطبيق",
+    "microsoft365Hint": "يسجّل الدخول كتسجيل تطبيق في Entra ID بدلًا من كلمة مرور صندوق البريد، فيمكن أن يبقى التحقق متعدد العوامل مفعّلًا. يحتاج التطبيق إلى إذن التطبيق SMTP.SendAsApp من Office 365 Exchange Online بموافقة المسؤول، وإلى الوصول إلى هذا الصندوق في Exchange، وتفعيل SMTP AUTH للصندوق."
   },
   "authProvider": {
     "saved": "تم حفظ مزوّد المصادقة",

@@ -25,7 +25,7 @@ export default function InviteProviderButtons({ token }: { token: string }) {
     try {
       await signInWithProviderForInvite(token, provider);
     } catch (err) {
-      setError(err instanceof Error && err.message ? err.message : t('genericError'));
+      setError(err instanceof Error && err.message ? err.message : t('signInFailed'));
       setPending(false);
     }
   }

@@ -1,3 +1,4 @@
+import { createProject } from '#tests/helpers/app';
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { resetDb } from '#tests/helpers/db';
 import { addUser, joinProject, setup } from '../../../god/__tests__/helpers';
@@ -22,7 +23,7 @@ describe('performance', () => {
     const a = await addUser();
     const b = await addUser();
     await god.api.god.billing.put({ hoursPerDay: 6, internalDayRatePence: 30000 });
-    await god.api.projects.post({ key: 'CON', name: 'Consulting' });
+    await createProject(god.api, { key: 'CON', name: 'Consulting' });
     await god.api.projects({ projectKey: 'CON' }).settings.estimates.patch({
       points: false,
       time: true,
@@ -126,7 +127,7 @@ describe('performance', () => {
     const { god } = await setup();
     const a = await addUser();
     await god.api.god.billing.put({ hoursPerDay: 6, internalDayRatePence: null });
-    await god.api.projects.post({ key: 'CON', name: 'Consulting' });
+    await createProject(god.api, { key: 'CON', name: 'Consulting' });
     await joinProject(god, a, 'CON', 'member');
     const con = god.api.projects({ projectKey: 'CON' });
     await con.settings.estimates.patch({ points: false, time: true, logging: false });

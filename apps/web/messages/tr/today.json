@@ -1,0 +1,10 @@
+{
+  "empty": "Nothing needs you today: no overdue, due or in-progress work assigned to you.",
+  "buckets": {
+    "overdue": "Overdue",
+    "due": "Due today",
+    "started": "In progress",
+    "cycle": "In the current cycle",
+    "scheduled": "Start date reached"
+  }
+}

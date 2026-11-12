@@ -12,17 +12,34 @@ import {
   hasConfiguredGoogle,
   getOidcSettings,
   setOidcSettings,
+  getScimSettings,
+  setScimSettings,
+  rotateScimToken,
   hasConfiguredOidc,
 } from '@repo/auth';
 import { hasConfiguredEmailProvider, getStorageSettings } from '@repo/db';
 import { emailBody, hasEmailProvider, sendEmail } from '@repo/mailer';
 import { authContext } from '#shared/auth-context';
-import { requireGod } from '#shared/access';
-import { HttpError } from '#shared/lib';
+import { requireGod, requireUser } from '#shared/access';
+import { HttpError, rethrowDuplicate } from '#shared/lib';
 import { accessErrors, commonErrors, errors } from '#shared/responses';
 import { paginate } from '#shared/pagination';
 import { noContent } from '#shared/http';
 import { deleteProject } from '#modules/projects/service';
+import { SCIM_BASE_URL } from '#modules/scim/resource';
+import {
+  MappableProjectListResponse,
+  ScimGroupMappingsBody,
+  ProvisionedGroupResponse,
+  ScimSettingsBody,
+  ScimSettingsResponse,
+  ScimTokenResponse,
+} from '#modules/scim/model';
+import {
+  listMappableProjects,
+  listProvisionedGroups,
+  setGroupMappings,
+} from '#modules/scim/mappings';
 import {
   deleteInstanceUser,
   getInstanceProject,
@@ -36,6 +53,8 @@ import {
   listInstanceTeamMembers,
   listInstanceUsers,
   setInstanceUserActive,
+  setInstanceUserRole,
+  instanceOwnerId,
   verifyInstanceUserEmail,
   listInstanceProjectOptions,
   type ActiveLock,
@@ -55,6 +74,7 @@ import {
   InstanceTeamProjectPageResponse,
   InstanceTeamResponse,
   InstanceUserDetailResponse,
+  InstanceOwnerResponse,
   InstanceUserPageResponse,
   OidcSettingsBody,
   OidcSettingsResponse,
@@ -64,9 +84,12 @@ import {
   deleteUserQuery,
   listUsersQuery,
   projectParams,
+  roleParams,
+  scimGroupParams,
   searchPageQuery,
   teamParams,
   userParams,
+  userRoleBody,
   assignProjectsBody,
   userProjectParams,
   InstanceProjectOptionListResponse,
@@ -79,16 +102,29 @@ import {
   setHotkeySettings,
   setBranding,
   setBillingSettings,
+  getEmbedSites,
+  setEmbedSites,
   getProjectDefaults,
   setProjectDefaults,
   getAgentSettings,
   setAgentSettings,
 } from '#modules/settings/service';
 import { getUpdateStatus } from '#modules/settings/updates';
+import { RoleResponse, createRoleBody, updateRoleBody } from '#modules/roles/model';
+import {
+  createRole,
+  deleteRole,
+  getRole,
+  getRoleUsage,
+  isRoleInUse,
+  listRoles,
+  updateRole,
+} from '#modules/roles/service';
 import {
   AgentSettingsSchema,
   BillingSettingsSchema,
   BrandingSchema,
+  EmbedSitesSchema,
   HotkeyCombosSchema,
   ProjectDefaultsSchema,
   StorageSettingsSchema,
@@ -97,9 +133,9 @@ import {
 
 // God mode: instance-wide administration, open only to the "god" user (the first
 // registered account). It covers how people may register, the mail provider that
-// sends authentication email, and the OAuth credentials. SCIM provisioning belongs to
-// a workspace and is set in its settings. Invites are per team (team_invite), managed in the team panel and in the project's Members
-// section — there is nothing instance-level to add here.
+// sends authentication email, the OAuth credentials, and the instance's SCIM
+// provisioning. Invites are per team (team_invite), managed in the team panel and in the
+// project's Members section — there is nothing instance-level to add here.
 //
 // The settings themselves are owned by @repo/auth, which reads them at sign-up and
 // when sending mail; these routes only expose them over HTTP. Secrets are never
@@ -150,7 +186,8 @@ export const godRoutes = new Elysia({ name: 'god', detail: { tags: ['God'] } })
       response: { 200: AuthSettingsResponse, ...errors(401, 403) },
       detail: {
         summary: 'Get authentication settings',
-        description: 'Get the instance registration mode and email-dependent auth options.',
+        description:
+          'Get the instance registration mode, allowed email domains, invite lifetime and email-dependent auth options.',
       },
     },
   )
@@ -178,7 +215,8 @@ export const godRoutes = new Elysia({ name: 'god', detail: { tags: ['God'] } })
       response: { 200: AuthSettingsResponse, ...errors(400, 401, 403) },
       detail: {
         summary: 'Update authentication settings',
-        description: 'Update the instance registration mode and email-dependent auth options.',
+        description:
+          'Update the instance registration mode, allowed email domains, invite lifetime and email-dependent auth options.',
       },
     },
   )
@@ -322,6 +360,80 @@ export const godRoutes = new Elysia({ name: 'god', detail: { tags: ['God'] } })
     },
   )
 
+  .get('/god/scim', async () => ({ ...(await getScimSettings(null)), baseUrl: SCIM_BASE_URL }), {
+    response: { 200: ScimSettingsResponse, ...errors(401, 403) },
+    detail: {
+      summary: 'Get SCIM provisioning settings',
+      description: 'Get whether SCIM provisioning is on and whether a token has been generated.',
+    },
+  })
+
+  .patch(
+    '/god/scim',
+    async ({ body }) => {
+      // Enabling it without a token would leave the endpoint answering 401 to
+      // everything, which reads as a broken integration rather than a missing step.
+      if (body.enabled && !(await getScimSettings(null)).hasToken) {
+        throw new HttpError(400, 'Generate a SCIM token first');
+      }
+      return { ...(await setScimSettings(null, body)), baseUrl: SCIM_BASE_URL };
+    },
+    {
+      body: ScimSettingsBody,
+      response: { 200: ScimSettingsResponse, ...errors(400, 401, 403) },
+      detail: {
+        summary: 'Update SCIM provisioning settings',
+        description: 'Turn SCIM provisioning on or off.',
+      },
+    },
+  )
+
+  .post('/god/scim/token', async () => ({ token: await rotateScimToken(null) }), {
+    response: { 200: ScimTokenResponse, ...errors(401, 403) },
+    detail: {
+      summary: 'Generate a SCIM token',
+      description:
+        'Generate the bearer token an identity provider sends to /scim/v2, replacing any ' +
+        'previous one. The value is returned once and cannot be read back.',
+    },
+  })
+
+  .get('/god/scim/groups', () => listProvisionedGroups(null), {
+    response: { 200: t.Array(ProvisionedGroupResponse), ...errors(401, 403) },
+    detail: {
+      summary: 'List provisioned groups',
+      description:
+        "The groups the instance's identity provider has pushed, with their member counts and " +
+        'the projects they grant membership in.',
+    },
+  })
+
+  .put(
+    '/god/scim/groups/:groupId/mappings',
+    ({ params, body }) => setGroupMappings(null, params.groupId, body.mappings),
+    {
+      params: scimGroupParams,
+      body: ScimGroupMappingsBody,
+      response: { 200: ProvisionedGroupResponse, ...errors(400, 401, 403, 404) },
+      detail: {
+        summary: "Set a group's project mappings",
+        description:
+          'Replace the projects a provisioned group grants membership in, then reconcile the ' +
+          'membership of every project the change touched.',
+      },
+    },
+  )
+
+  .get('/god/scim/projects', () => listMappableProjects(null), {
+    response: { 200: MappableProjectListResponse, ...errors(401, 403) },
+    detail: {
+      summary: 'List mappable projects',
+      description:
+        'Every project a provisioned group may grant, with the roles its team assigns, for ' +
+        'the group mapping picker.',
+    },
+  })
+
   .get('/god/storage-settings', () => getStorageSettings(), {
     response: { 200: StorageSettingsSchema, ...errors(401, 403) },
     detail: {
@@ -367,7 +479,7 @@ export const godRoutes = new Elysia({ name: 'god', detail: { tags: ['God'] } })
   })
 
   .put('/god/agent-settings', ({ body }) => setAgentSettings(body), {
-    body: AgentSettingsSchema,
+    body: t.Partial(AgentSettingsSchema),
     response: { 200: AgentSettingsSchema, ...errors(400, 401, 403) },
     detail: {
       summary: 'Update instance agent settings',
@@ -412,6 +524,26 @@ export const godRoutes = new Elysia({ name: 'god', detail: { tags: ['God'] } })
       summary: 'Set instance branding',
       description:
         'Replace the product name, accent colour (#rrggbb) and logo (an image data URL). A null field restores the default.',
+    },
+  })
+
+  .get('/god/embed-sites', () => getEmbedSites(), {
+    response: { 200: EmbedSitesSchema, ...errors(401, 403) },
+    detail: {
+      summary: 'Get the sites that may embed public pages',
+      description:
+        'Get the sites that may show the shared work items and views, and the public pages, in a frame.',
+    },
+  })
+
+  .put('/god/embed-sites', ({ body }) => setEmbedSites(body.origins), {
+    body: EmbedSitesSchema,
+    response: { 200: EmbedSitesSchema, ...errors(400, 401, 403) },
+    detail: {
+      summary: 'Set the sites that may embed public pages',
+      description:
+        'Replace the list. Each entry is a site address with no path; it is stored as its ' +
+        'origin. Every other site, and every other page, is refused a frame.',
     },
   })
 
@@ -586,6 +718,30 @@ export const godRoutes = new Elysia({ name: 'god', detail: { tags: ['God'] } })
     },
   )
 
+  .get('/god/instance-owner', async () => ({ userId: await instanceOwnerId() }), {
+    response: { 200: InstanceOwnerResponse, ...errors(401, 403) },
+    detail: {
+      summary: 'Get the instance owner',
+      description: 'The account that gives and takes god mode: the first account given it.',
+    },
+  })
+
+  .patch(
+    '/god/users/:userId/role',
+    ({ params, body, user }) => setInstanceUserRole(requireUser(user).id, params.userId, body.role),
+    {
+      params: userParams,
+      body: userRoleBody,
+      response: { 200: InstanceUserDetailResponse, ...errors(400, 401, 403, 404, 409) },
+      detail: {
+        summary: "Change a user's role",
+        description:
+          'Give an account god mode, or take it away. Only the instance owner may, and not ' +
+          'for their own account or an AI agent; a deactivated account is not given it.',
+      },
+    },
+  )
+
   .post(
     '/god/users/:userId/reactivate',
     async ({ params }) => {
@@ -754,6 +910,75 @@ export const godRoutes = new Elysia({ name: 'god', detail: { tags: ['God'] } })
       detail: {
         summary: "List a team's members",
         description: 'One page of the team members, people and agents alike, with their rank.',
+      },
+    },
+  )
+
+  // System roles: permission matrices that belong to no team. Only god mode writes them.
+  .get('/god/roles', () => listRoles(null), {
+    response: { 200: t.Array(RoleResponse), ...errors(401, 403) },
+    detail: { summary: 'List system roles', description: 'Every system role, oldest first.' },
+  })
+
+  .post(
+    '/god/roles',
+    async ({ body, set }) => {
+      try {
+        set.status = 201;
+        return await createRole(null, body);
+      } catch (err) {
+        rethrowDuplicate(err, 'role');
+      }
+    },
+    {
+      body: createRoleBody,
+      response: { 201: RoleResponse, ...errors(400, 401, 403, 409) },
+      detail: { summary: 'Create a system role', description: 'Create a system role.' },
+    },
+  )
+
+  .patch(
+    '/god/roles/:roleId',
+    async ({ params, body }) => {
+      let role;
+      try {
+        role = await updateRole(null, params.roleId, body);
+      } catch (err) {
+        rethrowDuplicate(err, 'role');
+      }
+      if (!role) throw new HttpError(404, 'Role not found');
+      return role;
+    },
+    {
+      params: roleParams,
+      body: updateRoleBody,
+      response: { 200: RoleResponse, ...commonErrors, ...errors(409) },
+      detail: {
+        summary: 'Update a system role',
+        description: 'Update the name or the permission matrix of a system role.',
+      },
+    },
+  )
+
+  .delete(
+    '/god/roles/:roleId',
+    async ({ params }) => {
+      const role = await getRole(null, params.roleId);
+      if (!role) throw new HttpError(404, 'Role not found');
+      if (role.isDefault) throw new HttpError(400, 'The default role cannot be deleted');
+      // Deleting a role in use would drop its holders onto the default matrix.
+      if (isRoleInUse(await getRoleUsage(params.roleId))) {
+        throw new HttpError(409, 'This role is in use');
+      }
+      await deleteRole(null, params.roleId, null);
+      return noContent();
+    },
+    {
+      params: roleParams,
+      response: { 204: t.Void(), ...commonErrors, ...errors(409) },
+      detail: {
+        summary: 'Delete a system role',
+        description: 'Delete a system role. The default role cannot be deleted.',
       },
     },
   );

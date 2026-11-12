@@ -1,3 +1,4 @@
+import { createProject } from '#tests/helpers/app';
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { resetDb } from '#tests/helpers/db';
 import { addUser, joinProject, setup } from '../../../god/__tests__/helpers';
@@ -25,7 +26,7 @@ describe('Playbook import', () => {
   it('plans without writing, applies once, and skips what exists on a rerun', async () => {
     const { god } = await setup();
     const jo = await addUser({ name: 'Jo' });
-    await god.api.projects.post({ key: 'CON', name: 'Consulting' });
+    await createProject(god.api, { key: 'CON', name: 'Consulting' });
     await joinProject(god, jo, 'CON', 'member');
     const con = god.api.projects({ projectKey: 'CON' });
     await con.initiatives.post({ title: 'GSG — leads' });
@@ -86,7 +87,7 @@ describe('Playbook import', () => {
   it('refuses a non-member', async () => {
     const { god } = await setup();
     const outsider = await addUser({ name: 'Out' });
-    await god.api.projects.post({ key: 'CON', name: 'Consulting' });
+    await createProject(god.api, { key: 'CON', name: 'Consulting' });
     const res = await outsider.api
       .projects({ projectKey: 'CON' })
       .playbook.import.post({ rows: [], setup: false, apply: false });

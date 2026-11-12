@@ -1,3 +1,4 @@
+import { createProject } from '#tests/helpers/app';
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { db, project } from '@repo/db';
 import { eq } from 'drizzle-orm';
@@ -17,7 +18,7 @@ const day = (v: unknown) => (v instanceof Date ? v.toISOString().slice(0, 10) : 
 
 async function consulting(god: Awaited<ReturnType<typeof setup>>['god']) {
   await god.api.god.billing.put({ hoursPerDay: 6, internalDayRatePence: null });
-  await god.api.projects.post({ key: 'CON', name: 'Consulting' });
+  await createProject(god.api, { key: 'CON', name: 'Consulting' });
   const con = god.api.projects({ projectKey: 'CON' });
   await con.settings.estimates.patch({ points: false, time: true, logging: false });
   const [{ id: projectId }] = await db.select().from(project).where(eq(project.key, 'CON'));

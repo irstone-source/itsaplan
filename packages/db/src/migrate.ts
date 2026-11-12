@@ -25,6 +25,13 @@ const db = drizzle(migrationClient);
 
 const migrationsFolder = fileURLToPath(new URL('../drizzle', import.meta.url));
 
+// A build's own tables, kept apart from the core's: its migrations folder, applied after
+// the core's under the same lock and backup, with a bookkeeping table of its own.
+const buildFolder = process.env.BUILD_MIGRATIONS_DIR;
+const BUILD_TABLE = '__build_migrations';
+const readJournal = (folder: string) =>
+  JSON.parse(readFileSync(`${folder}/meta/_journal.json`, 'utf8'));
+
 // Compose orders the api behind a healthy postgres, but a platform without that
 // guarantee (Railway, plain `docker run`) starts both at once and the first
 // connections are refused. Wait for the server separately so a failing migration
@@ -61,26 +68,44 @@ if (!locked) {
 // SKIP_PRE_MIGRATION_BACKUP=1 is for an operator who backs up by other means, and is
 // what `db:migrate:test` sets — BACKUP_DIR is a path only the api container has, and
 // a test database that is truncated between tests has nothing to go back to.
-const journal = JSON.parse(readFileSync(`${migrationsFolder}/meta/_journal.json`, 'utf8'));
+const journal = readJournal(migrationsFolder);
 
 // drizzle applies only the migrations newer than the newest one it has recorded. A
-// recorded migration whose timestamp is in no journal entry was renumbered away (the
-// Cambray migrations 0135-0140, replaced by the re-runnable 0147_cambray when upstream
-// took those numbers), and left in place it would hide every upstream migration older
-// than it. Such records are dropped before anything else is read.
-const known = new Set<number>(journal.entries.map((e: { when: number }) => e.when));
+// recorded migration whose timestamp is in no journal entry was renumbered away (Cambray's
+// migrations, folded into one re-runnable migration each time upstream took their
+// numbers), and left in place it would hide every upstream migration older than it. Such
+// records are left out of the pending count here and deleted once the backup is written:
+// the dump then still holds the ledger the previous release expects, so restoring it
+// does not make that release re-run migrations of its own that are not re-runnable.
+const entries: { when: number; tag: string }[] = journal.entries;
+const known = new Set<number>(entries.map((e) => e.when));
 const [{ exists: hasLedger }] = await migrationClient<{ exists: boolean }[]>`
   select to_regclass('drizzle.__drizzle_migrations') is not null as exists`;
-if (hasLedger) {
-  const recorded = await migrationClient<{ id: number; created_at: string }[]>`
-    select id, created_at from drizzle.__drizzle_migrations`;
-  const orphans = recorded.filter((r) => !known.has(Number(r.created_at)));
-  if (orphans.length > 0) {
-    await migrationClient`delete from drizzle.__drizzle_migrations where id in ${migrationClient(orphans.map((r) => r.id))}`;
-    console.log(`🧭 Dropped ${orphans.length} record(s) of migrations no longer in the journal`);
-  }
-}
-const pending = await pendingMigrations(migrationClient, journal);
+const recorded = hasLedger
+  ? await migrationClient<{ id: number; created_at: string }[]>`
+    select id, created_at from drizzle.__drizzle_migrations`
+  : [];
+const orphans = recorded.filter((r) => !known.has(Number(r.created_at)));
+// The core migrations drizzle will apply once the orphans are gone: the journal entries
+// newer than the newest record still in it. An empty ledger is a new database, which
+// has nothing to dump (the rule pendingMigrations applies).
+const lastKept = Math.max(
+  0,
+  ...recorded.filter((r) => known.has(Number(r.created_at))).map((r) => Number(r.created_at)),
+);
+const corePending =
+  recorded.length === 0
+    ? []
+    : entries
+        .filter((e) => e.when > lastKept)
+        .sort((a, b) => a.when - b.when)
+        .map((e) => e.tag);
+const pending = [
+  ...corePending,
+  ...(buildFolder
+    ? await pendingMigrations(migrationClient, readJournal(buildFolder), BUILD_TABLE)
+    : []),
+];
 const skipBackup = process.env.SKIP_PRE_MIGRATION_BACKUP === '1';
 let backup = null;
 
@@ -98,8 +123,14 @@ if (pending.length > 0 && !skipBackup) {
   console.log(`✅ Backup written to ${backup.path} (${Math.round(backup.sizeBytes / 1024)} KB)`);
 }
 
+if (orphans.length > 0) {
+  await migrationClient`delete from drizzle.__drizzle_migrations where id in ${migrationClient(orphans.map((r) => r.id))}`;
+  console.log(`🧭 Dropped ${orphans.length} record(s) of migrations no longer in the journal`);
+}
+
 console.log('⏳ Running migrations...');
 await migrate(db, { migrationsFolder });
+if (buildFolder) await migrate(db, { migrationsFolder: buildFolder, migrationsTable: BUILD_TABLE });
 if (pending.length > 0) await recordMigrationRun(migrationClient, pending);
 if (backup) await recordBackup(migrationClient, backup);
 const removed = await pruneBackups();

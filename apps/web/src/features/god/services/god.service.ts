@@ -34,10 +34,14 @@ import {
   updateInstanceProjectDefaults,
   getInstanceAgentSettings,
   updateInstanceAgentSettings,
+  getInstanceEmbedSites,
+  updateInstanceEmbedSites,
   getInstanceStorageSettings,
   updateInstanceStorageSettings,
   listInstanceUsers,
   setInstanceUserActive,
+  setInstanceUserRole,
+  getInstanceOwner,
   getInstanceUser,
   deleteInstanceUser,
   listInstanceProjects,
@@ -50,7 +54,12 @@ import {
   listInstanceTeamProjects,
   listInstanceTeamMembers,
   verifyInstanceUserEmail,
+  listSystemRoles,
+  createSystemRole,
+  updateSystemRole,
+  deleteSystemRole,
 } from '@/lib/api/endpoints/god';
+import type { Permissions } from '@/lib/api/endpoints/roles';
 import { qk } from '@/services/queryKeys';
 
 // Data hooks for god mode. Every write returns the new state, which replaces the
@@ -75,7 +84,10 @@ export function useUpdateInstanceAuthSettings() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (patch: InstanceAuthSettingsPatch) => updateInstanceAuthSettings(patch),
-    onSuccess: (data) => qc.setQueryData(qk.instanceAuthSettings, data),
+    onSuccess: (data) => {
+      qc.setQueryData(qk.instanceAuthSettings, data);
+      qc.setQueryData(qk.inviteSearch, { enabled: data.inviteSearch });
+    },
   });
 }
 
@@ -92,7 +104,8 @@ export function useUpdateInstanceEmailSettings() {
     mutationFn: (patch: InstanceEmailSettingsPatch) => updateInstanceEmailSettings(patch),
     onSuccess: (data) => {
       qc.setQueryData(qk.instanceEmailSettings, data);
-      // Turning a provider on unlocks the auth options that need outbound mail.
+      // Turning a provider on unlocks the auth options that need outbound mail, and
+      // turning it off clears them.
       void qc.invalidateQueries({ queryKey: qk.instanceAuthSettings });
     },
   });
@@ -186,8 +199,24 @@ export function useInstanceAgentSettingsQuery() {
 export function useUpdateInstanceAgentSettings() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: AgentSettings) => updateInstanceAgentSettings(body),
+    mutationFn: (body: Partial<AgentSettings>) => updateInstanceAgentSettings(body),
     onSuccess: (data) => qc.setQueryData(qk.instanceAgentSettings, data),
+  });
+}
+
+// The sites that may frame the public pages.
+export function useInstanceEmbedSitesQuery() {
+  return useQuery({
+    queryKey: qk.instanceEmbedSites,
+    queryFn: () => getInstanceEmbedSites(),
+  });
+}
+
+export function useUpdateInstanceEmbedSites() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (origins: string[]) => updateInstanceEmbedSites(origins),
+    onSuccess: (data) => qc.setQueryData(qk.instanceEmbedSites, data),
   });
 }
 
@@ -310,6 +339,22 @@ export function useRemoveInstanceUserProject() {
   });
 }
 
+export function useInstanceOwnerQuery() {
+  return useQuery({ queryKey: qk.instanceOwner, queryFn: getInstanceOwner });
+}
+
+export function useSetInstanceUserRole() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: 'god' | 'user' }) =>
+      setInstanceUserRole(userId, role),
+    onSuccess: (data) => {
+      qc.setQueryData(qk.instanceUser(data.id), data);
+      void qc.invalidateQueries({ queryKey: qk.anyInstanceUsers });
+    },
+  });
+}
+
 export function useSetInstanceUserActive() {
   const qc = useQueryClient();
   return useMutation({
@@ -376,4 +421,31 @@ export function useInstanceTeamMembersQuery(teamId: number, search: string | und
     initialPageParam: 1,
     getNextPageParam: nextPageParam,
   });
+}
+
+export function useSystemRolesQuery() {
+  return useQuery({ queryKey: qk.systemRoles, queryFn: listSystemRoles });
+}
+
+function useSystemRoleMutation<TInput, TResult>(mutationFn: (input: TInput) => Promise<TResult>) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.systemRoles }),
+  });
+}
+
+export function useCreateSystemRole() {
+  return useSystemRoleMutation(createSystemRole);
+}
+
+export function useUpdateSystemRole() {
+  return useSystemRoleMutation(
+    ({ roleId, patch }: { roleId: number; patch: { name?: string; permissions?: Permissions } }) =>
+      updateSystemRole(roleId, patch),
+  );
+}
+
+export function useDeleteSystemRole() {
+  return useSystemRoleMutation(deleteSystemRole);
 }

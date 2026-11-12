@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { authedApi } from '#tests/helpers/app';
+import { authedApi, createProject } from '#tests/helpers/app';
 import { signUpTestUser } from '#tests/helpers/auth';
 import { resetDb } from '#tests/helpers/db';
 import { bucketOf } from '../../service';
@@ -14,7 +14,7 @@ describe('today', () => {
   it('lists my open assigned work for the day, bucketed', async () => {
     const u = await signUpTestUser();
     const api = authedApi(u.cookie);
-    await api.projects.post({ key: 'MKT', name: 'Marketing' });
+    await createProject(api, { key: 'MKT', name: 'Marketing' });
     const columns = (await api.projects({ projectKey: 'MKT' }).get()).data!.columns;
     const col = (type: string) => columns.find((c) => c.stateType === type)!.id;
     const issues = api.projects({ projectKey: 'MKT' }).issues;
@@ -40,7 +40,7 @@ describe('today', () => {
     const a = await signUpTestUser();
     const b = await signUpTestUser();
     const apiA = authedApi(a.cookie);
-    await apiA.projects.post({ key: 'MKT', name: 'Marketing' });
+    await createProject(apiA, { key: 'MKT', name: 'Marketing' });
     const columns = (await apiA.projects({ projectKey: 'MKT' }).get()).data!.columns;
     await apiA.projects({ projectKey: 'MKT' }).issues.post({
       columnId: columns[0].id,

@@ -20,6 +20,10 @@
       "title": "Proyectos",
       "description": "Los proyectos que este equipo posee."
     },
+    "templates": {
+      "title": "Plantillas de proyecto",
+      "description": "Ajustes guardados con los que empiezan los proyectos nuevos."
+    },
     "members": {
       "title": "Miembros del equipo",
       "description": "Todo el mundo del equipo, y las invitaciones que siguen abiertas."
@@ -55,6 +59,9 @@
     "analytics": {
       "title": "Consumo",
       "description": "Lo que han gastado en modelos los agentes del equipo, por agente, proyecto y día."
+    },
+    "queue": {
+      "title": "Ejecuciones de agentes"
     }
   },
   "info": {
@@ -71,15 +78,16 @@
     "leaveHint": "Conservas los proyectos de los que eres miembro. Para volver a unirte, un propietario tiene que añadirte de vuelta.",
     "delete": {
       "action": "Eliminar equipo",
-      "hint": "Se eliminan con él sus miembros, roles, invitaciones, habilidades, herramientas e integraciones. Las personas conservan sus cuentas y sus otros equipos.",
+      "hint": "Se eliminan con él sus miembros, roles, plantillas de proyecto, invitaciones, habilidades, herramientas e integraciones. Las personas conservan sus cuentas y sus otros equipos.",
       "blocked": "Elimina primero los proyectos y los agentes de IA del equipo.",
       "title": "¿Eliminar {name}?",
-      "description": "<strong>{name}</strong> se elimina junto con sus miembros, roles, invitaciones, habilidades, herramientas e integraciones. Las personas conservan sus cuentas y sus otros equipos. No se puede deshacer.",
+      "description": "<strong>{name}</strong> se elimina junto con sus miembros, roles, plantillas de proyecto, invitaciones, habilidades, herramientas e integraciones. Las personas conservan sus cuentas y sus otros equipos. No se puede deshacer.",
       "deleted": "Equipo eliminado"
     }
   },
   "columns": {
     "project": "Proyecto",
+    "template": "Plantilla",
     "owners": "Propietarios",
     "members": "Miembros",
     "created": "Creada",
@@ -95,6 +103,7 @@
     "emailPlaceholder": "nombre@ejemplo.com",
     "alreadyMember": "{email} ya está en este equipo",
     "alreadyPending": "{email} ya tiene una invitación pendiente",
+    "domainNotAllowed": "El dominio de {email} no está permitido en esta instancia",
     "refused": "No se ha podido invitar a {email}",
     "roleLabel": "Rol del equipo",
     "roleHint": {
@@ -107,11 +116,16 @@
     "joinsProject": "Se une al equipo y a {project}",
     "copyLink": "Copiar el enlace",
     "copied": "Copiado",
+    "resendEmail": "Enviar correo",
+    "resendingEmail": "Enviando…",
     "revokeAction": "Revocar invitación",
     "revokeTitle": "¿Revocar la invitación de {email}?",
     "revokeConfirm": "Revocar invitación",
     "revokeDescription": "El enlace deja de funcionar. Puedes volver a invitarlo más tarde.",
-    "pending": "Invitado"
+    "pending": "Invitado",
+    "expiredAt": "caducó el {date}",
+    "renew": "Renovar",
+    "renewing": "Renovando…"
   },
   "manage": {
     "label": "Gestionar equipos",
@@ -132,9 +146,9 @@
     "search": "Buscar roles",
     "noMatches": "Ningún rol coincide con «{query}».",
     "default": "Por defecto",
+    "system": "Del sistema",
     "editAction": "Editar el rol",
     "deleteAction": "Eliminar el rol",
-    "defaultUndeletable": "El rol por defecto no se puede eliminar",
     "deleteTitle": "Eliminar el rol «{name}»",
     "deleteDescription": "Nada está en este rol. No se puede deshacer.",
     "deleteInUse": "Este rol todavía está en uso. Elige el rol al que se mueve todo lo que está en él.",
@@ -148,16 +162,6 @@
     "moveAndDelete": "Mover y eliminar",
     "noTargetRole": "No hay otro rol al que moverlos. Crea uno primero.",
     "newRole": "Nuevo rol",
-    "editorTitleEdit": "Editar el rol",
-    "editorTitleNew": "Nuevo rol",
-    "namePlaceholder": "p. ej. Colaborador",
-    "resourceColumn": "Recurso",
-    "toggleActionAll": "Alternar {action} para todos los recursos",
-    "toggleGroupAll": "Alternar todos los permisos de {group}",
-    "toggleActionGroup": "Alternar {action} para {group}",
-    "cellAria": "{resource}: {action}",
-    "saveRole": "Guardar el rol",
-    "createRole": "Crear el rol",
     "copyRoles": "Copiar los roles",
     "pasteRoles": "Pegar los roles",
     "nothingToCopy": "No hay roles personalizados que copiar.",
@@ -174,13 +178,87 @@
       "actions": {
         "create": "Nuevo",
         "update": "Sobrescribir",
-        "skip": "Saltar (por defecto)"
+        "skip": "Saltar (rol del sistema)"
       }
     },
     "transferErrors": {
       "invalidJson": "El portapapeles no contiene un JSON válido.",
       "notAnExport": "El portapapeles no contiene una exportación de roles.",
       "empty": "La exportación de roles está vacía."
+    }
+  },
+  "templates": {
+    "empty": "Todavía no hay plantillas de proyecto",
+    "emptyHint": "Guarda un proyecto como plantilla para crear proyectos nuevos a partir de ella.",
+    "newAction": "Nueva plantilla",
+    "teams": "Equipos",
+    "allTeams": "Todos los equipos",
+    "noTeams": "Ningún equipo",
+    "editAction": "Editar plantilla",
+    "editHint": "Lo que contiene la plantilla se queda tal como se guardó.",
+    "copyAction": "Copiar plantilla",
+    "copied": "Plantilla \"{name}\" copiada. Pégala en otro espacio de trabajo para importarla.",
+    "downloadAction": "Descargar",
+    "downloadFailed": "No se pudo descargar la plantilla.",
+    "importAction": "Importar plantilla",
+    "deleteAction": "Eliminar plantilla",
+    "deleteDialog": {
+      "title": "¿Eliminar la plantilla «{name}»?",
+      "description": "Los proyectos creados con ella no cambian.",
+      "confirm": "Eliminar plantilla",
+      "galleryNote": "Su página en la galería también se retira."
+    },
+    "panel": {
+      "saved": "Guardada el {date}",
+      "none": "Ninguno",
+      "teams": "Equipos: {teams}"
+    },
+    "publish": {
+      "action": "Publicar",
+      "published": "Publicada",
+      "account": "Cuenta de la galería",
+      "publishingAs": "Publicas como",
+      "authorProfile": "Perfil del autor",
+      "changeEmail": "Cambiar correo",
+      "rules": "Normas de la galería",
+      "unlink": "Desvincular espacio de trabajo",
+      "downloadable": "Cualquiera puede descargarla",
+      "private": "Sin tickets ni personas",
+      "counts": "{states, plural, one {# estado} other {# estados}} · {types, plural, one {# tipo} other {# tipos}} · {fields, plural, one {# campo} other {# campos}}",
+      "by": "de <b>{name}</b>",
+      "authorHint": "Se muestra en todas las plantillas publicadas desde {email}.",
+      "authorName": "Autor",
+      "authorUrl": "Enlace al perfil",
+      "optional": "Opcional",
+      "authorUrlInvalid": "Debe empezar por https://",
+      "submit": "Publicar",
+      "update": "Actualizar página",
+      "live": "En línea",
+      "since": "desde el {date}",
+      "openPage": "Abrir página",
+      "copyLink": "Copiar enlace",
+      "linkCopied": "Enlace copiado",
+      "copyFailed": "No se pudo copiar el enlace",
+      "unpublish": "Retirar",
+      "unpublishConfirm": "¿Retirar la página?",
+      "unpublishHint": "Su enlace dejará de funcionar.",
+      "keep": "Mantener",
+      "publishedToast": "Publicada",
+      "updatedToast": "Página actualizada",
+      "badge": "Pública",
+      "badgeHint": "En la galería desde el {date}",
+      "link": {
+        "intro": "Confirma un correo una sola vez para este espacio de trabajo.",
+        "email": "Correo electrónico",
+        "emailHint": "No se muestra públicamente",
+        "agree": "Al enviar el código aceptas las <rules>normas de la galería</rules>.",
+        "sendCode": "Enviar código",
+        "codeSent": "Introduce el código enviado a {email}",
+        "code": "Código",
+        "confirm": "Confirmar",
+        "resend": "Enviar de nuevo",
+        "resent": "Código nuevo enviado"
+      }
     }
   },
   "panel": {
@@ -234,6 +312,8 @@
     "timeout": "Tiempo de espera (s)",
     "optional": "Opcional",
     "apiKey": "Clave de API",
+    "from": "Dirección de remitente",
+    "fromHint": "Obligatoria para Resend. Con SMTP toma por defecto el nombre de usuario.",
     "telegramBot": "Bot de Telegram",
     "telegramBotHint": "El bot que entrega las notificaciones para cada proyecto del equipo. Los miembros eligen su propio chat en sus preferencias. El token se guarda cifrado.",
     "botToken": "Token de la API del bot (opcional)",
@@ -373,6 +453,8 @@
     "username": "Nombre de usuario",
     "usernamePlaceholder": "p. ej. bot-triaje",
     "usernameHint": "Letras, dígitos, puntos, guiones y barras bajas. Hasta 64 caracteres.",
+    "chat": "Chat",
+    "chatHint": "Deja que el equipo abra o siga un chat con este agente. Si se apaga, desaparece del selector del chat; las menciones, delegaciones y tareas programadas lo siguen ejecutando.",
     "access": "Disponibilidad",
     "accessHint": "Quién le puede dar tareas a este agente",
     "model": "Modelo",
@@ -404,8 +486,46 @@
     "runDelay": "Esperar antes de empezar",
     "runDelayHint": "Tiempo para seguir editando el ticket antes de que el agente empiece. 0 empieza de inmediato.",
     "minutes": "min",
-    "runner": "Ejecutor",
-    "runnerHint": "El proceso en tu máquina que ejecuta las tareas de este agente",
+    "connection": "Conexión",
+    "connectionHint": "Cómo recibe el agente sus tareas",
+    "deliveryRunner": "Ejecutor",
+    "deliveryRunnerHint": "Tu máquina pide las tareas",
+    "deliveryUrl": "Endpoint",
+    "deliveryUrlHint": "Tu URL recibe las tareas",
+    "invocationUrl": "URL del endpoint",
+    "invocationUrlPlaceholder": "https://example.com/agent",
+    "invocationUrlHint": "Recibe cada tarea y mensaje de chat como un POST firmado.",
+    "invocationUnsaved": "Guarda para enviar las tareas a esta URL.",
+    "invocationSecretOnSave": "Guarda la URL para obtener el secreto de firma.",
+    "invocationSecret": "Secreto de firma",
+    "invocationSecretHint": "Úsalo para comprobar la cabecera X-Itsaplan-Signature.",
+    "invocationSecretRotated": "Secreto de firma regenerado",
+    "invocationRotate": "Regenerar el secreto",
+    "invocationRotateTitle": "¿Regenerar el secreto de firma?",
+    "invocationRotateMessage": "Las solicitudes para <v>{name}</v> pasan al secreto nuevo de inmediato. Actualiza tu endpoint o rechazará las próximas tareas.",
+    "invocationTest": "Solicitud de prueba",
+    "invocationTestHint": "Envía un ping firmado a la URL guardada.",
+    "invocationTestSend": "Enviar prueba",
+    "invocationTestSending": "Enviando…",
+    "invocationTestOk": "Respondió {status} en {ms} ms",
+    "invocationTestRefused": "Respondió {status}. Se esperaba 2xx.",
+    "invocationTestTimeout": "Sin respuesta a tiempo. Responde primero y luego haz el trabajo.",
+    "invocationTestUnreachable": "No se pudo contactar con el endpoint",
+    "invocationHelpOpen": "Cómo crear el endpoint",
+    "invocationHelpTitle": "Cómo recibir tareas en una URL",
+    "invocationHelpVerify": "Comprueba la firma",
+    "invocationHelpVerifyHint": "HMAC-SHA256 de la marca de tiempo, un punto y el cuerpo sin procesar, con el secreto de firma como clave. Rechaza las solicitudes de hace más de cinco minutos.",
+    "invocationHelpAccept": "Responde 2xx enseguida",
+    "invocationHelpAcceptHint": "Trabaja después de responder. Con cualquier otro estado, la tarea vuelve más tarde y un mensaje de chat falla al instante.",
+    "invocationHelpPayload": "Lee la tarea",
+    "invocationHelpPayloadHint": "El campo event indica qué llegó: una tarea, un mensaje de chat o un ping de prueba.",
+    "invocationHelpTabRun": "Tarea",
+    "invocationHelpTabChat": "Mensaje de chat",
+    "invocationHelpTabPing": "Ping de prueba",
+    "invocationHelpReport": "Envía el resultado con la clave del agente",
+    "invocationHelpReportHint": "Mientras trabajas, envía un heartbeat al menos cada 5 minutos. Luego envía el resultado. Puedes enviar una respuesta de chat por partes.",
+    "invocationHelpTest": "Envía una solicitud de prueba",
+    "invocationHelpTestHint": "La sección Conexión muestra cómo respondió tu endpoint.",
     "runnerWayCli": "CLI del ejecutor",
     "runnerWayCliHint": "Nuestro paquete de npm. Apúntalo a un agente de codificación, sondea tareas y informa de vuelta. Necesita un fichero de configuración con la clave del agente.",
     "runnerWayApi": "Tu propio código",
@@ -428,7 +548,7 @@
     "runnerHelpTabCustom": "El tuyo propio",
     "runnerHelpPiAdapter": "Pi lee .mcp.json mediante una extensión. Instálala una vez: pi install npm:pi-mcp-adapter",
     "runnerHelpCheck": "Comprobar que está conectado",
-    "runnerHelpCheckHint": "La sección Ejecutor muestra En línea.",
+    "runnerHelpCheckHint": "La sección Conexión muestra En línea.",
     "runnerOnline": "Ejecutor en línea",
     "runnerOffline": "Ejecutor fuera de línea",
     "runnerNever": "Todavía no hay ejecutor",
@@ -436,6 +556,8 @@
     "runnerStateOffline": "Fuera de línea",
     "runnerStateNone": "No conectado",
     "runnerSeen": "Última ves visto hace {time}",
+    "runnerStateUrl": "Endpoint",
+    "runnerUrl": "Recibe tareas en su URL",
     "actions": "Acciones",
     "actionsHint": "Lo que el agente puede hacer en el proyecto",
     "searchActions": "Buscar acciones",
@@ -465,7 +587,7 @@
     "goToTools": "Ir a Herramientas",
     "searchTools": "Buscar herramientas",
     "advanced": "Avanzado",
-    "advancedHint": "Muestreo, razonamiento, límite de pasos y memoria",
+    "advancedHint": "Muestreo, razonamiento, límites de pasos y de tiempo, y memoria",
     "temperature": "Temperature",
     "reasoningEffort": "Esfuerzo de razonamiento",
     "reasoningEffortDefault": "Predeterminado del proveedor",
@@ -474,6 +596,8 @@
     "reasoningEffortHigh": "Alto",
     "optional": "Opcional",
     "maxSteps": "Máximo de pasos",
+    "runTimeout": "Límite de tiempo (s)",
+    "runTimeoutDefault": "Máximo de la instancia",
     "memory": "Memoria de la conversación",
     "memoryHint": "Recuerda los mensajes recientes dentro de un hilo de conversación.",
     "memoryCount": "Recordar los últimos N mensajes",
@@ -497,6 +621,7 @@
     "endOfHistory": "Fin del historial",
     "manualTask": "Tarea manual",
     "scheduledTask": "Tarea programada",
+    "documentTask": "Comentario en un documento",
     "failed": "Fallida",
     "task": "Tarea",
     "error": "Error",
@@ -590,6 +715,13 @@
       "owner": "Solo el propietario",
       "managers": "El propietario y los administradores",
       "members": "Todos los de sus equipos"
+    },
+    "runLimit": {
+      "title": "Ejecuciones de agentes a la vez",
+      "description": "Cuántas ejecuciones de sus agentes van a la vez. El resto espera en cola. 0 es sin límite propio.",
+      "descriptionCapped": "Cuántas ejecuciones de sus agentes van a la vez, hasta {max}. El resto espera en cola. Con 0, el límite es {max}.",
+      "ownerOnly": "Solo el propietario cambia cuántas ejecuciones de agentes van a la vez.",
+      "none": "Sin límite"
     },
     "managers": {
       "title": "Responsables",
@@ -709,6 +841,9 @@
       "useBuiltIn": "Usar el precio incluido",
       "removePrice": "Quitar precio",
       "save": "Guardar precio"
+    },
+    "queue": {
+      "title": "Ejecuciones de agentes"
     }
   }
 }

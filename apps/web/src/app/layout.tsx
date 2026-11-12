@@ -2,23 +2,25 @@ import type { Metadata, Viewport } from 'next';
 import { ThemeProvider } from 'next-themes';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { AfterSignIn } from '@/cloud';
 import { Providers } from '@/components/providers';
 import RuntimeEnvScript from '@/components/runtime-env-script';
 import WhatsNew from '@/features/whats-new/WhatsNew';
 import { localeDirection, type Locale } from '@/i18n/locales';
 import { BrandingProvider } from '@/components/brand/Branding';
 import { accentCss, loadBranding } from '@/utils/branding.server';
+import { APP_NAME } from '@/utils/app';
 import './globals.css';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('meta');
   const branding = await loadBranding();
   return {
-    title: branding.appName ?? t('title'),
+    title: branding.appName ?? APP_NAME,
     description: t('description'),
     icons: { icon: branding.logo ?? '/icon.svg' },
     appleWebApp: {
-      title: branding.appName ?? "It's a Plan",
+      title: branding.appName ?? APP_NAME,
       capable: true,
       statusBarStyle: 'default',
     },
@@ -63,6 +65,7 @@ export default async function RootLayout({
               <Providers>
                 {children}
                 <WhatsNew />
+                <AfterSignIn />
               </Providers>
             </BrandingProvider>
           </NextIntlClientProvider>

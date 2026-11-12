@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { InviteView } from '@/lib/api/endpoints/invites';
 import { signOut, useSession } from '@/lib/auth-client';
@@ -19,20 +18,18 @@ import { useAuthConfig } from '@/services/authConfig.service';
 export default function InviteStep({ token, invite }: { token: string; invite: InviteView }) {
   const t = useTranslations('invite');
   const tCommon = useTranslations('common');
-  const router = useRouter();
   const { data: session, isPending: sessionPending } = useSession();
   const authConfig = useAuthConfig();
   // With password sign-in off the invitee joins through single sign-on only.
   const passwordEnabled = authConfig?.emailPassword !== false;
 
-  async function switchAccount() {
-    await signOut();
-    router.refresh();
+  function switchAccount() {
+    void signOut('here');
   }
 
-  if (invite.status !== 'pending') {
+  if (invite.status !== 'pending' || invite.expired) {
     return (
-      <InviteNotice message={t('alreadyHandled', { status: invite.status })}>
+      <InviteNotice>
         <Button asChild variant="outline">
           <Link href="/">{t('goToApp')}</Link>
         </Button>

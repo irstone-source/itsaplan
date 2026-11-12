@@ -1,3 +1,4 @@
+import { createProject } from '#tests/helpers/app';
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { resetDb } from '#tests/helpers/db';
 import { addUser, joinProject, setup, type Actor } from '../../../god/__tests__/helpers';
@@ -6,7 +7,7 @@ import { addUser, joinProject, setup, type Actor } from '../../../god/__tests__/
 // and added to a cycle when their cadence makes them due.
 
 async function scaffold(owner: Actor) {
-  await owner.api.projects.post({ key: 'CON', name: 'Consulting' });
+  await createProject(owner.api, { key: 'CON', name: 'Consulting' });
   await owner.api.projects({ projectKey: 'CON' }).settings.estimates.patch({
     points: false,
     time: true,
@@ -111,7 +112,7 @@ describe('Playbook', () => {
   it('rejects an initiative from another project and answers 404 for an unknown item', async () => {
     const { god } = await setup();
     const { con } = await scaffold(god);
-    await god.api.projects.post({ key: 'OTH', name: 'Other' });
+    await createProject(god.api, { key: 'OTH', name: 'Other' });
     const other = (await god.api.projects({ projectKey: 'OTH' }).initiatives.post({ title: 'X' }))
       .data!;
     const bad = await con.playbook.post({ initiativeId: other.id, title: 'Nope' });

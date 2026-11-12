@@ -1,5 +1,6 @@
 import { db, agentRun, agentSchedule, aiAgent, issue, project, projectColumn } from '@repo/db';
 import { and, eq, inArray, ne, notInArray, sql } from 'drizzle-orm';
+import { emitRunsCanceled } from '../core/run-finished';
 import { filterScheduleIssues, isScheduleSupported, type ScheduleForExtension } from './extension';
 
 // The runs schedules queue on issues: a 'status' schedule's when an issue enters its
@@ -41,9 +42,9 @@ export async function queueStatusRuns(
   actorUserId: string | null | undefined,
 ): Promise<void> {
   if (issueIds.length === 0) return;
-  await db
+  const canceled = await db
     .update(agentRun)
-    .set({ status: 'canceled', finishedAt: new Date() })
+    .set({ status: 'canceled', executionStartedAt: null, finishedAt: new Date() })
     .where(
       and(
         inArray(agentRun.issueId, issueIds),
@@ -55,7 +56,12 @@ export async function queueStatusRuns(
           where ${agentSchedule.columnId} <> ${columnId}
         )`,
       ),
-    );
+    )
+    .returning({ id: agentRun.id });
+  await emitRunsCanceled(
+    canceled.map((row) => row.id),
+    actorUserId,
+  );
 
   const schedules = await db
     .select({ ...scheduleFields, columnName: projectColumn.name })

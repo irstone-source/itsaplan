@@ -1,3 +1,4 @@
+import { createProject } from '#tests/helpers/app';
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { resetDb } from '#tests/helpers/db';
 import { addUser, setup } from '../helpers';
@@ -8,7 +9,7 @@ import { addUser, setup } from '../helpers';
 async function projectIds(actor: Awaited<ReturnType<typeof addUser>>, keys: string[]) {
   const ids: number[] = [];
   for (const key of keys) {
-    await actor.api.projects.post({ key, name: key });
+    await createProject(actor.api, { key, name: key });
     ids.push((await actor.api.projects({ projectKey: key }).get()).data!.project.id);
   }
   return ids;

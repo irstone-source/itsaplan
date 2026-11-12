@@ -1,5 +1,5 @@
 {
-  "id": "fe9c205f-6b65-488a-b4c4-60b6dd9be96c",
+  "id": "2e4b7f25-0a5a-4548-bd8a-cb97fce4b45d",
   "prevId": "4cd74f3e-e253-459d-8de4-c74dba487814",
   "version": "7",
   "dialect": "postgresql",
@@ -4077,18 +4077,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "target_pence": {
-          "name": "target_pence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "capacity_minutes": {
-          "name": "capacity_minutes",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "completed_at": {
           "name": "completed_at",
           "type": "timestamp with time zone",
@@ -4549,67 +4537,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.finance_year": {
-      "name": "finance_year",
-      "schema": "",
-      "columns": {
-        "start_month": {
-          "name": "start_month",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "revenue_target_pence": {
-          "name": "revenue_target_pence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "finance_year_project_id_project_id_fk": {
-          "name": "finance_year_project_id_project_id_fk",
-          "tableFrom": "finance_year",
-          "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "finance_year_format_check": {
-          "name": "finance_year_format_check",
-          "value": "\"finance_year\".\"start_month\" ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'"
-        },
-        "finance_year_target_check": {
-          "name": "finance_year_target_check",
-          "value": "\"finance_year\".\"revenue_target_pence\" >= 0"
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.git_managed_repository": {
       "name": "git_managed_repository",
       "schema": "",
@@ -4852,141 +4779,6 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.git_release": {
-      "name": "git_release",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "provider": {
-          "name": "provider",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "repository": {
-          "name": "repository",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tag": {
-          "name": "tag",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "prerelease": {
-          "name": "prerelease",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "target_commitish": {
-          "name": "target_commitish",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "published_at": {
-          "name": "published_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "git_release_project_idx": {
-          "name": "git_release_project_idx",
-          "columns": [
-            {
-              "expression": "project_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "published_at",
-              "isExpression": false,
-              "asc": false,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "git_release_project_id_project_id_fk": {
-          "name": "git_release_project_id_project_id_fk",
-          "tableFrom": "git_release",
-          "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "git_release_project_id_provider_repository_tag_unique": {
-          "name": "git_release_project_id_provider_repository_tag_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "project_id",
-            "provider",
-            "repository",
-            "tag"
-          ]
-        }
-      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -5414,30 +5206,6 @@
           "notNull": true,
           "default": 0
         },
-        "billing_model": {
-          "name": "billing_model",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "day_rate_pence": {
-          "name": "day_rate_pence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "revenue_class": {
-          "name": "revenue_class",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "monthly_fee_pence": {
-          "name": "monthly_fee_pence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -5508,22 +5276,6 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
-        "initiative_billing_model_check": {
-          "name": "initiative_billing_model_check",
-          "value": "\"initiative\".\"billing_model\" IN ('day_rate', 'retainer', 'rev_share', 'internal')"
-        },
-        "initiative_day_rate_check": {
-          "name": "initiative_day_rate_check",
-          "value": "\"initiative\".\"day_rate_pence\" >= 0"
-        },
-        "initiative_revenue_class_check": {
-          "name": "initiative_revenue_class_check",
-          "value": "\"initiative\".\"revenue_class\" IN ('committed', 'new', 'management')"
-        },
-        "initiative_monthly_fee_check": {
-          "name": "initiative_monthly_fee_check",
-          "value": "\"initiative\".\"monthly_fee_pence\" >= 0"
-        },
         "initiative_status_check": {
           "name": "initiative_status_check",
           "value": "\"initiative\".\"status\" IN ('proposed', 'planned', 'active', 'completed', 'canceled')"
@@ -5886,18 +5638,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "value_override_pence": {
-          "name": "value_override_pence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "playbook_item_id": {
-          "name": "playbook_item_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "start_date": {
           "name": "start_date",
           "type": "date",
@@ -5952,28 +5692,6 @@
         }
       },
       "indexes": {
-        "issue_playbook_item_idx": {
-          "name": "issue_playbook_item_idx",
-          "columns": [
-            {
-              "expression": "playbook_item_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "cycle_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"issue\".\"playbook_item_id\" IS NOT NULL",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "issue_project_active_idx": {
           "name": "issue_project_active_idx",
           "columns": [
@@ -6148,19 +5866,6 @@
           "tableTo": "user",
           "columnsFrom": [
             "delegate_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "issue_playbook_item_id_playbook_item_id_fk": {
-          "name": "issue_playbook_item_id_playbook_item_id_fk",
-          "tableFrom": "issue",
-          "tableTo": "playbook_item",
-          "columnsFrom": [
-            "playbook_item_id"
           ],
           "columnsTo": [
             "id"
@@ -9139,325 +8844,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.performance_month": {
-      "name": "performance_month",
-      "schema": "",
-      "columns": {
-        "month": {
-          "name": "month",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "break_even_pence": {
-          "name": "break_even_pence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pool_percent": {
-          "name": "pool_percent",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "performance_month_format_check": {
-          "name": "performance_month_format_check",
-          "value": "\"performance_month\".\"month\" ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'"
-        },
-        "performance_month_break_even_check": {
-          "name": "performance_month_break_even_check",
-          "value": "\"performance_month\".\"break_even_pence\" >= 0"
-        },
-        "performance_month_pool_check": {
-          "name": "performance_month_pool_check",
-          "value": "\"performance_month\".\"pool_percent\" BETWEEN 0 AND 100"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.playbook_item": {
-      "name": "playbook_item",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "initiative_id": {
-          "name": "initiative_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "price_pence": {
-          "name": "price_pence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "billing": {
-          "name": "billing",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'billable'"
-        },
-        "estimate_minutes": {
-          "name": "estimate_minutes",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cadence": {
-          "name": "cadence",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'monthly'"
-        },
-        "quarter_month": {
-          "name": "quarter_month",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "type_id": {
-          "name": "type_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "active": {
-          "name": "active",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "position": {
-          "name": "position",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "stripe_price_id": {
-          "name": "stripe_price_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "playbook_item_project_idx": {
-          "name": "playbook_item_project_idx",
-          "columns": [
-            {
-              "expression": "project_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "initiative_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "position",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "playbook_item_project_id_project_id_fk": {
-          "name": "playbook_item_project_id_project_id_fk",
-          "tableFrom": "playbook_item",
-          "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "playbook_item_initiative_id_initiative_id_fk": {
-          "name": "playbook_item_initiative_id_initiative_id_fk",
-          "tableFrom": "playbook_item",
-          "tableTo": "initiative",
-          "columnsFrom": [
-            "initiative_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "playbook_item_type_id_issue_type_id_fk": {
-          "name": "playbook_item_type_id_issue_type_id_fk",
-          "tableFrom": "playbook_item",
-          "tableTo": "issue_type",
-          "columnsFrom": [
-            "type_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "playbook_item_price_check": {
-          "name": "playbook_item_price_check",
-          "value": "\"playbook_item\".\"price_pence\" >= 0"
-        },
-        "playbook_item_estimate_check": {
-          "name": "playbook_item_estimate_check",
-          "value": "\"playbook_item\".\"estimate_minutes\" >= 0"
-        },
-        "playbook_item_billing_check": {
-          "name": "playbook_item_billing_check",
-          "value": "\"playbook_item\".\"billing\" IN ('billable', 'retainer', 'non_billable')"
-        },
-        "playbook_item_cadence_check": {
-          "name": "playbook_item_cadence_check",
-          "value": "\"playbook_item\".\"cadence\" IN ('monthly', 'quarterly', 'ad_hoc')"
-        },
-        "playbook_item_quarter_month_check": {
-          "name": "playbook_item_quarter_month_check",
-          "value": "\"playbook_item\".\"quarter_month\" BETWEEN 1 AND 3"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.playbook_item_label": {
-      "name": "playbook_item_label",
-      "schema": "",
-      "columns": {
-        "item_id": {
-          "name": "item_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "label_id": {
-          "name": "label_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "playbook_item_label_item_id_playbook_item_id_fk": {
-          "name": "playbook_item_label_item_id_playbook_item_id_fk",
-          "tableFrom": "playbook_item_label",
-          "tableTo": "playbook_item",
-          "columnsFrom": [
-            "item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "playbook_item_label_label_id_label_id_fk": {
-          "name": "playbook_item_label_label_id_label_id_fk",
-          "tableFrom": "playbook_item_label",
-          "tableTo": "label",
-          "columnsFrom": [
-            "label_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "playbook_item_label_item_id_label_id_pk": {
-          "name": "playbook_item_label_item_id_label_id_pk",
-          "columns": [
-            "item_id",
-            "label_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.project": {
       "name": "project",
       "schema": "",
@@ -9572,13 +8958,6 @@
         },
         "time_estimate_enabled": {
           "name": "time_estimate_enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "internal": {
-          "name": "internal",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -11819,465 +11198,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.tracker_entry": {
-      "name": "tracker_entry",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "measure_id": {
-          "name": "measure_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "period_start": {
-          "name": "period_start",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "actual": {
-          "name": "actual",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "done": {
-          "name": "done",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "verified": {
-          "name": "verified",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "evidence": {
-          "name": "evidence",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "entered_by_user_id": {
-          "name": "entered_by_user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "entered_at": {
-          "name": "entered_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "restated_at": {
-          "name": "restated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "previous_actual": {
-          "name": "previous_actual",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "tracker_entry_period_idx": {
-          "name": "tracker_entry_period_idx",
-          "columns": [
-            {
-              "expression": "measure_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "period_start",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "tracker_entry_measure_id_tracker_measure_id_fk": {
-          "name": "tracker_entry_measure_id_tracker_measure_id_fk",
-          "tableFrom": "tracker_entry",
-          "tableTo": "tracker_measure",
-          "columnsFrom": [
-            "measure_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "tracker_entry_entered_by_user_id_user_id_fk": {
-          "name": "tracker_entry_entered_by_user_id_user_id_fk",
-          "tableFrom": "tracker_entry",
-          "tableTo": "user",
-          "columnsFrom": [
-            "entered_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.tracker_measure": {
-      "name": "tracker_measure",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "initiative_id": {
-          "name": "initiative_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "company": {
-          "name": "company",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "loop": {
-          "name": "loop",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "definition": {
-          "name": "definition",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "kind": {
-          "name": "kind",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "unit": {
-          "name": "unit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "direction": {
-          "name": "direction",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'at_least'"
-        },
-        "cadence": {
-          "name": "cadence",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'week'"
-        },
-        "unlock_periods": {
-          "name": "unlock_periods",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "source": {
-          "name": "source",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'manual'"
-        },
-        "owner_user_id": {
-          "name": "owner_user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "starts_on": {
-          "name": "starts_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "north_star": {
-          "name": "north_star",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "archived_at": {
-          "name": "archived_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "tracker_measure_project_idx": {
-          "name": "tracker_measure_project_idx",
-          "columns": [
-            {
-              "expression": "project_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "tracker_measure_project_id_project_id_fk": {
-          "name": "tracker_measure_project_id_project_id_fk",
-          "tableFrom": "tracker_measure",
-          "tableTo": "project",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "tracker_measure_initiative_id_initiative_id_fk": {
-          "name": "tracker_measure_initiative_id_initiative_id_fk",
-          "tableFrom": "tracker_measure",
-          "tableTo": "initiative",
-          "columnsFrom": [
-            "initiative_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "tracker_measure_owner_user_id_user_id_fk": {
-          "name": "tracker_measure_owner_user_id_user_id_fk",
-          "tableFrom": "tracker_measure",
-          "tableTo": "user",
-          "columnsFrom": [
-            "owner_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "tracker_measure_kind_check": {
-          "name": "tracker_measure_kind_check",
-          "value": "\"tracker_measure\".\"kind\" IN ('activity', 'engagement', 'outcome', 'guardrail', 'gate')"
-        },
-        "tracker_measure_unit_check": {
-          "name": "tracker_measure_unit_check",
-          "value": "\"tracker_measure\".\"unit\" IN ('count', 'money', 'percent', 'done')"
-        },
-        "tracker_measure_direction_check": {
-          "name": "tracker_measure_direction_check",
-          "value": "\"tracker_measure\".\"direction\" IN ('at_least', 'at_most')"
-        },
-        "tracker_measure_cadence_check": {
-          "name": "tracker_measure_cadence_check",
-          "value": "\"tracker_measure\".\"cadence\" IN ('week', 'month')"
-        },
-        "tracker_measure_source_check": {
-          "name": "tracker_measure_source_check",
-          "value": "\"tracker_measure\".\"source\" IN ('manual', 'billings', 'tickets_completed')"
-        },
-        "tracker_measure_unlock_check": {
-          "name": "tracker_measure_unlock_check",
-          "value": "\"tracker_measure\".\"unlock_periods\" >= 0"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.tracker_target_version": {
-      "name": "tracker_target_version",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "measure_id": {
-          "name": "measure_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "effective_from": {
-          "name": "effective_from",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rule": {
-          "name": "rule",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "changed_by_user_id": {
-          "name": "changed_by_user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "tracker_target_version_measure_idx": {
-          "name": "tracker_target_version_measure_idx",
-          "columns": [
-            {
-              "expression": "measure_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "effective_from",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "tracker_target_version_measure_id_tracker_measure_id_fk": {
-          "name": "tracker_target_version_measure_id_tracker_measure_id_fk",
-          "tableFrom": "tracker_target_version",
-          "tableTo": "tracker_measure",
-          "columnsFrom": [
-            "measure_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "tracker_target_version_changed_by_user_id_user_id_fk": {
-          "name": "tracker_target_version_changed_by_user_id_user_id_fk",
-          "tableFrom": "tracker_target_version",
-          "tableTo": "user",
-          "columnsFrom": [
-            "changed_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.user_notification_preference": {
       "name": "user_notification_preference",
       "schema": "",
@@ -13057,7 +11977,7 @@
           "name": "workspace_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "display_name": {
           "name": "display_name",
@@ -13086,7 +12006,24 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "scim_group_instance_display_name_uq": {
+          "name": "scim_group_instance_display_name_uq",
+          "columns": [
+            {
+              "expression": "display_name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"scim_group\".\"workspace_id\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "scim_group_workspace_id_workspace_id_fk": {
           "name": "scim_group_workspace_id_workspace_id_fk",
@@ -13322,7 +12259,7 @@
           "name": "workspace_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "user_id": {
           "name": "user_id",
@@ -13352,6 +12289,22 @@
         }
       },
       "indexes": {
+        "scim_user_instance_user_uq": {
+          "name": "scim_user_instance_user_uq",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"scim_user\".\"workspace_id\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "scim_user_user_idx": {
           "name": "scim_user_user_idx",
           "columns": [
@@ -13396,16 +12349,17 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "scim_user_workspace_id_user_id_pk": {
-          "name": "scim_user_workspace_id_user_id_pk",
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "scim_user_workspace_id_user_id_unique": {
+          "name": "scim_user_workspace_id_user_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "workspace_id",
             "user_id"
           ]
         }
       },
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

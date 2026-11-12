@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 import { useProviderList } from '../../hooks/useProviderList';
 import GodUserActiveSwitch from './GodUserActiveSwitch';
+import GodUserRoleSwitch from './GodUserRoleSwitch';
 
 // The account list. A row (or the pencil in its Actions cell) opens the account in
 // the side panel, where the email can be confirmed and the account deleted.
@@ -114,6 +115,9 @@ export default function GodUsersTable({
                     {t('agent')}
                   </Badge>
                 )}
+              </div>
+              <div className="mt-1.5" onClick={(e) => e.stopPropagation()}>
+                <GodUserRoleSwitch user={u} />
               </div>
             </TableCell>
 

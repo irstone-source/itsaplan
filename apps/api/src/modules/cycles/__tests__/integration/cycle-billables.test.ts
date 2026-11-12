@@ -1,3 +1,4 @@
+import { createProject } from '#tests/helpers/app';
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { resetDb } from '#tests/helpers/db';
 import { addUser, setup } from '../../../god/__tests__/helpers';
@@ -8,7 +9,7 @@ import { valueOf } from '../../billables';
 // out; issues without an estimate or a rate are counted, not valued.
 
 async function project(api: Awaited<ReturnType<typeof setup>>['god']['api'], key: string) {
-  await api.projects.post({ key, name: key });
+  await createProject(api, { key, name: key });
   await api.projects({ projectKey: key }).settings.estimates.patch({
     points: false,
     time: true,

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import { authedApi } from '#tests/helpers/app';
+import { authedApi, createProject } from '#tests/helpers/app';
 import { signUpTestUser } from '#tests/helpers/auth';
 import { resetDb } from '#tests/helpers/db';
 import { createAgent } from '#tests/helpers/agents';
@@ -7,6 +7,7 @@ import { createCredential } from '#tests/helpers/integrations';
 import { claimDueRuns, enqueueAgentRun } from '../../run-queue';
 import { processAgentRuns } from '../../run-poller';
 import { STEP_LIMIT_MESSAGE, streamAgent, type AgentRunEvent } from '../../runtime';
+import { getMastra } from '../../runtime/observability';
 
 // An OpenAI-compatible model that asks for a tool on every call, so the run ends only
 // because it reaches maxSteps; with `answers` set it replies once and stops instead.
@@ -65,12 +66,13 @@ describe('agent run step limit', () => {
 
   afterEach(async () => {
     await endpoint.stop(true);
+    await getMastra().observability.flush();
   });
 
   async function setup() {
     const owner = await signUpTestUser({ name: 'Owner' });
     const asOwner = authedApi(owner.cookie);
-    await asOwner.projects.post({ key: 'MKT', name: 'Marketing' });
+    await createProject(asOwner, { key: 'MKT', name: 'Marketing' });
     const view = await asOwner.projects({ projectKey: 'MKT' }).get();
     const credentialId = await createCredential(asOwner, 'MKT', {
       integrationKey: 'openai-compatible',

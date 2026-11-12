@@ -75,4 +75,74 @@ describe('MCP authorization asks for consent', () => {
     const { url } = (await res.json()) as { url: string };
     expect(new URL(url).pathname).toBe('/oauth/consent');
   });
+
+  // The api cannot send this error back to a client it does not know, so the person sees
+  // it: on the web's sign-in screen, in either form of API_URL.
+  it('sends an authorization for an unknown client to the sign-in screen with the reason', async () => {
+    const res = await app.handle(
+      new Request(
+        `http://localhost/api/auth/oauth2/authorize?${new URLSearchParams({
+          response_type: 'code',
+          client_id: 'no-such-client',
+          redirect_uri: 'https://client.example.com/callback',
+          code_challenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
+          code_challenge_method: 'S256',
+          state: 'st',
+        })}`,
+      ),
+    );
+
+    const location = new URL(res.headers.get('location') ?? '');
+    expect(`${location.origin}${location.pathname}`).toBe(`${process.env.APP_URL}/login`);
+    expect(location.searchParams.get('error')).toBe('invalid_client');
+  });
+
+  async function authorizeWith(overrides: Record<string, string>): Promise<URL> {
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: await registerClient(),
+      redirect_uri: 'https://client.example.com/callback',
+      code_challenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
+      code_challenge_method: 'S256',
+      state: 'st',
+      ...overrides,
+    });
+    const res = await app.handle(
+      new Request(`http://localhost/api/auth/oauth2/authorize?${params}`),
+    );
+    return new URL(res.headers.get('location') ?? '');
+  }
+
+  it('sends an authorization for an unregistered redirect URI to the sign-in screen', async () => {
+    const location = await authorizeWith({ redirect_uri: 'https://other.example.com/callback' });
+
+    expect(`${location.origin}${location.pathname}`).toBe(`${process.env.APP_URL}/login`);
+    expect(location.searchParams.get('error')).toBe('invalid_redirect');
+  });
+
+  it('still answers the client an error it can send back', async () => {
+    const location = await authorizeWith({ scope: 'no-such-scope' });
+
+    expect(`${location.origin}${location.pathname}`).toBe('https://client.example.com/callback');
+    expect(location.searchParams.get('error')).toBe('invalid_scope');
+  });
+
+  // The consent page names the client and where the answer goes from these.
+  it('tells the consent page which client asks and where the answer goes', async () => {
+    const user = await signUpTestUser({ team: false });
+
+    const consentPage = await authorize(user.cookie);
+    const clientId = consentPage.searchParams.get('client_id') ?? '';
+    expect(consentPage.searchParams.get('redirect_uri')).toBe(
+      'https://client.example.com/callback',
+    );
+
+    const res = await app.handle(
+      new Request(`http://localhost/api/auth/oauth2/public-client?client_id=${clientId}`, {
+        headers: { cookie: user.cookie },
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { client_name?: string }).client_name).toBe('Test client');
+  });
 });

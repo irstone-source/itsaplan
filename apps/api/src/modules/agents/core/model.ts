@@ -1,7 +1,7 @@
 import { t } from 'elysia';
 
 import { pageQueryFields, pageResponse } from '#shared/pagination';
-import { agentRunTrigger, runContextTokens } from '../model';
+import { agentRunTrigger, agentExecutionState, runContextTokens } from '../model';
 
 export { agentParams, projectAgentParams } from '../model';
 
@@ -69,6 +69,15 @@ const configFields = {
     }),
   ),
   maxSteps: t.Optional(t.Nullable(t.Integer({ description: 'Max tool-call steps per run.' }))),
+  runTimeoutSec: t.Optional(
+    t.Nullable(
+      t.Integer({
+        minimum: 1,
+        description:
+          "Seconds one run may take before it is stopped and saved as failed. Null uses the instance's maximum, which also caps this value.",
+      }),
+    ),
+  ),
   memoryEnabled: t.Optional(
     t.Boolean({ description: 'Keep conversation memory across a thread.' }),
   ),
@@ -77,6 +86,14 @@ const configFields = {
   ),
   triggerOnMention: t.Optional(t.Boolean({ description: 'Run when @-mentioned in a comment.' })),
   triggerOnAssign: t.Optional(t.Boolean({ description: 'Run when assigned to an issue.' })),
+  chatEnabled: t.Optional(
+    t.Boolean({
+      description:
+        'Whether the agent may be chatted with (the chat selector and the chat routes). ' +
+        'Off, it keeps running through a mention, a delegation, or a schedule. Defaults ' +
+        'to true.',
+    }),
+  ),
   fieldTriggers: t.Optional(
     t.Array(
       t.Object({
@@ -102,7 +119,7 @@ const configFields = {
       description:
         'Projects of the team the agent works in, from list_projects. Replaces the set: a ' +
         'project left out is detached. A project of another team is rejected. The agent ' +
-        "joins on the team's default role; set_member_role changes it per project.",
+        'joins on the default role; set_member_role changes it per project.',
     }),
   ),
   runnerScope: t.Optional(
@@ -111,6 +128,18 @@ const configFields = {
         "Which runs an external agent's runner receives: 'owner' only the creator's, " +
         "'team' any member's.",
     }),
+  ),
+  invocationUrl: t.Optional(
+    t.Nullable(
+      t.String({
+        minLength: 1,
+        maxLength: 2048,
+        description:
+          "HTTPS URL an external agent's runs and chat messages are POSTed to, signed with " +
+          'its invocation secret, instead of being claimed by a runner. Null puts the agent ' +
+          'back on a runner. Ignored for an internal agent.',
+      }),
+    ),
   ),
 };
 
@@ -135,21 +164,31 @@ export const AiAgentResponse = t.Object({
   temperature: t.Nullable(t.Number()),
   reasoningEffort: t.Nullable(reasoningEffort),
   maxSteps: t.Nullable(t.Number()),
+  runTimeoutSec: t.Nullable(t.Number()),
   memoryEnabled: t.Boolean(),
   memoryLastMessages: t.Nullable(t.Number()),
   triggerOnMention: t.Boolean(),
   triggerOnAssign: t.Boolean(),
+  chatEnabled: t.Boolean(),
   fieldTriggers: t.Array(t.Object({ fieldId: t.Number(), name: t.String(), delaySec: t.Number() })),
   delegationDelaySec: t.Number(),
   ownerUserId: t.Nullable(t.String()),
   runnerScope: t.Union([t.Literal('owner'), t.Literal('team')]),
   lastSeenAt: t.Nullable(t.String()),
+  invocationUrl: t.Nullable(t.String()),
   createdAt: t.String(),
   apiKeyStart: t.Nullable(t.String()),
   modelProvider: t.Nullable(t.String()),
   actionCount: t.Number(),
   skillCount: t.Number(),
   toolCount: t.Number(),
+  canManage: t.Boolean({
+    description:
+      'Whether you may act on the agent as a whole: rotate its key, edit or delete it, set its ' +
+      'tools or skills, and read, rotate or test its invocation secret. Takes running the team ' +
+      'or being a member of every project the agent works in; each action also needs its role ' +
+      'permission.',
+  }),
 });
 
 // createAgent's result: the agent plus its one-time API key secret (null for an
@@ -172,10 +211,13 @@ export const RunAgentResponse = t.Object({
 export const AgentRunResponse = t.Object({
   id: t.Number(),
   status: t.String(),
+  executionState: agentExecutionState,
   trigger: agentRunTrigger,
   issueId: t.Nullable(t.Number()),
   issueIdentifier: t.Nullable(t.String()),
   issueTitle: t.Nullable(t.String()),
+  documentId: t.Nullable(t.Number()),
+  documentTitle: t.Nullable(t.String()),
   prompt: t.String(),
   attempts: t.Number(),
   lastError: t.Nullable(t.String()),
@@ -256,6 +298,11 @@ export const ChatMessagesResponse = t.Object({
 
 export const AiAgentListResponse = t.Array(AiAgentResponse);
 
+// What a screen needs to name an agent, for a member who may not read its configuration.
+export const ProjectAgentListResponse = t.Array(
+  t.Pick(AiAgentResponse, ['id', 'name', 'kind', 'model']),
+);
+
 // One page of a caller's chat threads with an agent (ChatThreadPage).
 export const ChatThreadListResponse = t.Object({
   items: t.Array(ChatThreadResponse),
@@ -286,7 +333,7 @@ export const setAgentProjectsBody = t.Object({
   projectIds: t.Array(t.Integer(), {
     description:
       'Projects of the team the agent works in. Replaces the set: a project left out is ' +
-      "detached. The agent joins on the team's default role; set_member_role changes it per " +
+      'detached. The agent joins on the default role; set_member_role changes it per ' +
       'project.',
   }),
 });

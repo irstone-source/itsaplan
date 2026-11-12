@@ -44,7 +44,14 @@
     },
     "deactivateTitle": "Deactivate {email}?",
     "deactivateBody": "They are signed out at once and cannot sign in or use their API keys until you turn the account back on. Their MCP connections and the invites they sent are removed. Nothing else is deleted.",
-    "deactivateConfirm": "Deactivate"
+    "deactivateConfirm": "Deactivate",
+    "godMode": "God mode",
+    "godAria": "God mode for {email}",
+    "giveGodTitle": "Give {email} god mode?",
+    "giveGodConfirm": "Give god mode",
+    "giveGodBody": "They will see and change every instance setting, every user, Finance and the team's Performance. You stay the instance owner and can take it away again here.",
+    "godGiven": "{email} now has god mode",
+    "godTaken": "{email} no longer has god mode"
   },
   "userPanel": {
     "instanceOwner": "Instance owner",
@@ -177,6 +184,20 @@
     },
     "joined": "joined {date}"
   },
+  "roles": {
+    "newRole": "New role",
+    "empty": "No system roles yet.",
+    "default": "Default",
+    "defaultUndeletable": "The default role cannot be deleted",
+    "columns": {
+      "role": "Role",
+      "permissions": "Permissions"
+    },
+    "edit": "Edit role",
+    "delete": "Delete role",
+    "deleteTitle": "Delete role \"{name}\"",
+    "deleteDescription": "This cannot be undone."
+  },
   "general": {
     "saved": "Project defaults saved",
     "projectDefaults": "Project defaults",
@@ -186,29 +207,55 @@
     "workspaces": "Workspaces",
     "personalWorkspaces": "A workspace for everyone",
     "personalWorkspacesHint": "Every account gets a workspace of its own, named after the person. Off, people work only in the workspaces they are added to.",
+    "invites": "Invites",
+    "inviteSearch": "Suggest people when inviting",
+    "inviteSearchHint": "As a team owner or manager types an address in the invite dialog, matching accounts from every workspace on this instance are listed by name and email. Off, they type the full address.",
+    "invitesSaved": "Invite settings saved",
     "agents": "Agents",
     "agentsSaved": "Agent settings saved",
+    "embedding": "Embedding",
+    "embedSites": "Trusted sites",
+    "embedSitesHint": "Issues and boards shared publicly open in a frame on these sites only. Separate sites with commas.",
+    "embedSitesInvalid": "Enter each site as https://example.com, without a path.",
+    "embedSaved": "Trusted sites saved",
     "traceRetention": "Keep run traces",
     "traceRetentionHint": "Each agent run records its model and tool calls. Usage dashboards count only the runs still kept.",
     "traceDays": "{days, plural, one {# day} other {# days}}",
-    "traceForever": "Forever"
+    "traceForever": "Forever",
+    "maxRunTime": "Max run time",
+    "maxRunTimeHint": "How long one agent run may take before it is stopped and saved as failed. An agent's own limit cannot exceed it.",
+    "runMinutes": "{minutes, plural, one {# minute} other {# minutes}}",
+    "runSeconds": "{seconds} s",
+    "concurrentRuns": "Runs at once",
+    "concurrentRunsHint": "How many agent runs work at once on this instance. The rest wait in the queue. Chats and external agents don't count. 0 sets no limit.",
+    "concurrentRunsInvalid": "Enter a whole number from 0 to {max}."
   },
   "authentication": {
     "saved": "Authentication settings saved",
     "registration": "Registration",
     "registrationHint": "Who may create an account on this instance.",
+    "registrationPasswordlessNote": "Sign-up and password recovery are handled by the sign-in provider.",
+    "inviteTtlDays": "Invite expiry (days)",
+    "inviteTtlDaysHint": "After this many days an invite link stops working and, with invite-only registration, no longer lets its address sign up. 0 keeps invites valid until they are answered.",
+    "inviteTtlDaysInvalid": "Enter a whole number of days from 0 to {max}.",
+    "allowedEmailDomains": "Allowed email domains",
+    "allowedEmailDomainsHint": "Only addresses at these domains can create an account. Separate them with commas, or leave empty to allow any. Existing accounts keep their access.",
+    "allowedEmailDomainsInvalid": "Each domain should look like example.com, with up to 100 domains.",
     "modes": {
       "open": {
         "label": "Open",
-        "description": "Anyone who reaches the sign-up page can create an account."
+        "description": "Anyone who reaches the sign-up page can create an account.",
+        "descriptionPasswordless": "Anyone who signs in with the provider for the first time gets an account."
       },
       "invite": {
         "label": "Invite only",
-        "description": "An account can only be created through an invite link."
+        "description": "An account can only be created through an invite link.",
+        "descriptionPasswordless": "Signing in with the provider only creates an account when there is a pending invite for that address."
       },
       "closed": {
         "label": "Closed",
-        "description": "No new accounts. Existing ones keep signing in."
+        "description": "No new accounts. Existing ones keep signing in.",
+        "descriptionPasswordless": "No new accounts, not even for someone arriving from the provider. Existing ones keep signing in."
       }
     },
     "signIn": "Sign-in options",
@@ -278,7 +325,18 @@
     "testing": "Sending…",
     "testHint": "Send a real message with the current settings without saving them.",
     "testConfigureFirst": "Enable a provider and add its required credentials first.",
-    "testSent": "Test email sent to {email}"
+    "testSent": "Test email sent to {email}",
+    "smtpAuth": "Authentication",
+    "smtpAuthOptions": {
+      "password": "Password",
+      "microsoft365": "Microsoft 365 (OAuth)"
+    },
+    "mailbox": "Mailbox",
+    "tenantId": "Tenant ID",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "clientSecretPlaceholder": "App registration secret",
+    "microsoft365Hint": "Signs in as an app registration in Entra ID instead of with the mailbox password, so the mailbox can keep MFA on. The app needs the Office 365 Exchange Online application permission SMTP.SendAsApp with admin consent, access to this mailbox in Exchange, and SMTP AUTH turned on for the mailbox."
   },
   "authProvider": {
     "saved": "Auth provider saved",

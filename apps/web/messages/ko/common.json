@@ -101,6 +101,8 @@
     "unreachable": "AI 에이전트에 연결할 수 없습니다. 다시 시도해 주세요.",
     "runnerOffline": "러너 오프라인",
     "runnerOfflineHint": "이 AI 에이전트와 대화하려면 머신에서 러너를 실행하세요.",
+    "chatDisabled": "이 에이전트는 채팅에서 사용할 수 없습니다",
+    "chatDisabledHint": "이 에이전트의 채팅이 비활성화되어 있습니다. 멘션, 위임 및 예약 작업은 계속 실행됩니다.",
     "attachFile": "AI 에이전트가 읽을 스프레드시트, 문서, PDF 또는 텍스트 파일 첨부",
     "removeAttachment": "첨부 파일 제거",
     "uploadFailed": "파일을 업로드할 수 없습니다.",
@@ -134,7 +136,16 @@
     "stopSharing": "공유 중지",
     "createLink": "링크 생성",
     "copy": "복사",
-    "copied": "복사됨"
+    "copied": "복사됨",
+    "calendarFeed": "캘린더 피드",
+    "calendarFeedHint": "이 링크를 캘린더 앱에 복사하여 이 보기를 구독하세요.",
+    "expiry": "만료",
+    "expiryHint": "이 시점 이후 링크가 작동하지 않습니다.",
+    "neverExpires": "만료 없음",
+    "expiresInDays": "{count, plural, other {#일 후}}",
+    "expiresOn": "{date}까지",
+    "expiryPickDate": "또는 마지막 날짜 선택:",
+    "expiryFailed": "링크 만료 시점을 변경하지 못했습니다. 다시 시도하세요."
   },
   "actions": "작업",
   "clearSearch": "검색어 지우기",
@@ -198,7 +209,8 @@
     "copiedLink": "복사됨",
     "editLink": "링크 편집",
     "retryPreview": "다시 시도",
-    "copyLinkFailed": "링크를 복사할 수 없습니다. 위의 URL을 직접 선택하여 복사해 주세요."
+    "copyLinkFailed": "링크를 복사할 수 없습니다. 위의 URL을 직접 선택하여 복사해 주세요.",
+    "todoList": "할 일 목록"
   },
   "chart": {
     "download": "차트 저장",
@@ -212,5 +224,6 @@
     "perPage": "개씩 보기",
     "range": "전체 {total}개 중 {first}-{last}"
   },
-  "aboutCloudAndPro": "Cloud 및 Pro 알아보기"
+  "aboutCloudAndPro": "Cloud 및 Pro 알아보기",
+  "signingOut": "로그아웃하는 중…"
 }

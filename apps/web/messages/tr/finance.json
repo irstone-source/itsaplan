@@ -1,0 +1,23 @@
+{
+  "previous": "Previous year",
+  "next": "Next year",
+  "startMonth": "Year starts",
+  "revenueTarget": "Revenue target for the year",
+  "cyclesFrom": "Cycles from",
+  "saveAndSpread": "Save and set cycle targets",
+  "spreadHint": "Saving writes each cycle's target in proportion to its working days (Monday to Friday). A single cycle's target can still be changed in its row below.",
+  "plannedInCycles": "Planned in cycles",
+  "billedToDate": "Billed so far",
+  "yearSaved": "Year target saved and spread over the cycles",
+  "month": "Month",
+  "cycle": "Cycle",
+  "workingDays": "Working days",
+  "target": "Target",
+  "breakEven": "Break-even",
+  "pool": "Pool %",
+  "billings": "Billings",
+  "noCycle": "No cycle",
+  "save": "Save",
+  "monthSaved": "{month} saved",
+  "rowsHint": "Billings are the value of client work completed in the month. Break-even and pool % set the month's performance share."
+}

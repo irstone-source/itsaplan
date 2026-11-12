@@ -44,7 +44,14 @@
     },
     "deactivateTitle": "Nonaktifkan {email}?",
     "deactivateBody": "Orang ini langsung dikeluarkan dan tidak bisa masuk atau memakai kunci API-nya sampai Anda mengaktifkan akunnya lagi. Koneksi MCP dan undangan yang dikirimnya dihapus. Tidak ada yang lain yang dihapus.",
-    "deactivateConfirm": "Nonaktifkan"
+    "deactivateConfirm": "Nonaktifkan",
+    "godMode": "God mode",
+    "godAria": "God mode for {email}",
+    "giveGodTitle": "Give {email} god mode?",
+    "giveGodConfirm": "Give god mode",
+    "giveGodBody": "They will see and change every instance setting, every user, Finance and the team's Performance. You stay the instance owner and can take it away again here.",
+    "godGiven": "{email} now has god mode",
+    "godTaken": "{email} no longer has god mode"
   },
   "userPanel": {
     "instanceOwner": "Pemilik instance",
@@ -177,6 +184,20 @@
     },
     "joined": "bergabung {date}"
   },
+  "roles": {
+    "newRole": "Peran baru",
+    "empty": "Belum ada peran sistem.",
+    "default": "Bawaan",
+    "defaultUndeletable": "Peran bawaan tidak dapat dihapus",
+    "columns": {
+      "role": "Peran",
+      "permissions": "Izin"
+    },
+    "edit": "Ubah peran",
+    "delete": "Hapus peran",
+    "deleteTitle": "Hapus peran \"{name}\"",
+    "deleteDescription": "Tindakan ini tidak dapat dibatalkan."
+  },
   "general": {
     "saved": "Pengaturan bawaan proyek disimpan",
     "projectDefaults": "Pengaturan bawaan proyek",
@@ -186,29 +207,55 @@
     "workspaces": "Workspace",
     "personalWorkspaces": "Workspace untuk setiap orang",
     "personalWorkspacesHint": "Setiap akun mendapat workspace sendiri dengan nama pemiliknya. Jika nonaktif, orang hanya bekerja di workspace tempat mereka ditambahkan.",
+    "invites": "Undangan",
+    "inviteSearch": "Sarankan orang saat mengundang",
+    "inviteSearchHint": "Saat pemilik atau manajer tim mengetik alamat di dialog undangan, akun yang cocok dari semua workspace di instance ini ditampilkan dengan nama dan email. Jika nonaktif, alamat harus diketik lengkap.",
+    "invitesSaved": "Pengaturan undangan disimpan",
     "agents": "Agen",
     "agentsSaved": "Pengaturan agen disimpan",
+    "embedding": "Penyematan",
+    "embedSites": "Situs tepercaya",
+    "embedSitesHint": "Issue dan papan yang dibagikan secara publik hanya terbuka dalam frame di situs ini. Pisahkan situs dengan koma.",
+    "embedSitesInvalid": "Tulis setiap situs seperti https://example.com, tanpa path.",
+    "embedSaved": "Situs tepercaya disimpan",
     "traceRetention": "Simpan trace eksekusi",
     "traceRetentionHint": "Setiap eksekusi agen mencatat panggilan ke model dan alat. Dasbor penggunaan hanya menghitung eksekusi yang masih disimpan.",
     "traceDays": "{days} hari",
-    "traceForever": "Selamanya"
+    "traceForever": "Selamanya",
+    "maxRunTime": "Waktu jalan maksimum",
+    "maxRunTimeHint": "Berapa lama satu jalannya agen boleh berlangsung sebelum dihentikan dan disimpan sebagai gagal. Batas milik agen tidak boleh melebihinya.",
+    "runMinutes": "{minutes, plural, other {# menit}}",
+    "runSeconds": "{seconds} dtk",
+    "concurrentRuns": "Eksekusi bersamaan",
+    "concurrentRunsHint": "Berapa banyak eksekusi agen yang berjalan bersamaan di instance ini. Sisanya menunggu dalam antrean. Obrolan dan agen eksternal tidak dihitung. 0 berarti tanpa batas.",
+    "concurrentRunsInvalid": "Masukkan bilangan bulat dari 0 sampai {max}."
   },
   "authentication": {
     "saved": "Pengaturan autentikasi disimpan",
     "registration": "Pendaftaran",
     "registrationHint": "Siapa yang boleh membuat akun di instance ini.",
+    "registrationPasswordlessNote": "Pendaftaran dan pemulihan kata sandi ditangani oleh penyedia masuk.",
+    "inviteTtlDays": "Masa berlaku undangan (hari)",
+    "inviteTtlDaysHint": "Setelah jangka waktu ini, tautan undangan tidak berfungsi lagi dan, dengan pendaftaran khusus undangan, tidak bisa lagi dipakai untuk mendaftar. Dengan 0, undangan tidak kedaluwarsa.",
+    "inviteTtlDaysInvalid": "Masukkan jumlah hari berupa bilangan bulat dari 0 sampai {max}.",
+    "allowedEmailDomains": "Domain email yang diizinkan",
+    "allowedEmailDomainsHint": "Hanya alamat di domain ini yang bisa membuat akun. Pisahkan dengan koma, atau kosongkan untuk mengizinkan semua alamat. Akun yang sudah ada tetap bisa masuk.",
+    "allowedEmailDomainsInvalid": "Setiap domain harus berbentuk seperti example.com, maksimal 100 domain.",
     "modes": {
       "open": {
         "label": "Terbuka",
-        "description": "Siapa saja yang mengakses halaman pendaftaran dapat membuat akun."
+        "description": "Siapa saja yang mengakses halaman pendaftaran dapat membuat akun.",
+        "descriptionPasswordless": "Siapa pun yang masuk melalui penyedia untuk pertama kali akan mendapatkan akun."
       },
       "invite": {
         "label": "Hanya undangan",
-        "description": "Akun hanya dapat dibuat melalui tautan undangan."
+        "description": "Akun hanya dapat dibuat melalui tautan undangan.",
+        "descriptionPasswordless": "Masuk melalui penyedia hanya membuat akun jika ada undangan yang tertunda untuk alamat tersebut."
       },
       "closed": {
         "label": "Tertutup",
-        "description": "Tidak ada akun baru. Akun yang ada tetap dapat masuk."
+        "description": "Tidak ada akun baru. Akun yang ada tetap dapat masuk.",
+        "descriptionPasswordless": "Tidak ada akun baru, bahkan bagi yang datang dari penyedia. Akun yang ada tetap dapat masuk."
       }
     },
     "signIn": "Opsi masuk",
@@ -278,7 +325,18 @@
     "testing": "Mengirim…",
     "testHint": "Kirim pesan nyata dengan pengaturan saat ini tanpa menyimpannya.",
     "testConfigureFirst": "Aktifkan penyedia dan tambahkan kredensial yang diperlukan terlebih dahulu.",
-    "testSent": "Email uji dikirim ke {email}"
+    "testSent": "Email uji dikirim ke {email}",
+    "smtpAuth": "Autentikasi",
+    "smtpAuthOptions": {
+      "password": "Kata sandi",
+      "microsoft365": "Microsoft 365 (OAuth)"
+    },
+    "mailbox": "Kotak surat",
+    "tenantId": "ID tenant",
+    "clientId": "ID klien",
+    "clientSecret": "Rahasia klien",
+    "clientSecretPlaceholder": "Rahasia pendaftaran aplikasi",
+    "microsoft365Hint": "Masuk sebagai pendaftaran aplikasi Entra ID, bukan dengan kata sandi kotak surat, sehingga kotak surat tetap bisa memakai MFA. Aplikasi memerlukan izin aplikasi SMTP.SendAsApp dari Office 365 Exchange Online dengan persetujuan admin, akses ke kotak surat ini di Exchange, dan SMTP AUTH aktif untuk kotak surat."
   },
   "authProvider": {
     "saved": "Penyedia autentikasi disimpan",

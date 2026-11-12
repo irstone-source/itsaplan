@@ -135,9 +135,11 @@ await api('PUT', '/god/branding', { ...BRANDING, logo });
 console.log('\nbranding set');
 
 // ── consulting project ───────────────────────────────────────────────────────
+// A project is created under its team: the one the folded client projects are in.
+const teamId: number = (sources[0]?.project ?? projects[0]).teamId;
 const target =
   existingTarget ??
-  (await api('POST', '/projects', {
+  (await api('POST', `/teams/${teamId}/projects`, {
     key: TARGET,
     name: 'Consulting',
     description:

@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { Agent, type AgentExecutionOptions } from '@mastra/core/agent';
+import { Agent, type AgentConfig, type AgentExecutionOptions } from '@mastra/core/agent';
 import type { TracingOptions } from '@mastra/core/observability';
 import {
+  assertChatEnabled,
   getAgentInProject,
   getInternalAgentApiKey,
   type AiAgentRow,
@@ -12,11 +13,13 @@ import { getCredentialSecret } from '../../integrations/service';
 import { listAgentSkills } from '../../skills/service';
 import { listAgentToolsForRun } from '../../tools/service';
 import { buildCustomTools } from './tools/custom-tools';
-import { buildRouteTools } from './tools/route-tools';
+import { buildNamedRouteTools, buildRouteTools } from './tools/route-tools';
 import { buildLocalTools } from './tools/local';
 import { buildSkillTool, skillsPreamble } from './skill-runtime';
 import { buildMemory, ensureThread, DEFAULT_LAST_MESSAGES } from './memory';
 import { getMastra } from './observability';
+import { runRefusal } from '../run-refusal';
+import { buildOnAgent } from '../agent-build';
 import { toolArgsText, toolText } from '../../chat-parts';
 import { recordContextUsage, type ContextUsage } from '../../chat-usage';
 import { isChatThreadId, newChatThreadId } from './thread-ids';
@@ -110,7 +113,7 @@ export type AgentRunEvent =
 async function buildAgent(
   row: AiAgentRow,
   projectId: number,
-  contextPreamble: string,
+  opts: RunOpts,
   sessionId: string,
 ): Promise<Agent> {
   const project = await getProjectById(projectId);
@@ -121,10 +124,10 @@ async function buildAgent(
   const apiKey = await getInternalAgentApiKey(row);
   const instructions =
     projectPreamble(project) +
-    contextPreamble +
+    (opts.contextPreamble ?? '') +
     (row.instructions ?? DEFAULT_INSTRUCTIONS) +
     skillsPreamble(skills);
-  const agent = new Agent({
+  const config: AgentConfig = {
     id: `ai-agent-${row.id}`,
     name: row.name,
     instructions,
@@ -143,7 +146,18 @@ async function buildAgent(
     ...(row.memoryEnabled
       ? { memory: buildMemory(row.memoryLastMessages ?? DEFAULT_LAST_MESSAGES) }
       : {}),
-  });
+  };
+  const agent = new Agent(
+    await buildOnAgent(config, {
+      agentId: row.id,
+      teamId: row.teamId,
+      projectId,
+      runId: opts.runId,
+      trigger: opts.trigger,
+      issueId: opts.issueId,
+      routeTools: (names) => buildNamedRouteTools(project, apiKey, names),
+    }),
+  );
   // An agent traces its run only through a container (see observability.ts).
   agent.__registerMastra(getMastra());
   return agent;
@@ -291,18 +305,24 @@ async function prepareRun(
   if (row.kind !== 'internal') {
     throw new HttpError(400, 'Only internal agents can be run');
   }
+  // A queued run was asked about in the poller, before it was recorded as started.
+  if (opts.runId == null) {
+    assertChatEnabled(row);
+    const refused = await runRefusal({
+      agentId: row.id,
+      teamId: row.teamId,
+      projectId,
+      userId: opts.callerUserId,
+    });
+    if (refused) throw new HttpError(403, refused, 'run_refused');
+  }
   // A chat run with no threadId starts a new conversation; every other run continues
   // the thread its caller named (see thread-ids). Without memory every run is a
   // conversation of its own, which is what the model's session id follows.
   const threadId = row.memoryEnabled
     ? (opts.threadId ?? newChatThreadId(row.id, opts.callerUserId))
     : null;
-  const agent = await buildAgent(
-    row,
-    projectId,
-    opts.contextPreamble ?? '',
-    threadId ?? randomUUID(),
-  );
+  const agent = await buildAgent(row, projectId, opts, threadId ?? randomUUID());
 
   // Mastra's generate/stream have overloaded options; type the shape we use. In
   // Mastra v1 the temperature belongs to the call's model settings — a flat

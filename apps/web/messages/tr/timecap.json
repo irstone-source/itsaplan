@@ -1,0 +1,142 @@
+{
+  "my": {
+    "title": "My time",
+    "description": "What your computer captured, one block per stretch of work. Accept or change each block so it counts as time on a ticket.",
+    "tabs": {
+      "blocks": "Blocks",
+      "rules": "Rules"
+    },
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "yesterday": "Yesterday",
+    "totals": "{captured} captured · {confirmed} confirmed · {pending} pending",
+    "empty": "Nothing captured on this day.",
+    "noDevice": "No computer is sending time yet.",
+    "setUp": "Set up time capture",
+    "confirmSuggested": "Confirm suggested ({count})",
+    "dayConfirmed": "{count, plural, =0 {Nothing to confirm} one {# block confirmed} other {# blocks confirmed}}",
+    "locked": "Past week: read-only"
+  },
+  "device": {
+    "seen": "{name}: seen {time} ago",
+    "trackerNotRunning": "tracker not running",
+    "stale": "not seen in 24 hours"
+  },
+  "block": {
+    "accept": "Accept",
+    "change": "Change",
+    "split": "Split",
+    "ignore": "Ignore",
+    "capture": "Capture as task",
+    "undo": "Undo",
+    "call": "Call",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "ignored": "Ignored"
+    },
+    "suggestion": "{target} · {confidence}%",
+    "noSuggestion": "No suggestion",
+    "noTarget": "No ticket",
+    "confirmed": "Confirmed to {target}",
+    "ignored": "Block ignored",
+    "undone": "Block back to pending",
+    "alwaysDoThis": "Always do this?",
+    "alwaysIgnore": "Always ignore this?",
+    "always": "Always",
+    "ruleSaved": "Rule saved"
+  },
+  "change": {
+    "title": "Change allocation",
+    "project": "Project",
+    "ticket": "Ticket",
+    "searchTicket": "CON-12 or a title",
+    "noTicket": "No ticket",
+    "initiative": "Initiative",
+    "noInitiative": "No initiative",
+    "save": "Save",
+    "needTarget": "Pick a ticket or an initiative."
+  },
+  "split": {
+    "title": "Split block",
+    "hint": "The block becomes two: before and after this time.",
+    "at": "Split at",
+    "action": "Split",
+    "done": "Block split"
+  },
+  "capture": {
+    "title": "Capture as task",
+    "project": "Project",
+    "titleField": "Title",
+    "initiative": "Initiative",
+    "noInitiative": "No initiative",
+    "action": "Create task",
+    "created": "Task {ticket} created and the block confirmed to it"
+  },
+  "rules": {
+    "description": "A rule maps a block to a ticket or an initiative, or ignores it. Yours come first, then the team's.",
+    "empty": "No rules yet. Changing or ignoring a block offers to save one.",
+    "personal": "Yours",
+    "team": "Team rule",
+    "teamHint": "Team rules are set by a project owner.",
+    "ignore": "Ignore",
+    "hits": "{count, plural, one {# hit} other {# hits}}",
+    "deleted": "Rule deleted",
+    "field": {
+      "app": "App",
+      "title": "Title",
+      "domain": "Domain",
+      "contact": "Contact"
+    }
+  },
+  "setup": {
+    "title": "Time capture setup",
+    "description": "Four steps on the computer you work from. Each one is checked as it is done.",
+    "done": "Done",
+    "waiting": "Waiting",
+    "steps": {
+      "activitywatch": {
+        "title": "Install ActivityWatch",
+        "body": "Download ActivityWatch and keep it running. It stores what you do on this computer only; the agent sends blocks of app, window title, domain and time, nothing else.",
+        "link": "activitywatch.net",
+        "check": "The agent reports that ActivityWatch answers."
+      },
+      "apiKey": {
+        "title": "Create an API key",
+        "body": "The agent signs in to Plan with a personal API key. Create one and keep its value for the next step.",
+        "link": "Open API keys",
+        "check": "At least one API key exists."
+      },
+      "agent": {
+        "title": "Install the agent",
+        "body": "Run these in a terminal. Setup fills in the Plan API address and asks for the API key and a name for this computer.",
+        "check": "A computer has registered."
+      },
+      "sync": {
+        "title": "First sync",
+        "body": "Leave watch running. It syncs every 15 minutes, and yesterday's blocks appear in My time.",
+        "check": "A sync arrived in the last 24 hours.",
+        "open": "Open My time"
+      }
+    },
+    "calls": {
+      "title": "Calls (Mac)",
+      "body": "On a Mac with an iPhone signed in to iCloud, the agent can also read your call history. Grant Full Disk Access to your terminal in System Settings → Privacy & Security, then run watch with --calls."
+    },
+    "copied": "Command copied"
+  },
+  "banner": {
+    "title": "Set up time capture",
+    "body": "No computer has sent time in the last 24 hours. Set the agent up to log yesterday in three minutes a day.",
+    "dismiss": "Not now"
+  },
+  "team": {
+    "title": "Team setup",
+    "description": "Who has the agent running and how much of this week is confirmed.",
+    "empty": "No members.",
+    "noDevice": "No device",
+    "seen": "Seen {time} ago",
+    "confirmed": "{time} confirmed",
+    "pending": "{time} pending"
+  }
+}

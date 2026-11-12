@@ -101,6 +101,8 @@
     "unreachable": "Could not reach the agent. Try again.",
     "runnerOffline": "Runner offline",
     "runnerOfflineHint": "Start the runner on your machine to chat with this agent.",
+    "chatDisabled": "This agent is not available in chat",
+    "chatDisabledHint": "Chat is turned off for this agent. Mentions, delegations, and schedules still work.",
     "attachFile": "Attach a spreadsheet, document, PDF, or text file for the agent to read",
     "removeAttachment": "Remove attachment",
     "uploadFailed": "Could not upload the file.",
@@ -134,7 +136,16 @@
     "stopSharing": "Stop sharing",
     "createLink": "Create link",
     "copy": "Copy",
-    "copied": "Copied"
+    "copied": "Copied",
+    "calendarFeed": "Calendar feed",
+    "calendarFeedHint": "Copy this link into your calendar app to subscribe to this view.",
+    "expiry": "Expiry",
+    "expiryHint": "The link stops working after this.",
+    "neverExpires": "Never expires",
+    "expiresInDays": "{count, plural, one {In # day} other {In # days}}",
+    "expiresOn": "Until {date}",
+    "expiryPickDate": "Or pick the last day:",
+    "expiryFailed": "Could not change when the link expires. Try again."
   },
   "actions": "Actions",
   "clearSearch": "Clear search",
@@ -198,7 +209,8 @@
     "copiedLink": "Copied",
     "editLink": "Edit link",
     "retryPreview": "Try again",
-    "copyLinkFailed": "Could not copy the link. Select and copy the URL above."
+    "copyLinkFailed": "Could not copy the link. Select and copy the URL above.",
+    "todoList": "To-do list"
   },
   "chart": {
     "download": "Save chart",
@@ -212,5 +224,6 @@
     "perPage": "per page",
     "range": "{first}-{last} of {total}"
   },
-  "aboutCloudAndPro": "Learn about Cloud and Pro"
+  "aboutCloudAndPro": "Learn about Cloud and Pro",
+  "signingOut": "Signing out…"
 }

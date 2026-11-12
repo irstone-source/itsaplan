@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { auth } from '@repo/auth';
 import { resetDb } from '#tests/helpers/db';
-import { apiKeyApi, type Api } from '#tests/helpers/app';
+import { apiKeyApi, type Api, createProject } from '#tests/helpers/app';
 import { addProjectMember } from '#tests/helpers/members';
 import { createRole } from '#tests/helpers/roles';
 import { addUser, joinProject, setup, type Actor } from '../../../god/__tests__/helpers';
@@ -59,7 +59,7 @@ async function myDay(api: Api, date = dayOf()) {
 }
 
 async function scaffold(owner: Actor) {
-  await owner.api.projects.post({ key: 'CON', name: 'Consulting' });
+  await createProject(owner.api, { key: 'CON', name: 'Consulting' });
   const con = owner.api.projects({ projectKey: 'CON' });
   const columns = (await con.get()).data!.columns;
   const todo = columns.find((c) => c.stateType === 'unstarted')!;

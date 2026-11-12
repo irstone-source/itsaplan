@@ -44,7 +44,14 @@
     },
     "deactivateTitle": "{email} 계정을 비활성화하시겠습니까?",
     "deactivateBody": "즉시 로그아웃되며, 계정을 다시 활성화할 때까지 로그인하거나 API 키를 사용할 수 없습니다. MCP 연결과 이 사용자가 보낸 초대는 삭제됩니다. 그 외에는 아무것도 삭제되지 않습니다.",
-    "deactivateConfirm": "비활성화"
+    "deactivateConfirm": "비활성화",
+    "godMode": "God mode",
+    "godAria": "God mode for {email}",
+    "giveGodTitle": "Give {email} god mode?",
+    "giveGodConfirm": "Give god mode",
+    "giveGodBody": "They will see and change every instance setting, every user, Finance and the team's Performance. You stay the instance owner and can take it away again here.",
+    "godGiven": "{email} now has god mode",
+    "godTaken": "{email} no longer has god mode"
   },
   "userPanel": {
     "instanceOwner": "인스턴스 소유자",
@@ -177,6 +184,20 @@
     },
     "joined": "{date}에 가입"
   },
+  "roles": {
+    "newRole": "새 역할",
+    "empty": "아직 시스템 역할이 없습니다.",
+    "default": "기본값",
+    "defaultUndeletable": "기본 역할은 삭제할 수 없습니다",
+    "columns": {
+      "role": "역할",
+      "permissions": "권한"
+    },
+    "edit": "역할 편집",
+    "delete": "역할 삭제",
+    "deleteTitle": "\"{name}\" 역할 삭제",
+    "deleteDescription": "이 작업은 되돌릴 수 없습니다."
+  },
   "general": {
     "saved": "프로젝트 기본값이 저장되었습니다",
     "projectDefaults": "프로젝트 기본값",
@@ -186,29 +207,55 @@
     "workspaces": "워크스페이스",
     "personalWorkspaces": "모든 사용자에게 워크스페이스 제공",
     "personalWorkspacesHint": "각 계정에 사용자 이름을 딴 개인 워크스페이스가 하나씩 생성됩니다. 끄면 사용자는 자신이 추가된 워크스페이스에서만 작업할 수 있습니다.",
+    "invites": "초대",
+    "inviteSearch": "초대할 때 사용자 추천",
+    "inviteSearchHint": "팀 소유자나 관리자가 초대 창에 주소를 입력하면 이 인스턴스의 모든 워크스페이스에서 일치하는 계정이 이름과 이메일로 표시됩니다. 끄면 전체 주소를 입력해야 합니다.",
+    "invitesSaved": "초대 설정이 저장되었습니다",
     "agents": "AI 에이전트",
     "agentsSaved": "AI 에이전트 설정이 저장되었습니다",
+    "embedding": "임베드",
+    "embedSites": "신뢰하는 사이트",
+    "embedSitesHint": "공개 공유된 이슈와 보드는 이 사이트에서만 프레임으로 열립니다. 사이트는 쉼표로 구분하세요.",
+    "embedSitesInvalid": "각 사이트를 경로 없이 https://example.com 형식으로 입력하세요.",
+    "embedSaved": "신뢰하는 사이트가 저장되었습니다",
     "traceRetention": "실행 추적 기록 보관",
     "traceRetentionHint": "각 AI 에이전트 실행에는 모델 및 도구 호출 기록이 저장됩니다. 사용량 대시보드에는 현재 보관 중인 실행 기록만 집계됩니다.",
     "traceDays": "{days, plural, one {#일} other {#일}}",
-    "traceForever": "계속 보관"
+    "traceForever": "계속 보관",
+    "maxRunTime": "최대 실행 시간",
+    "maxRunTimeHint": "에이전트 실행 한 번이 중지되고 실패로 저장되기 전까지 걸릴 수 있는 시간입니다. 에이전트 자체 제한은 이 값을 초과할 수 없습니다.",
+    "runMinutes": "{minutes, plural, other {#분}}",
+    "runSeconds": "{seconds}초",
+    "concurrentRuns": "동시 실행 수",
+    "concurrentRunsHint": "이 서버에서 동시에 진행되는 에이전트 실행 수입니다. 나머지는 대기열에서 기다립니다. 채팅과 외부 에이전트는 포함되지 않습니다. 0이면 제한이 없습니다.",
+    "concurrentRunsInvalid": "0에서 {max} 사이의 정수를 입력하세요."
   },
   "authentication": {
     "saved": "인증 설정이 저장되었습니다",
     "registration": "회원가입",
     "registrationHint": "이 인스턴스에서 계정을 생성할 수 있는 사용자를 설정합니다.",
+    "registrationPasswordlessNote": "회원가입과 비밀번호 복구는 로그인 공급자에서 처리합니다.",
+    "inviteTtlDays": "초대 유효 기간(일)",
+    "inviteTtlDaysHint": "초대 링크는 이 일수가 지나면 더 이상 작동하지 않으며, 초대 전용 회원가입에서는 해당 주소로 가입할 수 없게 됩니다. 0으로 설정하면 초대에 응답할 때까지 유효합니다.",
+    "inviteTtlDaysInvalid": "0에서 {max} 사이의 정수 일수를 입력하세요.",
+    "allowedEmailDomains": "허용된 이메일 도메인",
+    "allowedEmailDomainsHint": "이 도메인의 주소로만 계정을 만들 수 있습니다. 쉼표로 구분하고, 비워 두면 모든 주소를 허용합니다. 기존 계정은 계속 로그인할 수 있습니다.",
+    "allowedEmailDomainsInvalid": "각 도메인은 example.com 형식이어야 하며 최대 100개까지 입력할 수 있습니다.",
     "modes": {
       "open": {
         "label": "공개",
-        "description": "회원가입 페이지에 접근할 수 있는 사람은 누구나 계정을 생성할 수 있습니다."
+        "description": "회원가입 페이지에 접근할 수 있는 사람은 누구나 계정을 생성할 수 있습니다.",
+        "descriptionPasswordless": "공급자로 처음 로그인하는 사용자에게 계정이 생성됩니다."
       },
       "invite": {
         "label": "초대 전용",
-        "description": "초대 링크를 통해서만 계정을 생성할 수 있습니다."
+        "description": "초대 링크를 통해서만 계정을 생성할 수 있습니다.",
+        "descriptionPasswordless": "공급자로 로그인하면 해당 이메일 주소에 대기 중인 초대가 있을 때만 계정이 생성됩니다."
       },
       "closed": {
         "label": "비공개",
-        "description": "새 계정을 생성할 수 없습니다. 기존 계정은 계속 로그인할 수 있습니다."
+        "description": "새 계정을 생성할 수 없습니다. 기존 계정은 계속 로그인할 수 있습니다.",
+        "descriptionPasswordless": "공급자에서 오는 사용자를 포함해 새 계정을 생성하지 않습니다. 기존 계정은 계속 로그인할 수 있습니다."
       }
     },
     "signIn": "로그인 옵션",
@@ -278,7 +325,18 @@
     "testing": "전송 중…",
     "testHint": "현재 설정을 저장하지 않고 실제 테스트 이메일을 전송합니다.",
     "testConfigureFirst": "먼저 공급자를 활성화하고 필요한 인증 정보를 입력하세요.",
-    "testSent": "테스트 이메일을 {email}(으)로 전송했습니다"
+    "testSent": "테스트 이메일을 {email}(으)로 전송했습니다",
+    "smtpAuth": "인증",
+    "smtpAuthOptions": {
+      "password": "비밀번호",
+      "microsoft365": "Microsoft 365 (OAuth)"
+    },
+    "mailbox": "메일함",
+    "tenantId": "테넌트 ID",
+    "clientId": "클라이언트 ID",
+    "clientSecret": "클라이언트 시크릿",
+    "clientSecretPlaceholder": "앱 등록 시크릿",
+    "microsoft365Hint": "메일함 비밀번호 대신 Entra ID의 앱 등록으로 로그인하므로 메일함에 MFA를 유지할 수 있습니다. 앱에는 관리자 동의를 받은 Office 365 Exchange Online 애플리케이션 권한 SMTP.SendAsApp, Exchange에서 이 메일함에 대한 접근 권한, 메일함에서 활성화된 SMTP AUTH가 필요합니다."
   },
   "authProvider": {
     "saved": "인증 공급자 설정이 저장되었습니다",
