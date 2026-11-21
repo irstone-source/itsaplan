@@ -265,6 +265,9 @@ export const qk = {
   issue: (id: number) => ['issue', id] as const,
   // Under the issue prefix, so the issue's live refresh picks up a new draft.
   issueDockets: (id: number) => ['issue', id, 'dockets'] as const,
+  docket: (id: number) => ['docket', id] as const,
+  docketVerify: (id: number) => ['docket', id, 'verify'] as const,
+  projectDockets: (projectKey: string, params: unknown) => ['dockets', projectKey, params] as const,
   issueDevelopmentRepositories: (id: number) =>
     ['issue', id, 'development', 'repositories'] as const,
   issueDevelopmentPullRequests: (id: number, repositoryId: number, state: 'open' | 'all') =>

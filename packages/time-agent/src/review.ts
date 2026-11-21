@@ -122,11 +122,11 @@ function update() {
   if (DATA.docket) {
     const bytes = DATA.docket.baseBytes + new TextEncoder().encode(evidence()).length;
     items.push(DATA.docket.filename + ' — about ' + bytes.toLocaleString('en-GB') + ' bytes, attached to ' + DATA.docket.identifier);
-    items.push('a comment on ' + DATA.docket.identifier + ' with the same docket');
+    const id = DATA.docket.identifier;
+    items.push('a stamped docket on ' + id + (outcome() === 'blocked' ? '; ' + id + ' stays open' : ' (sent to a lead for review)'));
   }
   const blocks = ticked('block').length;
   items.push(blocks + ' time block' + (blocks === 1 ? '' : 's') + (DATA.docket ? ', logged against ' + DATA.docket.identifier : ''));
-  if (DATA.docket && outcome() === 'blocked') items.push(DATA.docket.identifier + ' stays open: you will not be asked to complete it');
   document.getElementById('uploads').innerHTML = '';
   for (const text of items) { const li = document.createElement('li'); li.textContent = text; document.getElementById('uploads').append(li); }
 }

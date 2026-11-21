@@ -73,6 +73,14 @@ export const playbookPath = (ref: string) => `${projectPath(ref)}/playbook`;
 
 export const timePath = (ref: string) => `${projectPath(ref)}/time`;
 
+export const docketsPath = (ref: string) => `${projectPath(ref)}/dockets`;
+
+// A docket page sits outside the shell, so it is addressed by id alone.
+export const docketPath = (docketId: number) => `/docket/${docketId}`;
+
+// Redirects to the issue's team path once the viewer's project list names its project.
+export const issueByIdPath = (issueId: number) => `/issue/${issueId}`;
+
 // An issue is addressed by its identifier under its team, not under its project:
 // /acme/issue/MKT-42.
 export const issuePath = (ref: string, sequenceNumber: number) => {

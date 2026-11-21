@@ -63,3 +63,9 @@ export function signPayload(secret: string, timestampSeconds: number, body: stri
   const digest = createHmac('sha256', secret).update(`${timestampSeconds}.${body}`).digest('hex');
   return `t=${timestampSeconds},v1=${digest}`;
 }
+
+// A key for one purpose, derived from APP_ENCRYPTION_KEY, so a signature made with it never
+// equals one made for another purpose. Changing APP_ENCRYPTION_KEY changes every derived key.
+export function derivedKey(purpose: string): Buffer {
+  return createHmac('sha256', getKey()).update(purpose, 'utf8').digest();
+}

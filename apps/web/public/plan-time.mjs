@@ -490,14 +490,12 @@ class PlanClient {
       },
     );
   }
-  async comment(issue, body) {
-    await this.send(
+  async createDocket(issue, docket) {
+    return this.send(
       'POST',
-      `/issues/${issue.id}/comments`,
-      `docket comment on ${issue.identifier}`,
-      {
-        body,
-      },
+      `/issues/${issue.id}/dockets`,
+      `docket for ${issue.identifier}`,
+      docket,
     );
   }
 }
@@ -624,6 +622,7 @@ function askHidden(question) {
 }
 
 // src/session.ts
+import { randomBytes as randomBytes2 } from 'node:crypto';
 import { readFile as readFile6, rm as rm2 } from 'node:fs/promises';
 import { join as join6 } from 'node:path';
 
@@ -712,11 +711,11 @@ function update() {
   if (DATA.docket) {
     const bytes = DATA.docket.baseBytes + new TextEncoder().encode(evidence()).length;
     items.push(DATA.docket.filename + ' — about ' + bytes.toLocaleString('en-GB') + ' bytes, attached to ' + DATA.docket.identifier);
-    items.push('a comment on ' + DATA.docket.identifier + ' with the same docket');
+    const id = DATA.docket.identifier;
+    items.push('a stamped docket on ' + id + (outcome() === 'blocked' ? '; ' + id + ' stays open' : ' (sent to a lead for review)'));
   }
   const blocks = ticked('block').length;
   items.push(blocks + ' time block' + (blocks === 1 ? '' : 's') + (DATA.docket ? ', logged against ' + DATA.docket.identifier : ''));
-  if (DATA.docket && outcome() === 'blocked') items.push(DATA.docket.identifier + ' stays open: you will not be asked to complete it');
   document.getElementById('uploads').innerHTML = '';
   for (const text of items) { const li = document.createElement('li'); li.textContent = text; document.getElementById('uploads').append(li); }
 }
@@ -1230,7 +1229,7 @@ async function startSession(deps, identifier, agent) {
   }
   const now = deps.now();
   const session = {
-    id: `${issue.identifier}-${now.getTime()}`,
+    id: `${issue.identifier}-${now.getTime()}-${randomBytes2(6).toString('hex')}`,
     identifier: issue.identifier,
     issueId: issue.id,
     projectId: issue.projectId,
@@ -1374,7 +1373,14 @@ function docketMarkdown(docket, t) {
   }
   if (t.evidence.trim()) {
     const heading = t.outcome === 'blocked' ? 'Blocker' : 'Evidence this is complete';
-    lines.push('', `### ${heading}`, '', t.evidence.trim());
+    const evidence = t.evidence
+      .trim()
+      .split(
+        `
+`,
+      )
+      .map((line) => (line.trim() ? inert(line) : ''));
+    lines.push('', `### ${heading}`, '', ...evidence);
   }
   if (t.shots.length) {
     lines.push('', '### Screenshots', '');
@@ -1432,8 +1438,8 @@ async function approve(deps, config, session) {
     blocks: docket.blocks.filter((b) => keys.has(b.sourceKey)),
     shots: shots.filter((s) => ticked.has(s.name)).map((s) => s.name),
     uploaded: {},
-    docketFile: false,
-    commented: false,
+    docketFile: null,
+    docket: null,
     blocksSent: false,
     outboxTrimmed: false,
   };
@@ -1493,15 +1499,29 @@ async function finishSession(deps, config, identifier, options) {
     shots: attach.shots.map((name) => ({ name, url: attach.uploaded[name].url })),
   });
   const filename = docketFilename(session, attach.endedAt);
-  if (!attach.docketFile) {
-    await deps.client.uploadAttachment(issue, filename, 'text/markdown', Buffer.from(markdown));
-    await step(() => (attach.docketFile = true));
+  if (typeof attach.docketFile !== 'string') {
+    const file = await deps.client.uploadAttachment(
+      issue,
+      filename,
+      'text/markdown',
+      Buffer.from(markdown),
+    );
+    await step(() => (attach.docketFile = file.id));
     deps.log(`attached ${filename}`);
   }
-  if (!attach.commented) {
-    await deps.client.comment(issue, markdown);
-    await step(() => (attach.commented = true));
-    deps.log('posted the docket as a comment');
+  if (!attach.docket) {
+    const stamped = await deps.client.createDocket(issue, {
+      clientKey: session.id,
+      outcome: attach.outcome,
+      evidence: attach.evidence,
+      body: markdown,
+      device: config.device,
+      sessionStartedAt: session.startedAt,
+      sessionEndedAt: attach.endedAt,
+      activeSeconds: Math.floor(attach.activeMs / 1000),
+      attachmentIds: [...attach.shots.map((name) => attach.uploaded[name].id), attach.docketFile],
+    });
+    await step(() => (attach.docket = { id: stamped.id, number: stamped.number }));
   }
   if (!attach.blocksSent) {
     if (attach.blocks.length) {
@@ -1518,16 +1538,11 @@ async function finishSession(deps, config, identifier, options) {
     await step(() => (attach.outboxTrimmed = true));
   }
   if (attach.outcome === 'blocked') {
-    deps.log(`${session.identifier} stays open: the docket records the blocker`);
-  } else if (await deps.confirm(`Complete ${session.identifier}? (y/N)`)) {
-    const columns = await deps.client.columns(parseIdentifier(session.identifier).key);
-    const done = columns.find((c) => c.stateType === 'completed');
-    if (done) {
-      await deps.client.moveIssue(issue, done);
-      deps.log(`${session.identifier} moved to "${done.name}"`);
-    } else {
-      deps.log('this project has no completed column');
-    }
+    deps.log(
+      `${session.identifier} stays open: docket ${attach.docket.number} records the blocker`,
+    );
+  } else {
+    deps.log(`sent for review: ${attach.docket.number}`);
   }
   if (options.keep) deps.log(`session kept in ${shotsDir(session.id)}`);
   else await deleteSession(session.id);

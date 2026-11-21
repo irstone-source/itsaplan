@@ -283,7 +283,7 @@ export default function IssueDetailContent({
           imageByUserId={imageByUserId}
         />
       )}
-      <IssueDocketsPanel issueId={issue.id} canEdit={canEdit} />
+      <IssueDocketsPanel issueId={issue.id} projectKey={project.project.ref} canEdit={canEdit} />
       <div ref={feedRef}>
         <IssueActivityFeed
           issueId={issue.id}

@@ -8,6 +8,7 @@ import common from '../../messages/en/common.json';
 import cycles from '../../messages/en/cycles.json';
 import dashboards from '../../messages/en/dashboards.json';
 import display from '../../messages/en/display.json';
+import dockets from '../../messages/en/dockets.json';
 import documents from '../../messages/en/documents.json';
 import filters from '../../messages/en/filters.json';
 import god from '../../messages/en/god.json';
@@ -58,6 +59,7 @@ const coreMessages = {
   playbook,
   time,
   timecap,
+  dockets,
   auth,
   common,
   nav,

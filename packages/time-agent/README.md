@@ -99,14 +99,20 @@ docket under "Evidence this is complete" or "Blocker". **Attach** then:
 
 1. uploads each ticked screenshot to `POST /issues/:id/attachments`;
 2. uploads the docket as `docket-CON-158-<date>.md` to the same route;
-3. posts the docket as a comment, with the screenshots embedded the way the web editor
-   embeds an uploaded image (`/media/attachments/<id>/raw`). Window titles, app and site
-   names, the ticket title and the agent name are escaped so they cannot mention anyone or
-   render as markdown or HTML;
+3. sends the docket to `POST /issues/:id/dockets`, with the session id as `clientKey` and
+   the publicIds of the screenshots and the `.md` file. Plan stamps it with a number
+   (`D-CON-158-001`), the server time and an HMAC-SHA256 fingerprint over the docket and the bytes
+   of those files, and posts it to the ticket as a comment, with the screenshots embedded
+   the way the web editor embeds an uploaded image (`/media/attachments/<id>/raw`). Window
+   titles, app and site names, the ticket title and the agent name are escaped so they
+   cannot mention anyone or render as markdown or HTML;
 4. sends the ticked blocks to `POST /time/agent/blocks` with `issueId`, so they are stored
-   confirmed against the ticket;
-5. for a complete outcome, asks whether to move the ticket to the project's first
-   `completed` column; a blocked ticket stays where it is.
+   confirmed against the ticket.
+
+A complete docket waits for a lead to review it: approval moves the ticket to the first
+`completed` column, a return moves it back to the first `started` column with a note. The
+terminal prints `sent for review: D-CON-158-001`. A blocked docket leaves the ticket where it
+is; Plan tells the assignee and the project leads and labels the ticket "At risk".
 
 Unticked screenshots and blocks are deleted locally and never sent. Outbox blocks that fall
 inside the session are removed, because the docket covers them. The session folder is

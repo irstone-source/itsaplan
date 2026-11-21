@@ -49,6 +49,24 @@ export interface Attachment {
   url: string;
 }
 
+// Follows createSessionDocketBody in apps/api/src/modules/dockets/model.ts.
+export interface NewDocket {
+  clientKey: string;
+  outcome: 'complete' | 'blocked';
+  evidence: string;
+  body: string;
+  device: string;
+  sessionStartedAt: string;
+  sessionEndedAt: string;
+  activeSeconds: number;
+  attachmentIds: string[];
+}
+
+export interface StampedDocket {
+  id: number;
+  number: string;
+}
+
 export const CHUNK_SIZE = 2000;
 const REQUEST_TIMEOUT_MS = 30_000;
 const ATTEMPTS = 4;
@@ -249,14 +267,12 @@ export class PlanClient {
     );
   }
 
-  async comment(issue: IssueRef, body: string): Promise<void> {
-    await this.send(
+  async createDocket(issue: IssueRef, docket: NewDocket): Promise<StampedDocket> {
+    return this.send<StampedDocket>(
       'POST',
-      `/issues/${issue.id}/comments`,
-      `docket comment on ${issue.identifier}`,
-      {
-        body,
-      },
+      `/issues/${issue.id}/dockets`,
+      `docket for ${issue.identifier}`,
+      docket,
     );
   }
 }

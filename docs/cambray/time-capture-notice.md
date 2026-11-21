@@ -66,8 +66,11 @@ from it.
 - When you confirm a block to a ticket, the time appears on that ticket as logged time,
   which the project team sees as it does any logged time. Blocks you send by attaching a
   ticket's docket are confirmed to that ticket in the same way.
-- An evidence docket you attach becomes a comment on the ticket, and its screenshots
-  become ticket attachments. Everyone who can see the ticket sees them. An attachment
+- An evidence docket you attach is stamped by Plan with a number, the server's time and a
+  fingerprint, so any later change to it or its screenshots shows. It becomes a comment
+  on the ticket and a docket page, and its screenshots become ticket attachments. Everyone
+  who can see the ticket sees them. A lead reviews a complete docket and approves it or
+  returns it with a note. An attachment
   also has a direct link that opens without signing in: anyone who is given that link can
   view the screenshot.
 - When an AI agent works on a ticket, Plan drafts a docket of that run (what it did, the

@@ -17,6 +17,7 @@ import {
   Repeat,
   Timer,
   Hourglass,
+  Stamp,
 } from 'lucide-react';
 import {
   allWorkPath,
@@ -26,6 +27,7 @@ import {
   trackerPath,
   cyclesPath,
   dashboardsPath,
+  docketsPath,
   documentsPath,
   inboxPath,
   initiativesPath,
@@ -192,6 +194,15 @@ export default function SidebarWorkNav({
               icon={Timer}
               label={t('time')}
               active={pathname.endsWith('/time')}
+              disabled={disabled}
+            />
+          )}
+          {can('work_items', 'read') && (
+            <SidebarNavItem
+              href={projectKey ? docketsPath(projectKey) : '#'}
+              icon={Stamp}
+              label={t('dockets')}
+              active={pathname.endsWith('/dockets')}
               disabled={disabled}
             />
           )}

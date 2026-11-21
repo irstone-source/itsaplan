@@ -19,6 +19,7 @@ import {
 } from '#shared/access';
 import { boundProjectId, isMcpRequest } from '#shared/mcp-request';
 import { getProjectById } from '#modules/projects/service';
+import { isDocketComment } from '#modules/dockets/service';
 import { HttpError, instantParam } from '#shared/lib';
 import { accessErrors, commonErrors, errors } from '#shared/responses';
 import { deleteObject } from '@repo/storage';
@@ -316,6 +317,8 @@ export const issueRoutes = new Elysia({ name: 'issues', detail: { tags: ['Issues
           await assertPermission(entry.projectId, user, 'work_items', 'edit');
           if (entry.actorUserId !== requireUser(user).id)
             await assertProjectOwner(entry.projectId, user);
+          if (await isDocketComment(Number((params as { commentId: string }).commentId)))
+            throw new HttpError(409, 'A docket comment cannot be edited or deleted');
           await assertProjectReachable(entry.projectId, request);
           return { projectId: entry.projectId };
         },
@@ -1610,13 +1613,14 @@ export const issueRoutes = new Elysia({ name: 'issues', detail: { tags: ['Issues
       body: updateCommentBody,
       params: commentParams,
       comment: true,
-      response: { 200: FeedItemResponse, ...commonErrors },
+      response: { 200: FeedItemResponse, ...commonErrors, ...errors(409) },
       detail: {
         summary: 'Edit a comment',
         description:
           'Change the text of a comment, and re-resolve its mentions: the members an ' +
           'edit newly names are notified, the agents run. Your own comment needs ' +
-          "work_items edit; another member's comment only a project owner can change.",
+          "work_items edit; another member's comment only a project owner can change. A " +
+          'docket comment is 409: it is the record a stamped docket was posted as.',
         ...mcpTool('update_comment'),
       },
     },
@@ -1633,12 +1637,12 @@ export const issueRoutes = new Elysia({ name: 'issues', detail: { tags: ['Issues
     {
       params: commentParams,
       comment: true,
-      response: { 204: t.Void(), ...commonErrors },
+      response: { 204: t.Void(), ...commonErrors, ...errors(409) },
       detail: {
         summary: 'Delete a comment',
         description:
           'Remove a comment and its replies. Your own comment needs work_items edit; ' +
-          "another member's comment only a project owner can remove.",
+          "another member's comment only a project owner can remove. A docket comment is 409.",
         ...mcpTool('delete_comment'),
       },
     },

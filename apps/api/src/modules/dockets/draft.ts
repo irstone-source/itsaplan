@@ -21,8 +21,9 @@ interface TraceEvent {
   event: { type: string; toolCallId?: string; toolCallName?: string; delta?: string };
 }
 
-// Agent text must not mention anyone when a person attaches it as their comment.
-const quiet = (text: string) => text.replace(/@/g, '@​');
+// Docket text must not mention anyone when it is posted as a person's comment. An '@'
+// already followed by the zero-width space is left as it is.
+export const quiet = (text: string) => text.replace(/@(?!\u200b)/g, '@\u200b');
 
 function duration(from: Date, to: Date): string {
   const seconds = Math.max(0, Math.round((to.getTime() - from.getTime()) / 1000));

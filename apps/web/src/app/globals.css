@@ -832,3 +832,11 @@ a.issue-ref {
 .document-comment-mark:hover {
   background-color: color-mix(in oklch, var(--primary) 22%, transparent);
 }
+
+[data-docket] {
+  page: docket;
+}
+@page docket {
+  size: A4;
+  margin: 16mm;
+}

@@ -82,6 +82,7 @@ Rates (from the 12-week resource plan, 6 hours = 1 day):
 | Repeatable work | Top of every open cycle page | The playbook items the cycle's month makes due, grouped committed → new → management, to add in one go or one by one; an item is added once per cycle. Each becomes a ticket under its initiative, valued at its price |
 | Capacity and reserve | Cycle strip; God mode → Billing | Planned hours against capacity (working days × hours per day × the project's people, or a figure set on the cycle), with a reserve (20% by default) kept free for step-change work nobody has planned; the breakdown splits value and hours by revenue class |
 | Client report | Cycle breakdown → the copy icon on a client | The client's delivered tickets with their value and what is still in progress, as markdown to paste to them |
+| Dockets | Ticket detail; Sidebar → Dockets; `/docket/<id>` | Each session or agent docket is stamped by the server with a number (`D-CON-12-001`), its time in UK and UTC, and a sha256 fingerprint over the text and the screenshot bytes; the docket page shows it branded, verifies it on open and saves as PDF. A lead approves (ticket done) or returns it with a note; a blocked docket labels the ticket "At risk" and notifies. The register lists a month's dockets with Delivered, Pending review, Blocked and Returned counts. Scope: `time-capture.md` section 8 |
 
 ## 4. How the team uses it
 

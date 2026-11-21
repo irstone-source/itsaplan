@@ -116,6 +116,32 @@ export async function notifyComment(
   await insertNotifications(rows, comment.id);
 }
 
+// Tells the given members about a comment as 'commented' when they do not watch the
+// issue: the watchers were told by notifyComment. Used for a docket's author and for the
+// people a blocked docket concerns.
+export async function notifyCommentTo(
+  projectId: number,
+  comment: { issueId: number; id: number; actorUserId: string | null },
+  userIds: (string | null)[],
+): Promise<void> {
+  const watchers = await watcherUserIds(projectId, comment.issueId);
+  const wanted = userIds.filter(
+    (id): id is string => id != null && id !== comment.actorUserId && !watchers.has(id),
+  );
+  const members = await keepProjectMembers(projectId, [...new Set(wanted)]);
+  await insertNotifications(
+    [...members].map((userId) => ({
+      userId,
+      projectId,
+      issueId: comment.issueId,
+      sourceActivityId: comment.id,
+      type: 'commented' as const,
+      actorUserId: comment.actorUserId,
+    })),
+    comment.id,
+  );
+}
+
 // Fan out the mentions an edit newly added to a comment. The handles the comment
 // already named are filtered out by the caller, so an edit never re-pings them, and
 // the watchers hear nothing (unlike a new comment, which would send 'commented').

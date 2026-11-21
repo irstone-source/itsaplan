@@ -115,8 +115,10 @@ export interface Attach {
   shots: string[];
   // Screenshot name → the URL it is embedded by.
   uploaded: Record<string, { id: string; url: string }>;
-  docketFile: boolean;
-  commented: boolean;
+  // The publicId of the uploaded docket markdown.
+  docketFile: string | null;
+  // The stamped docket Plan made from the session.
+  docket: { id: number; number: string } | null;
   blocksSent: boolean;
   outboxTrimmed: boolean;
 }

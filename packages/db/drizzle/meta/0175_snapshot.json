@@ -7436,6 +7436,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'agent'"
+        },
         "status": {
           "name": "status",
           "type": "text",
@@ -7443,11 +7450,132 @@
           "notNull": true,
           "default": "'draft'"
         },
+        "number": {
+          "name": "number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "client_key": {
+          "name": "client_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "evidence": {
+          "name": "evidence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "body": {
           "name": "body",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "author_user_id": {
+          "name": "author_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "device": {
+          "name": "device",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "session_started_at": {
+          "name": "session_started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "session_ended_at": {
+          "name": "session_ended_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "active_seconds": {
+          "name": "active_seconds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attachments": {
+          "name": "attachments",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "fingerprint": {
+          "name": "fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fingerprint_version": {
+          "name": "fingerprint_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stamped_at": {
+          "name": "stamped_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comment_id": {
+          "name": "comment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "flagged_at": {
+          "name": "flagged_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_status": {
+          "name": "review_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_by": {
+          "name": "reviewed_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_note": {
+          "name": "review_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_moved": {
+          "name": "review_moved",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -7490,6 +7618,48 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "issue_docket_author_client_key_uq": {
+          "name": "issue_docket_author_client_key_uq",
+          "columns": [
+            {
+              "expression": "issue_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "author_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "client_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "issue_docket_stamped_idx": {
+          "name": "issue_docket_stamped_idx",
+          "columns": [
+            {
+              "expression": "stamped_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -7519,6 +7689,45 @@
           "onDelete": "set null",
           "onUpdate": "no action"
         },
+        "issue_docket_author_user_id_user_id_fk": {
+          "name": "issue_docket_author_user_id_user_id_fk",
+          "tableFrom": "issue_docket",
+          "tableTo": "user",
+          "columnsFrom": [
+            "author_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "issue_docket_comment_id_issue_activity_id_fk": {
+          "name": "issue_docket_comment_id_issue_activity_id_fk",
+          "tableFrom": "issue_docket",
+          "tableTo": "issue_activity",
+          "columnsFrom": [
+            "comment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "issue_docket_reviewed_by_user_id_fk": {
+          "name": "issue_docket_reviewed_by_user_id_fk",
+          "tableFrom": "issue_docket",
+          "tableTo": "user",
+          "columnsFrom": [
+            "reviewed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
         "issue_docket_decided_by_user_id_fk": {
           "name": "issue_docket_decided_by_user_id_fk",
           "tableFrom": "issue_docket",
@@ -7534,12 +7743,32 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "issue_docket_number_unique": {
+          "name": "issue_docket_number_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "number"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {
         "issue_docket_status_check": {
           "name": "issue_docket_status_check",
           "value": "\"issue_docket\".\"status\" IN ('draft', 'attached', 'discarded')"
+        },
+        "issue_docket_kind_check": {
+          "name": "issue_docket_kind_check",
+          "value": "\"issue_docket\".\"kind\" IN ('session', 'agent')"
+        },
+        "issue_docket_outcome_check": {
+          "name": "issue_docket_outcome_check",
+          "value": "\"issue_docket\".\"outcome\" IN ('complete', 'blocked')"
+        },
+        "issue_docket_review_check": {
+          "name": "issue_docket_review_check",
+          "value": "\"issue_docket\".\"review_status\" IN ('pending', 'approved', 'returned')"
         }
       },
       "isRLSEnabled": false

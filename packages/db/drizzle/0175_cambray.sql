@@ -475,3 +475,62 @@ DO $$ BEGIN
     FOR EACH ROW EXECUTE FUNCTION rev_issue_child('issue_id', 'detail');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "kind" text DEFAULT 'agent' NOT NULL;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "number" text;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "client_key" text;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "outcome" text;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "evidence" text;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "author_user_id" text;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "device" text;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "session_started_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "session_ended_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "active_seconds" integer;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "attachments" jsonb DEFAULT '[]'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "fingerprint" text;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "stamped_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "comment_id" integer;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "review_status" text;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "reviewed_by" text;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "reviewed_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "review_note" text;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "issue_docket" ADD CONSTRAINT "issue_docket_author_user_id_user_id_fk" FOREIGN KEY ("author_user_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;
+EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "issue_docket" ADD CONSTRAINT "issue_docket_comment_id_issue_activity_id_fk" FOREIGN KEY ("comment_id") REFERENCES "public"."issue_activity"("id") ON DELETE set null ON UPDATE no action;
+EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "issue_docket" ADD CONSTRAINT "issue_docket_reviewed_by_user_id_fk" FOREIGN KEY ("reviewed_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;
+EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL;
+END $$;
+--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "fingerprint_version" integer;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "flagged_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "issue_docket" ADD COLUMN IF NOT EXISTS "review_moved" boolean;--> statement-breakpoint
+DROP INDEX IF EXISTS "issue_docket_client_key_uq";--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "issue_docket_author_client_key_uq" ON "issue_docket" USING btree ("issue_id","author_user_id","client_key");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "issue_docket_stamped_idx" ON "issue_docket" USING btree ("stamped_at" DESC NULLS LAST);--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "issue_docket" ADD CONSTRAINT "issue_docket_number_unique" UNIQUE("number");
+EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "issue_docket" ADD CONSTRAINT "issue_docket_kind_check" CHECK ("issue_docket"."kind" IN ('session', 'agent'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "issue_docket" ADD CONSTRAINT "issue_docket_outcome_check" CHECK ("issue_docket"."outcome" IN ('complete', 'blocked'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "issue_docket" ADD CONSTRAINT "issue_docket_review_check" CHECK ("issue_docket"."review_status" IN ('pending', 'approved', 'returned'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

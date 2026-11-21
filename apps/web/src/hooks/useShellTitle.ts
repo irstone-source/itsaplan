@@ -18,6 +18,7 @@ const SECTION_LABELS = {
   notifications: 'notifications',
   api: 'apiDocs',
   mcp: 'mcpServer',
+  dockets: 'dockets',
 } as const;
 
 // The tab title of a project route: the project and the section the route opens. A

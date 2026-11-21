@@ -11,8 +11,8 @@ import { useAttachDocket, useDiscardDocket } from '../../services/dockets.servic
 export default function IssueDocketCard({ docket }: { docket: Docket }) {
   const t = useTranslations('issue.dockets');
   const [open, setOpen] = useState(false);
-  const attach = useAttachDocket(docket.issueId);
-  const discard = useDiscardDocket(docket.issueId);
+  const attach = useAttachDocket(docket.issue.id);
+  const discard = useDiscardDocket(docket.issue.id);
   const busy = attach.isPending || discard.isPending;
   const relative = useRelativeTime();
 

@@ -88,6 +88,7 @@
   "releases": "Releases",
   "playbook": "Playbook",
   "time": "Time",
+  "dockets": "Dockets",
   "myTime": "My time",
   "timeSetup": "Time capture setup"
 }

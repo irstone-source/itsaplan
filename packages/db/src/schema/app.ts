@@ -2375,8 +2375,19 @@ export const issueWorklog = pgTable(
   ],
 );
 
-// A record of an agent run on an issue, drafted when the run ends. It reaches the
-// issue as a comment only when a person attaches it.
+// An attachment a docket covers, with the sha256 of its bytes read by the server at stamping.
+export interface DocketAttachment {
+  publicId: string;
+  filename: string;
+  contentType: string;
+  bytes: number;
+  sha256: string;
+}
+
+// Evidence that work on an issue was done or is blocked. A session docket comes from the
+// time agent and is stamped when it is created; an agent docket is drafted when an agent's
+// run ends and is stamped when a person attaches it. A stamped docket has a number, the
+// server time and a fingerprint over its content, and is posted to the issue as a comment.
 export const issueDocket = pgTable(
   'issue_docket',
   {
@@ -2385,15 +2396,50 @@ export const issueDocket = pgTable(
       .notNull()
       .references(() => issue.id, { onDelete: 'cascade' }),
     agentRunId: integer('agent_run_id').references(() => agentRun.id, { onDelete: 'set null' }),
+    kind: text('kind').notNull().default('agent'),
     status: text('status').notNull().default('draft'),
+    // D-<issue identifier>-NNN, issued at stamping.
+    number: text('number').unique(),
+    // The time agent's session id: a repeated create returns the docket it made.
+    clientKey: text('client_key'),
+    outcome: text('outcome'),
+    evidence: text('evidence'),
     body: text('body').notNull(),
+    authorUserId: text('author_user_id').references(() => user.id, { onDelete: 'set null' }),
+    device: text('device'),
+    sessionStartedAt: timestamp('session_started_at', { withTimezone: true }),
+    sessionEndedAt: timestamp('session_ended_at', { withTimezone: true }),
+    activeSeconds: integer('active_seconds'),
+    attachments: jsonb('attachments').$type<DocketAttachment[]>().notNull().default([]),
+    // HMAC-SHA256 under a key derived from APP_ENCRYPTION_KEY; the version names the
+    // canonical form it covers.
+    fingerprint: text('fingerprint'),
+    fingerprintVersion: integer('fingerprint_version'),
+    stampedAt: timestamp('stamped_at', { withTimezone: true }),
+    commentId: integer('comment_id').references(() => issueActivity.id, { onDelete: 'set null' }),
+    // When a blocked docket's assignee and leads were told and the issue labelled at risk.
+    flaggedAt: timestamp('flagged_at', { withTimezone: true }),
+    reviewStatus: text('review_status'),
+    reviewedBy: text('reviewed_by').references(() => user.id, { onDelete: 'set null' }),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    reviewNote: text('review_note'),
+    // Whether the review moved the issue to its column; null until reviewed.
+    reviewMoved: boolean('review_moved'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     decidedBy: text('decided_by').references(() => user.id, { onDelete: 'set null' }),
     decidedAt: timestamp('decided_at', { withTimezone: true }),
   },
   (t) => [
     check('issue_docket_status_check', sql`${t.status} IN ('draft', 'attached', 'discarded')`),
+    check('issue_docket_kind_check', sql`${t.kind} IN ('session', 'agent')`),
+    check('issue_docket_outcome_check', sql`${t.outcome} IN ('complete', 'blocked')`),
+    check(
+      'issue_docket_review_check',
+      sql`${t.reviewStatus} IN ('pending', 'approved', 'returned')`,
+    ),
     index('issue_docket_issue_idx').on(t.issueId, t.id.desc()),
+    uniqueIndex('issue_docket_author_client_key_uq').on(t.issueId, t.authorUserId, t.clientKey),
+    index('issue_docket_stamped_idx').on(t.stampedAt.desc()),
   ],
 );
 

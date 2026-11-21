@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afkBucketFor, isWebBucket, isWindowBucket } from './aw';
@@ -184,7 +185,8 @@ export async function startSession(
   }
   const now = deps.now();
   const session: Session = {
-    id: `${issue.identifier}-${now.getTime()}`,
+    // The id is the docket's clientKey, so it is not guessable.
+    id: `${issue.identifier}-${now.getTime()}-${randomBytes(6).toString('hex')}`,
     identifier: issue.identifier,
     issueId: issue.id,
     projectId: issue.projectId,
@@ -370,7 +372,12 @@ export function docketMarkdown(docket: Docket, t: DocketText): string {
   }
   if (t.evidence.trim()) {
     const heading = t.outcome === 'blocked' ? 'Blocker' : 'Evidence this is complete';
-    lines.push('', `### ${heading}`, '', t.evidence.trim());
+    // Shown as the person typed it: escaped line by line, so it renders no markup.
+    const evidence = t.evidence
+      .trim()
+      .split('\n')
+      .map((line) => (line.trim() ? inert(line) : ''));
+    lines.push('', `### ${heading}`, '', ...evidence);
   }
   if (t.shots.length) {
     lines.push('', '### Screenshots', '');
@@ -441,8 +448,8 @@ async function approve(
     blocks: docket.blocks.filter((b) => keys.has(b.sourceKey)),
     shots: shots.filter((s) => ticked.has(s.name)).map((s) => s.name),
     uploaded: {},
-    docketFile: false,
-    commented: false,
+    docketFile: null,
+    docket: null,
     blocksSent: false,
     outboxTrimmed: false,
   };
@@ -510,15 +517,32 @@ export async function finishSession(
     shots: attach.shots.map((name) => ({ name, url: attach.uploaded[name].url })),
   });
   const filename = docketFilename(session, attach.endedAt);
-  if (!attach.docketFile) {
-    await deps.client.uploadAttachment(issue, filename, 'text/markdown', Buffer.from(markdown));
-    await step(() => (attach.docketFile = true));
+  if (typeof attach.docketFile !== 'string') {
+    const file = await deps.client.uploadAttachment(
+      issue,
+      filename,
+      'text/markdown',
+      Buffer.from(markdown),
+    );
+    await step(() => (attach.docketFile = file.id));
     deps.log(`attached ${filename}`);
   }
-  if (!attach.commented) {
-    await deps.client.comment(issue, markdown);
-    await step(() => (attach.commented = true));
-    deps.log('posted the docket as a comment');
+  if (!attach.docket) {
+    const stamped = await deps.client.createDocket(issue, {
+      clientKey: session.id,
+      outcome: attach.outcome,
+      evidence: attach.evidence,
+      body: markdown,
+      device: config.device,
+      sessionStartedAt: session.startedAt,
+      sessionEndedAt: attach.endedAt,
+      activeSeconds: Math.floor(attach.activeMs / 1000),
+      attachmentIds: [
+        ...attach.shots.map((name) => attach.uploaded[name].id),
+        attach.docketFile as string,
+      ],
+    });
+    await step(() => (attach.docket = { id: stamped.id, number: stamped.number }));
   }
   if (!attach.blocksSent) {
     if (attach.blocks.length) {
@@ -536,16 +560,11 @@ export async function finishSession(
   }
 
   if (attach.outcome === 'blocked') {
-    deps.log(`${session.identifier} stays open: the docket records the blocker`);
-  } else if (await deps.confirm(`Complete ${session.identifier}? (y/N)`)) {
-    const columns = await deps.client.columns(parseIdentifier(session.identifier).key);
-    const done = columns.find((c) => c.stateType === 'completed');
-    if (done) {
-      await deps.client.moveIssue(issue, done);
-      deps.log(`${session.identifier} moved to "${done.name}"`);
-    } else {
-      deps.log('this project has no completed column');
-    }
+    deps.log(
+      `${session.identifier} stays open: docket ${attach.docket!.number} records the blocker`,
+    );
+  } else {
+    deps.log(`sent for review: ${attach.docket!.number}`);
   }
   if (options.keep) deps.log(`session kept in ${shotsDir(session.id)}`);
   else await deleteSession(session.id);

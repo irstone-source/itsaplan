@@ -62,12 +62,15 @@ describe('agent run dockets', () => {
     expect(res.data).toHaveLength(1);
     const docket = res.data![0]!;
     expect(docket).toMatchObject({
-      issueId: issue.id,
-      agentRunId: run.id,
+      kind: 'agent',
+      issue: { id: issue.id, identifier: 'RUN-1' },
       status: 'draft',
-      decidedByUserId: null,
-      decidedAt: null,
+      number: null,
+      stampedAt: null,
+      fingerprint: null,
+      reviewStatus: null,
     });
+    expect(run.id).toBeGreaterThan(0);
     expect(docket.body).toContain('Agent run docket: Runner');
     expect(docket.body).toContain('- Status: success');
     expect(docket.body).toContain('- Tokens: 1200 in, 300 out');
@@ -80,19 +83,32 @@ describe('agent run dockets', () => {
     expect(await comments(api, issue.id)).toHaveLength(1);
   }, 20_000);
 
-  it('attach writes one comment by the person; a second decision is 409', async () => {
+  it('attach stamps the docket and writes one comment; a second decision is 409', async () => {
     const { api, runner, issue } = await finishedRun();
     const [docket] = (await api.issues({ issueId: issue.id }).dockets.get()).data!;
     const attached = await api.dockets({ docketId: docket!.id }).attach.post();
     expect(attached.status).toBe(200);
     expect(attached.data).toMatchObject({
       status: 'attached',
-      decidedByUserId: expect.any(String),
+      number: 'D-RUN-1-001',
+      outcome: 'complete',
+      evidence: null,
+      attachments: [],
+      author: { name: 'Runner' },
+      reviewStatus: 'pending',
+      canReview: true,
     });
-    expect(attached.data!.decidedAt).toBeInstanceOf(Date);
+    expect(attached.data!.fingerprint).toMatch(/^[0-9a-f]{64}$/);
+    expect(attached.data!.stampedAt).toBeInstanceOf(Date);
+    expect(attached.data!.sessionStartedAt).toBeInstanceOf(Date);
     const items = await comments(api, issue.id);
     expect(items).toHaveLength(2);
-    expect(items[0]).toMatchObject({ kind: 'comment', body: docket!.body });
+    expect(items[0]!.kind).toBe('comment');
+    expect(items[0]!.body).toStartWith('**Evidence docket `D-RUN-1-001`** · stamped ');
+    expect(items[0]!.body).toContain(`[Open docket](/docket/${docket!.id})\n\n${docket!.body}`);
+    expect((await api.dockets({ docketId: docket!.id }).verify.get()).data!.status).toBe(
+      'verified',
+    );
     // The agent's own @handle in its output does not start another run.
     expect((await runner['agent-runs'].claim.post()).data!.run).toBeNull();
 
@@ -114,14 +130,16 @@ describe('agent run dockets', () => {
     );
   }, 20_000);
 
-  it('keeps dockets from a reader and a non-member', async () => {
+  it('keeps drafts from a reader and dockets from a non-member', async () => {
     const { api, issue } = await finishedRun();
     const [docket] = (await api.issues({ issueId: issue.id }).dockets.get()).data!;
     const role = (
       await createRole(api, 'RUN', { name: 'Reader', permissions: { work_items: { read: true } } })
     ).data!;
     const reader = await addProjectMember(api, 'RUN', role.id);
-    expect((await reader.issues({ issueId: issue.id }).dockets.get()).status).toBe(403);
+    expect((await reader.issues({ issueId: issue.id }).dockets.get()).data).toEqual([]);
+    expect((await reader.dockets({ docketId: docket!.id }).get()).status).toBe(403);
+    expect((await reader.dockets({ docketId: docket!.id }).verify.get()).status).toBe(409);
     expect((await reader.dockets({ docketId: docket!.id }).attach.post()).status).toBe(403);
     expect((await reader.dockets({ docketId: docket!.id }).discard.post()).status).toBe(403);
 
@@ -130,5 +148,16 @@ describe('agent run dockets', () => {
     expect((await stranger.dockets({ docketId: docket!.id }).attach.post()).status).toBe(403);
     expect((await api.dockets({ docketId: docket!.id + 1000 }).attach.post()).status).toBe(404);
     expect((await api.issues({ issueId: issue.id }).dockets.get()).data![0]!.status).toBe('draft');
+
+    // Once stamped, a reader sees it, but cannot review it.
+    await api.dockets({ docketId: docket!.id }).attach.post();
+    const seen = await reader.issues({ issueId: issue.id }).dockets.get();
+    expect(seen.data!.map((d) => d.number)).toEqual(['D-RUN-1-001']);
+    expect(seen.data![0]!.canReview).toBe(false);
+    expect((await reader.dockets({ docketId: docket!.id }).get()).status).toBe(200);
+    expect(
+      (await reader.dockets({ docketId: docket!.id }).review.post({ decision: 'approve' })).status,
+    ).toBe(403);
+    expect((await stranger.dockets({ docketId: docket!.id }).get()).status).toBe(403);
   }, 20_000);
 });

@@ -103,11 +103,11 @@ const COLUMNS = [
 
 const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 
-// failCommentOnce makes the first comment POST answer 400.
-function fakePlan(failCommentOnce = false): { fetch: Fetch; requests: Request[] } {
+// failDocketOnce makes the first docket POST answer 400.
+function fakePlan(failDocketOnce = false): { fetch: Fetch; requests: Request[] } {
   const requests: Request[] = [];
   let uploads = 0;
-  let failComment = failCommentOnce;
+  let failDocket = failDocketOnce;
   const fetch: Fetch = async (input, init) => {
     const path = new URL(String(input)).pathname;
     const method = init?.method ?? 'GET';
@@ -133,9 +133,12 @@ function fakePlan(failCommentOnce = false): { fetch: Fetch; requests: Request[] 
         201,
       );
     }
-    if (path === '/issues/42/comments' && failComment) {
-      failComment = false;
-      return reply({ error: 'bad' }, 400);
+    if (path === '/issues/42/dockets') {
+      if (failDocket) {
+        failDocket = false;
+        return reply({ error: 'bad' }, 400);
+      }
+      return reply({ id: 9, number: 'D-CON-158-001' }, 201);
     }
     if (path === '/time/agent/blocks') {
       const blocks = (json as { blocks: unknown[] }).blocks;
@@ -166,7 +169,7 @@ describe('work session', () => {
       now: () => clock,
       confirm: async (q) => {
         questions.push(q);
-        return q.startsWith('Complete');
+        return false;
       },
       openUrl: (url) => opened(url),
       log: () => {},
@@ -197,7 +200,10 @@ describe('work session', () => {
     clock = t('10:00');
     const session = await startSession(deps, 'con-158', 'claude');
     expect(session.identifier).toBe('CON-158');
+    expect(session.id).toMatch(/^CON-158-\d+-[0-9a-f]{12}$/);
     expect(questions).toEqual(['Move CON-158 to "Doing"? (y/N)']);
+    const logs: string[] = [];
+    deps.log = (m) => logs.push(m);
     for (const at of ['10:05', '10:10', '10:15']) {
       clock = t(at);
       expect(await shoot(cfg)).toBe('taken');
@@ -248,11 +254,22 @@ describe('work session', () => {
       ['POST', '/issues/42/attachments', shots[0]],
       ['POST', '/issues/42/attachments', shots[2]],
       ['POST', '/issues/42/attachments', 'docket-CON-158-2026-11-02.md'],
-      ['POST', '/issues/42/comments', null],
+      ['POST', '/issues/42/dockets', null],
       ['POST', '/time/agent/blocks', null],
-      ['PATCH', '/issues/42', null],
     ]);
-    const comment = (after[3].json as { body: string }).body;
+    const docketJson = after[3].json as Record<string, unknown>;
+    expect(docketJson).toEqual({
+      clientKey: session.id,
+      outcome: 'complete',
+      evidence: 'Wrote the docket flow.',
+      body: expect.any(String),
+      device: 'mac',
+      sessionStartedAt: t('10:00').toISOString(),
+      sessionEndedAt: t('10:30').toISOString(),
+      activeSeconds: expect.any(Number),
+      attachmentIds: [uuid(1), uuid(2), uuid(3)],
+    });
+    const comment = docketJson.body as string;
     expect(comment).toContain('## Evidence docket: CON-158\n');
     expect(comment).toContain('### Evidence this is complete');
     expect(comment).toContain('Who: Ian Stone (device mac)');
@@ -264,8 +281,8 @@ describe('work session', () => {
     const sent = (after[4].json as { blocks: Array<Block & { issueId: number }> }).blocks;
     expect(sent.map((b) => b.sourceKey)).toEqual([keys[0], keys[2]]);
     expect(sent.every((b) => b.issueId === 42)).toBe(true);
-    expect(after[5].json).toEqual({ columnId: 3 });
-    expect(questions[1]).toBe('Complete CON-158? (y/N)');
+    expect(questions).toHaveLength(1);
+    expect(logs).toContain('sent for review: D-CON-158-001');
 
     expect(existsSync(sessionDir(session.id))).toBe(false);
     expect(await openSession()).toBeNull();
@@ -429,11 +446,13 @@ describe('screenshots', () => {
     expect(blocked.status).toBe(200);
     await finishing;
 
-    const comment = plan.requests.find((r) => r.path === '/issues/42/comments')!;
-    const body = (comment.json as { body: string }).body;
-    expect(body).toContain('## Evidence docket: CON-158 (blocked)');
-    expect(body).toContain('### Blocker\n\nWaiting on Chris to sign off');
-    expect(questions.some((q) => q.startsWith('Complete'))).toBe(false);
+    const docket = plan.requests.find((r) => r.path === '/issues/42/dockets')!;
+    const sent = docket.json as { body: string; outcome: string; evidence: string };
+    expect(sent.outcome).toBe('blocked');
+    expect(sent.evidence).toBe('Waiting on Chris to sign off');
+    expect(sent.body).toContain('## Evidence docket: CON-158 (blocked)');
+    expect(sent.body).toContain('### Blocker\n\nWaiting on Chris to sign off');
+    expect(questions).toHaveLength(1);
     expect(plan.requests.filter((r) => r.method === 'PATCH').map((r) => r.json)).toEqual([
       { columnId: 2 },
     ]);
@@ -674,20 +693,20 @@ describe('review fixes', () => {
         device: 'mac',
         blocks: [block],
         outcome: 'complete',
-        evidence: 'Thanks @ian',
+        evidence: `Thanks @ian\n\n${EVIL}`,
         shots: [],
       },
     );
-    expect(md.replace('Thanks @ian', '')).not.toMatch(/@(?!\u200b)/);
+    expect(md).not.toMatch(/@(?!\u200b)/);
     // What is left once every backslash-escaped character is removed is what renders as
     // markup: no image, link, HTML tag or autolink.
-    const live = md.replace('Thanks @ian', '').replace(/\\./g, '');
+    const live = md.replace(/\\./g, '');
     expect(live).not.toMatch(/[<>[\]!]/);
     expect(live).not.toContain('://');
     expect(live).not.toContain('www.');
     expect(md).toContain('@\u200bzak');
     expect(md).toContain('Agent: @\u200bbot');
-    expect(md).toContain('Thanks @ian');
+    expect(md).toContain('Thanks @\u200bian');
   });
 
   it('takes no screenshot without an AFK watcher, or when its state is stale', async () => {
@@ -789,7 +808,7 @@ describe('review fixes', () => {
       body: JSON.stringify({ blocks: keys, shots, evidence: 'Done.' }),
     });
     await expect(first).rejects.toThrow('failed with 400');
-    expect((await openSession())?.attach?.commented).toBe(false);
+    expect((await openSession())?.attach?.docket).toBeNull();
 
     clock = t('10:45');
     await finishSession(deps, config(), 'CON-158', { keep: false });
@@ -798,7 +817,9 @@ describe('review fixes', () => {
     for (const name of [...shots, 'docket-CON-158-2026-11-02.md']) {
       expect(posts.filter((r) => r.file === name)).toHaveLength(1);
     }
-    expect(posts.filter((r) => r.path === '/issues/42/comments')).toHaveLength(2);
+    const dockets = posts.filter((r) => r.path === '/issues/42/dockets');
+    expect(dockets).toHaveLength(2);
+    expect(dockets[1].json).toEqual(dockets[0].json);
     expect(posts.filter((r) => r.path === '/time/agent/blocks')).toHaveLength(1);
     expect(await openSession()).toBeNull();
   });

@@ -27,11 +27,12 @@ day each.
    `plan-time start CON-12` and `plan-time finish CON-12`. The session records activity
    and a screenshot every 5 minutes on the computer, and finish builds an **evidence
    docket**: timeline, apps and sites, screenshots, and either the evidence that the work is
-   complete or the blocker. The person reviews it and attaches it to the ticket; a blocked
-   ticket is not offered for completion. The session's blocks are sent already allocated to the
-   ticket.
+   complete or the blocker. The person reviews it and attaches it to the ticket. The server
+   stamps it with a number, its own time and a fingerprint (section 8); a complete docket
+   goes to a lead for review, a blocked one marks the ticket "At risk". The session's blocks
+   are sent already allocated to the ticket.
 7. An AI agent's run on an issue gets a draft docket on the server when it ends. A person
-   attaches it to the issue as a comment or discards it.
+   attaches it, which stamps it and posts it as a comment, or discards it.
 
 The Rize sync (`modules/rize`) stays in the code but is dormant; time capture replaces it
 as the source of time.
@@ -112,7 +113,8 @@ as the source of time.
 **`issue_worklog.time_block_id`** (unique, FK cascade): a confirmed block that has a
 ticket mirrors as one worklog, in the same way as `rize_entry_id`.
 
-**`issue_docket`** — a draft record of an AI agent's run on an issue:
+**`issue_docket`** — a docket of work on an issue: a session docket from `plan-time finish`,
+or a draft of an AI agent's run. The stamp columns are in section 8.
 - `id`, `issue_id` (FK, cascade), `agent_run_id` (FK, set null)
 - `status`: `draft` | `attached` | `discarded`
 - `body`: the markdown that becomes the comment
@@ -166,11 +168,12 @@ a block offers "Always ignore". An owner can promote a personal rule to a team r
     and asks before moving the ticket to its project's first started column.
   - `pause`, `resume`, `discard` (deletes the session folder).
   - `finish CON-12`: builds the docket from the session and opens the review page. On
-    **Attach** the ticked screenshots are uploaded as attachments, the docket is posted as
-    a comment and uploaded as `docket-CON-12-<date>.md`, and the session's blocks are sent
-    with `issueId`, so they are confirmed to the ticket. It then asks whether to move the
-    ticket to its completed column. The session folder is deleted afterwards (`--keep`
-    retains it).
+    **Attach** the ticked screenshots are uploaded as attachments, the docket is uploaded
+    as `docket-CON-12-<date>.md`, `POST /issues/:id/dockets` stamps it (the session id is
+    its idempotency key, so a resumed Attach does not stamp twice), and the session's
+    blocks are sent with `issueId`, so they are confirmed to the ticket. A complete docket
+    logs "sent for review: <number>"; the ticket moves to its completed column when a lead
+    approves it. The session folder is deleted afterwards (`--keep` retains it).
   - `sent`: prints the request log.
   - `install-autostart`: opt-in only, a launchd agent or a Windows Startup shortcut. Ian's
     Mac never uses it.
@@ -255,11 +258,11 @@ ignored blocks older than 7, once an hour.
   (from `agent_run_trace`), and the output, cut at 4,000 characters. An `@` in the agent's
   text is written so that it mentions nobody when the docket is attached. A failure to
   draft is logged and never fails the run.
-- `GET /issues/:issueId/dockets`: the issue's dockets, newest first (`work_items` edit:
-  a draft holds agent output, tool and file names and errors nobody has approved, and an
-  attached docket is already a comment).
-- `POST /dockets/:id/attach`: adds the body to the issue as the caller's comment and marks
-  it attached (`work_items` edit).
+- `GET /issues/:issueId/dockets`: the issue's dockets, newest first (`work_items` read).
+  Drafts and discarded dockets are listed only to callers with `work_items` edit: they hold
+  agent output, tool and file names and errors nobody has approved.
+- `POST /dockets/:id/attach`: stamps the draft (section 8), adds it to the issue as the
+  caller's comment and marks it attached (`work_items` edit).
 - `POST /dockets/:id/discard`: marks it discarded; nothing reaches the issue (`work_items`
   edit).
 - Only a draft can be decided; a second decision is 409.
@@ -268,6 +271,8 @@ ignored blocks older than 7, once an hour.
 - `get_my_time`, `allocate_time_block`, `split_time_block`, `capture_task_from_time`
 - `confirm_my_day`, `list_time_rules`, `add_time_rule`
 - `list_issue_dockets`, `attach_docket`, `discard_docket`
+- `create_session_docket`, `get_docket`, `verify_docket`, `list_project_dockets`,
+  `review_docket`
 
 ## 7. Web
 
@@ -293,14 +298,96 @@ ignored blocks older than 7, once an hour.
   computer", asking the person to run `plan-time review`. The 2 working days are counted
   from the last block, and from the first device setup when no block has arrived. Either
   can be dismissed for 7 days.
-- **Issue detail.** A draft agent docket shows above the activity feed as "Agent docket
-  waiting for approval", with a collapsed preview and **Attach** and **Discard**. Only
-  people who can edit the issue see it.
+- **Issue detail.** Above the activity feed: the issue's stamped dockets (section 8), and
+  each draft agent docket as "Agent docket waiting for approval", with a collapsed preview
+  and **Attach** and **Discard**. Only people who can edit the issue see the drafts.
 - **Time page** (Consulting): a "Team setup" list (who has a device, last seen,
   confirmed this week) for owners, and the client totals now include captured time.
-- **i18n.** `timecap` namespace, and `issue.dockets`, in every locale.
+- **i18n.** `timecap` and `dockets` namespaces, and `issue.dockets`, in every locale.
 
-## 8. Tests
+## 8. Stamped dockets
+
+A docket is the record that a piece of work was done, or that it is blocked. Once
+stamped it cannot change without the change showing.
+
+**Stamp.** The server stamps a session docket when the agent sends it, and an agent docket
+when a person attaches it. Stamping sets:
+- `number`: `D-<ticket>-<NNN>`, for example `D-CON-12-001`; NNN counts the ticket's stamped
+  dockets
+- `stamped_at`: the server's clock, never the computer's
+- each attachment's `sha256`, computed by the server from the stored bytes
+- `fingerprint`: an HMAC-SHA256 of the canonical JSON `{ number, issueId, kind, outcome,
+  evidence, body, stampedAt, authorUserId, device, sessionStartedAt, sessionEndedAt,
+  activeSeconds, attachments: [{ publicId, filename, contentType, bytes, sha256 }] }`, keys
+  in that order, under a key derived from `APP_ENCRYPTION_KEY`; `fingerprint_version` (1)
+  names that form. Someone who can write the database cannot make a matching fingerprint.
+  **Changing `APP_ENCRYPTION_KEY` makes every docket stamped before it fail verification.**
+- the comment on the ticket: a header line with the number in a code span, the stamp in
+  Europe/London and UTC, the outcome and a link to the docket page, then the body. No one
+  can edit or delete this comment (409)
+
+A session body is cleaned before it is stamped: an image is kept only when it points at
+this instance's `/media/attachments/<id>/raw`, raw HTML is escaped, and every `@` is
+written so that it mentions nobody. The agent also escapes the evidence text, so it shows
+as typed.
+
+**Create** (`POST /issues/:issueId/dockets`, `work_items` edit). `clientKey` is the agent's
+session id, which ends in random hex. A repeat by the same person with the same key
+returns the same docket (200) and only finishes a step an earlier try left undone; the
+same key from another person is 409. The session must have ended no more than 2 minutes
+in the future and started no more than 30 days ago, and `activeSeconds` cannot exceed its
+length (400).
+
+Other columns on `issue_docket`: `kind` (`session` | `agent`), `client_key` (the session
+id, unique per issue and author), `outcome` (`complete` | `blocked`), `evidence` (the
+evidence or the blocker), `author_user_id`, `device`, `session_started_at`,
+`session_ended_at`, `active_seconds`, `attachments` (jsonb), `comment_id`, `flagged_at`
+(when a blocked docket's people were told), `review_status`, `reviewed_by`, `reviewed_at`,
+`review_note`, `review_moved`.
+
+**Verify.** `GET /dockets/:id/verify` recomputes the fingerprint, compares the posted
+comment with what was posted, and reads every attachment's bytes again, one at a time. It
+answers `verified`, or `changed` with what differs: the docket's details, a comment that was
+edited or deleted, or an attachment that is missing or whose bytes no longer match. A store
+error other than a missing file is 502 (could not be checked). The attachment result is kept
+in memory for 5 minutes per docket while no attachment is replaced.
+
+**Docket page** (`/docket/<id>`, signed in, outside the app shell). The instance logo and
+name, "Evidence docket", the number, and the stamp in UK time and UTC; the ticket, client,
+person and device (or agent), the session in UK time and its active time; the outcome
+(Complete green, Blocked amber), the evidence or blocker, the review state; the timeline
+and apps tables; each screenshot full width with its file name and short sha256; and at
+the foot the full fingerprint and the result of a verify run when the page opens.
+**Save as PDF** prints the page: A4, light colours, no buttons, screenshots from a new page.
+
+**Review.** A complete docket is stamped `pending`; a blocked one is not reviewed.
+`POST /dockets/:id/review` `{ decision: 'approve' | 'return', note? }`, for God mode or a
+project member with `workflow_config` edit, on a pending docket only (409 otherwise):
+- the docket's author cannot review it (403), God included
+- approve moves the ticket to the project's first completed column and removes its "At
+  risk" label, unless a blocked docket was stamped after it
+- return needs a note; it moves the ticket to the first started column and posts
+  "Returned by <name>: <note>"
+- either notifies the docket's author
+- when the ticket cannot move (no such column, or a hard WIP limit), the comment says
+  "(ticket not moved: <reason>)" and the docket's `moved` is false
+- if a step fails, the comment, the move and the labels are put back and the docket is
+  pending again
+
+On the ticket, a reviewer sees **Approve** and **Return** on each pending docket; Return
+asks for the note.
+
+**Blocked.** A blocked docket adds the label "At risk" to the ticket (created in the
+project when missing) and notifies the ticket's assignee and the project's
+`workflow_config` editors.
+
+**Register** (sidebar → Dockets, `/<team>/<project>/dockets`;
+`GET /projects/:projectKey/dockets?month=&initiativeId=&outcome=&review=`): a month's
+stamped dockets, newest first, filtered by client, outcome and review. Counts at the top:
+Delivered (approved), Pending review, Blocked, Returned. Each row links to its docket
+page; **Check** runs verify on that row only.
+
+## 9. Tests
 
 - **API integration:**
   - upload is idempotent and never overwrites a confirmed block
@@ -329,7 +416,7 @@ ignored blocks older than 7, once an hour.
 - **Rendered check:** the local stack with a fake ActivityWatch server; screenshots of
   My time, Setup, the Today banner, and the Time page team list.
 
-## 9. Rollout
+## 10. Rollout
 
 1. Deploy as v1.5.0-cambray.3.
 2. Ian sends the notice.
