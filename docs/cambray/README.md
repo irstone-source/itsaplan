@@ -13,9 +13,9 @@ the instance holds, how the team uses it, and how it is changed and deployed.
 | Sign-in | Google (Cambray Workspace accounts). Email and password sign-in is off. |
 | Brand | "Cambray", accent #00E5CC, ring mark on a dark tile (`scripts/cambray-mark-tile.svg`); light theme: the press kit "Dark on Light" ink mark (#1A1A1A) on a white tile (`scripts/cambray-mark-tile-light.svg`) |
 | Hosting | Railway project `itsaplan`: services `api`, `web`, `worker`, `bot`, `postgres` |
-| Code | github.com/irstone-source/itsaplan, branch `feat/v1.5-cambray` (`feat/v1.4-cambray` is the pre-v1.5 line) |
+| Code | github.com/irstone-source/itsaplan, branch `feat/v1.10-cambray`; `feat/evidence-dockets` holds v1.10.0-cambray.2 on top of it |
 | Images | built in the public mirror github.com/irstone-source/itsaplan-images (AGPL source) |
-| Version | upstream v1.5.0 plus the Cambray changes, released as `v1.5.0-cambray.N` |
+| Version | upstream v1.10.0 plus the Cambray changes, released as `v1.10.0-cambray.N`. Pending: `v1.10.0-cambray.2` (evidence dockets: approval-gated time capture, ticket sessions with screenshots, agent run dockets) |
 
 ## 2. How the work is organised
 
@@ -77,7 +77,7 @@ Rates (from the 12-week resource plan, 6 hours = 1 day):
 | Revenue class, fee and hours | Initiative £/day pill | Committed (retained income that must be delivered), New (a new client) or Management (MGM, running the consultancy), the monthly retainer fee, and the hours a month allocated to the client |
 | Hours limit | Playbook, under each client; Time page | Hours this month (captured time, plus Rize while it is on) against the client's limit: red flag at 60%, down tools at 70% |
 | My time | Sidebar → My time (`/time/my`) | Yesterday's blocks of activity and calls from your own computer, each with a suggested ticket or client and its confidence: accept, change, split, ignore or capture as a task; "Confirm suggested" for everything at 85 or more; a Rules tab for the mappings learned from your corrections. Only you see your blocks; a past week is read-only |
-| Time capture setup | Sidebar → My time → Setup (`/time/setup`); Today banner | Four checked steps: install ActivityWatch, create an API key, install the `plan-time` agent (served at `/plan-time.mjs`), first sync; plus iPhone calls on a Mac with `--calls`. Scope: `time-capture.md`; staff notice: `time-capture-notice.md` |
+| Time capture setup | Sidebar → My time → Setup (`/time/setup`); Today banner | Five checked steps: install ActivityWatch, create an API key, install the `plan-time` agent (served at `/plan-time.mjs`), run watch, first review; plus Screen Recording and iPhone calls on a Mac. Scope: `time-capture.md`; staff notice: `time-capture-notice.md` |
 | Team setup | Time page (owners) | Who has a device, when it was last seen, confirmed and pending hours this week |
 | Repeatable work | Top of every open cycle page | The playbook items the cycle's month makes due, grouped committed → new → management, to add in one go or one by one; an item is added once per cycle. Each becomes a ticket under its initiative, valued at its price |
 | Capacity and reserve | Cycle strip; God mode → Billing | Planned hours against capacity (working days × hours per day × the project's people, or a figure set on the cycle), with a reserve (20% by default) kept free for step-change work nobody has planned; the breakdown splits value and hours by revenue class |
@@ -138,8 +138,10 @@ them (God mode → Users → Add to projects).
 - **Time capture** (`plan-time` on each person's computer): every 15 minutes the agent
   reads ActivityWatch (and, with `--calls`, the iPhone calls iCloud syncs to a Mac), merges
   the raw activity into blocks of app, window title, website domain, start and end, drops
-  idle time and the person's private list, and posts the blocks to the api with the person's
-  API key. The api suggests a ticket or a client for each block: a ticket id in the title,
+  idle time and the person's private list, and keeps the blocks on the computer. The person
+  approves them with `plan-time review`, which posts them to the api with the person's API
+  key. `plan-time start` / `finish` on a ticket adds screenshots and an evidence docket the
+  person attaches to the ticket. The api suggests a ticket or a client for each block: a ticket id in the title,
   then a rule, then the person's in-progress ticket, then a call whose contact matches a
   client. The person reviews the day in **My time** (or in Claude through the MCP tools
   `get_my_time`, `allocate_time_block`, `split_time_block`, `capture_task_from_time`,
@@ -148,7 +150,14 @@ them (God mode → Users → Add to projects).
   read-only to its person. The api deletes pending blocks after 30 days and ignored blocks
   after 7, once an hour. Design: `time-capture.md`.
 - **Today banner**: with no device seen in the last 24 hours, Today shows "Set up time
-  capture", which opens the Setup page; dismissing it hides it for 7 days on that browser.
+  capture", which opens the Setup page; with a device seen but no block for 2 working days,
+  it asks the person to run `plan-time review` (counted from the first device setup when
+  no block has arrived). Dismissing it hides it for 7 days on that
+  browser.
+- **Agent dockets**: when an AI agent's run of an issue ends, the api drafts a docket of
+  the run. The issue shows it above the activity feed, to people who can edit the issue
+  only, until one of them attaches it as a comment or discards it (MCP: `list_issue_dockets`, `attach_docket`,
+  `discard_docket`). Design: `time-capture.md`.
 - **Team setup** (Time page, owners): each project member with their devices, when each
   was last seen, and confirmed and pending hours this week.
 - **Rize sync** (God mode → Integrations → Rize): dormant. Time capture is the source of

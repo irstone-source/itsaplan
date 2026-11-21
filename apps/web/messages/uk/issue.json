@@ -575,5 +575,14 @@
     "amount": "Сума (£)",
     "useEstimate": "Рахувати за оцінкою × ставкою",
     "set": "Задати"
+  },
+  "dockets": {
+    "waiting": "Agent docket waiting for approval",
+    "show": "Show all",
+    "hide": "Show less",
+    "attach": "Attach",
+    "discard": "Discard",
+    "attached": "Docket attached as a comment",
+    "discarded": "Docket discarded"
   }
 }

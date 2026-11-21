@@ -68,6 +68,9 @@ export interface MyTimeStatus {
   // A device seen in the last 24 hours.
   active: boolean;
   devices: TimeDevice[];
+  // When the newest block arrived; null before the first.
+  lastBlockAt: string | null;
+  firstDeviceAt: string | null;
 }
 
 export type TimeRuleField = 'app' | 'title' | 'domain' | 'contact';

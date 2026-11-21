@@ -2,6 +2,8 @@ import { ActivityWatch, afkBucketFor, isWebBucket, isWindowBucket, type AwBucket
 import { callBlocks, readCalls, readContacts } from './calls';
 import { PlanClient, platformOf, type Fetch } from './client';
 import { saveConfig, type Config } from './config';
+import { startReview } from './review';
+import { addToOutbox, readOutbox, removeFromOutbox } from './store';
 import {
   applyPrivate,
   buildBlocks,
@@ -37,7 +39,7 @@ export interface SyncOptions {
 export interface SyncResult {
   awOk: boolean;
   blocks: number;
-  uploaded: number;
+  queued: number;
 }
 
 interface Window {
@@ -130,18 +132,27 @@ async function phoneBlocks(config: Config, now: Date): Promise<Block[]> {
   return applyPrivate(callBlocks(config.device, rows, contacts), config.private);
 }
 
+function describe(block: Block): string {
+  const minutes = Math.round((Date.parse(block.endedAt) - Date.parse(block.startedAt)) / 60_000);
+  return (
+    `${block.startedAt.slice(0, 16)} ${String(minutes).padStart(4)}m ${block.app}` +
+    `${block.domain ? ` (${block.domain})` : ''} — ${block.title}`
+  );
+}
+
+// Reads activity into the outbox; nothing but the heartbeat is sent. apiKey null skips the
+// heartbeat as well.
 export async function sync(
   config: Config,
-  apiKey: string,
+  apiKey: string | null,
   options: SyncOptions,
 ): Promise<SyncResult> {
   const { log } = options;
   const now = options.now ?? new Date();
   const aw = options.aw ?? new ActivityWatch();
-  const client = new PlanClient(config.url, apiKey, { fetch: options.fetch });
   const awOk = await aw.ok();
-  if (!options.dryRun) {
-    await client.heartbeat({
+  if (!options.dryRun && apiKey) {
+    await new PlanClient(config.url, apiKey, { fetch: options.fetch }).heartbeat({
       device: config.device,
       platform: platformOf(process.platform),
       version: VERSION,
@@ -165,31 +176,78 @@ export async function sync(
 
   const all = [...perSource.values()].flat();
   if (options.dryRun) {
-    for (const block of all) {
-      const minutes = Math.round(
-        (Date.parse(block.endedAt) - Date.parse(block.startedAt)) / 60_000,
-      );
-      log(
-        `${block.startedAt.slice(0, 16)} ${String(minutes).padStart(4)}m ${block.app}` +
-          `${block.domain ? ` (${block.domain})` : ''} — ${block.title}`,
-      );
-    }
-    log(`dry run: ${all.length} blocks, nothing sent`);
-    return { awOk, blocks: all.length, uploaded: 0 };
+    for (const block of all) log(describe(block));
+    log(`dry run: ${all.length} blocks, nothing stored or sent`);
+    return { awOk, blocks: all.length, queued: 0 };
   }
 
-  let uploaded = 0;
-  if (all.length > 0) {
-    const result = await client.uploadBlocks(config.device, all);
-    uploaded = result.inserted + result.updated;
-    log(
-      `sent ${all.length} blocks: ${result.inserted} new, ${result.updated} updated, ` +
-        `${result.skipped} skipped`,
-    );
-  } else {
-    log('nothing new to send');
-  }
+  await addToOutbox(all);
+  const waiting = (await readOutbox()).length;
+  log(
+    all.length
+      ? `${all.length} blocks held on this computer, ${waiting} waiting — run: plan-time review`
+      : 'nothing new',
+  );
   for (const id of perSource.keys()) config.cursor[id] = now.toISOString();
   await saveConfig(config);
-  return { awOk, blocks: all.length, uploaded };
+  return { awOk, blocks: all.length, queued: all.length };
+}
+
+export interface ReviewOptions {
+  yes: boolean;
+  log: (message: string) => void;
+  openUrl: (url: string) => void;
+  // With --yes at a terminal, asked after the list is printed.
+  confirm?: (question: string) => Promise<boolean>;
+  reviewTimeoutMs?: number;
+}
+
+// Sends the outbox blocks the person approves; the rest are deleted. Blocks added or
+// extended while the page is open are left for the next review.
+export async function reviewOutbox(
+  config: Config,
+  client: PlanClient,
+  options: ReviewOptions,
+): Promise<number> {
+  const { log } = options;
+  const blocks = await readOutbox();
+  if (blocks.length === 0) {
+    log('nothing waiting for review');
+    return 0;
+  }
+  let approved = blocks;
+  if (options.yes) {
+    for (const block of blocks) log(describe(block));
+    if (options.confirm && !(await options.confirm(`Send these ${blocks.length} blocks? (y/N)`))) {
+      log('nothing sent; the blocks are still waiting');
+      return 0;
+    }
+  } else {
+    const review = await startReview({
+      heading: `Time blocks waiting on ${config.device}`,
+      blocks,
+      shots: [],
+      timeoutMs: options.reviewTimeoutMs,
+    });
+    log(`review your time in your browser: ${review.url}`);
+    options.openUrl(review.url);
+    const decision = await review.decision;
+    if (!decision.approved) {
+      log(`nothing sent (${decision.reason}); the blocks are still waiting`);
+      return 0;
+    }
+    const keys = new Set(decision.blocks);
+    approved = blocks.filter((b) => keys.has(b.sourceKey));
+  }
+  if (approved.length) {
+    const result = await client.uploadBlocks(config.device, approved);
+    log(
+      `sent ${approved.length} blocks: ${result.inserted} new, ${result.updated} updated, ` +
+        `${result.skipped} skipped`,
+    );
+  }
+  const deleted = blocks.length - approved.length;
+  if (deleted) log(`deleted ${deleted} blocks from this computer`);
+  await removeFromOutbox(blocks);
+  return approved.length;
 }

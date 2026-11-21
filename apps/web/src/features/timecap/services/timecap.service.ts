@@ -25,12 +25,14 @@ export function useMyTimeQuery(date: string) {
   });
 }
 
-// The setup page polls until a sync arrives.
+// The setup page polls until approved blocks arrive.
 export function useMyTimeStatusQuery(pollMs?: number) {
   return useQuery({
     queryKey: statusKey,
     queryFn: ({ signal }) => getMyTimeStatus(signal),
-    refetchInterval: pollMs ? (query) => (query.state.data?.active ? false : pollMs) : undefined,
+    refetchInterval: pollMs
+      ? (query) => (query.state.data?.lastBlockAt != null ? false : pollMs)
+      : undefined,
   });
 }
 

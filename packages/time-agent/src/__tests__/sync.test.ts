@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Fetch } from '../client';
 import { loadConfig, type Config } from '../config';
+import { readOutbox } from '../store';
 import { sync, type AwReader } from '../sync';
 import { sourceKeyOf, type AwEvent, type Block } from '../transform';
 
@@ -96,19 +97,23 @@ describe('sync', () => {
     const options = { calls: false, dryRun: false, log, aw, fetch: plan.fetch };
 
     await sync(cfg, 'key', { ...options, now: t('10:58') });
-    const first = plan.uploads.find((u) => u.path === '/time/agent/blocks')!.body.blocks!;
+    expect(plan.uploads.map((u) => u.path)).toEqual(['/time/agent/heartbeat']);
+    const first = await readOutbox();
     expect(first.map((b) => [b.startedAt, b.endedAt])).toEqual([
       [t('07:00').toISOString(), t('10:00').toISOString()],
       [t('10:00').toISOString(), `${DAY}10:59:50.000Z`],
     ]);
     expect(cfg.cursor[WINDOW]).toBe(t('10:58').toISOString());
 
-    plan.uploads.length = 0;
     await sync(await loadConfig().then((c) => c!), 'key', { ...options, now: t('11:58') });
-    const second = plan.uploads.find((u) => u.path === '/time/agent/blocks')!.body.blocks!;
-    expect(second).toHaveLength(1);
-    expect(second[0].sourceKey).toBe(sourceKeyOf('mac', 'Code', 'main.ts', t('10:00').getTime()));
-    expect(second[0]).toMatchObject({
+    expect(plan.uploads.map((u) => u.path)).toEqual([
+      '/time/agent/heartbeat',
+      '/time/agent/heartbeat',
+    ]);
+    const second = await readOutbox();
+    expect(second).toHaveLength(2);
+    expect(second[1].sourceKey).toBe(sourceKeyOf('mac', 'Code', 'main.ts', t('10:00').getTime()));
+    expect(second[1]).toMatchObject({
       startedAt: t('10:00').toISOString(),
       endedAt: `${DAY}11:59:50.000Z`,
     });
@@ -124,7 +129,7 @@ describe('sync', () => {
       fetch: plan.fetch,
       now: t('10:00'),
     });
-    expect(result).toEqual({ awOk: false, blocks: 0, uploaded: 0 });
+    expect(result).toEqual({ awOk: false, blocks: 0, queued: 0 });
     expect(plan.uploads.map((u) => u.path)).toEqual(['/time/agent/heartbeat']);
     expect(plan.uploads[0].body).toMatchObject({ device: 'mac', awOk: false });
   });

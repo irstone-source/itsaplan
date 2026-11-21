@@ -575,5 +575,14 @@
     "amount": "المبلغ (£)",
     "useEstimate": "استخدام التقدير × السعر",
     "set": "تعيين"
+  },
+  "dockets": {
+    "waiting": "Agent docket waiting for approval",
+    "show": "Show all",
+    "hide": "Show less",
+    "attach": "Attach",
+    "discard": "Discard",
+    "attached": "Docket attached as a comment",
+    "discarded": "Docket discarded"
   }
 }

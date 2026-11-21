@@ -14,8 +14,8 @@ import TimecapCommand from './components/TimecapCommand';
 const ACTIVITYWATCH_URL = 'https://activitywatch.net';
 const AGENT_PATH = '~/.local/bin/plan-time.mjs';
 
-// The four steps to a first sync, each checked against what the API already knows.
-// The status is polled until a sync arrives.
+// The five steps to a first review, each checked against what the API already knows.
+// The status is polled until approved blocks arrive.
 export default function TimecapSetupPage() {
   const t = useTranslations('timecap.setup');
   const { data: status } = useMyTimeStatusQuery(15_000);
@@ -25,6 +25,7 @@ export default function TimecapSetupPage() {
 
   const devices = status?.devices ?? [];
   const trackerOk = devices.some((d) => d.trackerOk);
+  const reviewed = status?.lastBlockAt != null;
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
@@ -82,12 +83,30 @@ export default function TimecapSetupPage() {
           done={status?.active ?? false}
         >
           <TimecapCommand command={`node ${AGENT_PATH} watch`} />
-          {status?.active && (
+        </TimecapSetupStep>
+
+        <TimecapSetupStep
+          number={5}
+          title={t('steps.review.title')}
+          body={t('steps.review.body')}
+          check={t('steps.review.check')}
+          done={reviewed}
+        >
+          <TimecapCommand command={`node ${AGENT_PATH} review`} />
+          <p className="text-sm text-muted-foreground">{t('steps.review.ticket')}</p>
+          <TimecapCommand command={`node ${AGENT_PATH} start CON-12`} />
+          <TimecapCommand command={`node ${AGENT_PATH} finish CON-12`} />
+          {reviewed && (
             <Button asChild size="sm">
-              <Link href={myTimePath()}>{t('steps.sync.open')}</Link>
+              <Link href={myTimePath()}>{t('steps.review.open')}</Link>
             </Button>
           )}
         </TimecapSetupStep>
+
+        <section className="space-y-2 rounded-md border px-4 py-3">
+          <h2 className="text-sm font-medium">{t('screenRecording.title')}</h2>
+          <p className="text-sm text-muted-foreground">{t('screenRecording.body')}</p>
+        </section>
 
         <section className="space-y-2 rounded-md border px-4 py-3">
           <h2 className="text-sm font-medium">{t('calls.title')}</h2>

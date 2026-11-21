@@ -23,6 +23,7 @@ var __toESM = (mod, isNodeMode, target) => {
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
 // src/cli.ts
+import { spawn } from 'node:child_process';
 import { hostname } from 'node:os';
 import { setTimeout as sleep2 } from 'node:timers/promises';
 
@@ -161,82 +162,60 @@ function afkBucketFor(windowId, buckets) {
   return afk.find((b) => b.id === `aw-watcher-afk_${host}`) ?? afk[0];
 }
 
-// src/client.ts
-import { setTimeout as sleep } from 'node:timers/promises';
-var CHUNK_SIZE = 2000;
-var REQUEST_TIMEOUT_MS = 30000;
-var ATTEMPTS = 4;
-var BACKOFF_MS = 1000;
-
-class AuthError extends Error {
-  constructor() {
-    super('Plan rejected the API key (401) — run: plan-time setup');
+// src/capture.ts
+import { execFile as execFile2 } from 'node:child_process';
+import { promisify as promisify2 } from 'node:util';
+var run2 = promisify2(execFile2);
+var WINDOWS_SCRIPT = [
+  'Add-Type -AssemblyName System.Windows.Forms,System.Drawing',
+  '$b = [System.Windows.Forms.SystemInformation]::VirtualScreen',
+  '$bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height',
+  '$g = [System.Drawing.Graphics]::FromImage($bmp)',
+  '$g.CopyFromScreen($b.Left, $b.Top, 0, 0, $bmp.Size)',
+  '$bmp.Save($env:PLAN_TIME_SHOT, [System.Drawing.Imaging.ImageFormat]::Png)',
+].join('; ');
+function commandsFor(platform) {
+  if (platform === 'darwin') return [(f) => ['screencapture', ['-x', '-t', 'png', f]]];
+  if (platform === 'win32') {
+    return [
+      (f) => [
+        'powershell',
+        ['-NoProfile', '-NonInteractive', '-Command', WINDOWS_SCRIPT],
+        { ...process.env, PLAN_TIME_SHOT: f },
+      ],
+    ];
   }
+  return [
+    (f) => ['grim', [f]],
+    (f) => ['gnome-screenshot', ['-f', f]],
+    (f) => ['import', ['-window', 'root', f]],
+  ];
 }
-
-class RequestError extends Error {
-  status;
-  constructor(status, message) {
-    super(message);
-    this.status = status;
-  }
-}
-function platformOf(platform) {
-  return platform === 'darwin' || platform === 'win32' ? platform : 'linux';
-}
-
-class PlanClient {
-  url;
-  apiKey;
-  fetch;
-  backoffMs;
-  constructor(url, apiKey, options = {}) {
-    this.url = url;
-    this.apiKey = apiKey;
-    this.fetch = options.fetch ?? fetch;
-    this.backoffMs = options.backoffMs ?? BACKOFF_MS;
-  }
-  async post(path, body) {
-    let lastError = new Error('no attempt made');
-    for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
-      if (attempt > 0) await sleep(this.backoffMs * 2 ** (attempt - 1));
-      let res;
+function systemCapturer(platform = process.platform) {
+  let commands = commandsFor(platform);
+  return async (file) => {
+    let lastError = new Error('no screenshot tool found');
+    for (const command of commands) {
+      const [bin, args, env] = command(file);
       try {
-        res = await this.fetch(`${this.url}${path}`, {
-          method: 'POST',
-          headers: { 'x-api-key': this.apiKey, 'content-type': 'application/json' },
-          body: JSON.stringify(body),
-          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-        });
+        await run2(bin, args, { env, timeout: 30000 });
+        commands = [command];
+        if (platform === 'darwin') {
+          await run2('sips', ['-Z', '2560', file], { timeout: 30000 }).catch(() => {});
+        }
+        return;
       } catch (err) {
-        lastError = err instanceof Error ? err : new Error(String(err));
-        continue;
+        lastError = err;
       }
-      if (res.status === 401) throw new AuthError();
-      if (res.ok) return await res.json();
-      const text = (await res.text()).slice(0, 200);
-      lastError = new RequestError(res.status, `POST ${path} failed with ${res.status}: ${text}`);
-      if (res.status < 500) throw lastError;
     }
     throw lastError;
-  }
-  async heartbeat(beat) {
-    await this.post('/time/agent/heartbeat', beat);
-  }
-  async uploadBlocks(device, blocks) {
-    const total = { inserted: 0, updated: 0, skipped: 0 };
-    for (let i = 0; i < blocks.length; i += CHUNK_SIZE) {
-      const result = await this.post('/time/agent/blocks', {
-        device,
-        blocks: blocks.slice(i, i + CHUNK_SIZE),
-      });
-      total.inserted += result.inserted ?? 0;
-      total.updated += result.updated ?? 0;
-      total.skipped += result.skipped ?? 0;
-    }
-    return total;
-  }
+  };
 }
+
+// src/client.ts
+import { appendFile, mkdir as mkdir3, readFile as readFile2 } from 'node:fs/promises';
+import { join as join3 } from 'node:path';
+import { setTimeout as sleep } from 'node:timers/promises';
 
 // src/config.ts
 import { mkdir as mkdir2, readFile, writeFile as writeFile2 } from 'node:fs/promises';
@@ -355,31 +334,199 @@ function removePrivate(list2, kind, value) {
   return { ...list2, [kind]: list2[kind].filter((v) => v.toLowerCase() !== entry) };
 }
 
+// src/client.ts
+var CHUNK_SIZE = 2000;
+var REQUEST_TIMEOUT_MS = 30000;
+var ATTEMPTS = 4;
+var BACKOFF_MS = 1000;
+
+class AuthError extends Error {
+  constructor() {
+    super('Plan rejected the API key (401) — run: plan-time setup');
+  }
+}
+
+class RequestError extends Error {
+  status;
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
+}
+function platformOf(platform) {
+  return platform === 'darwin' || platform === 'win32' ? platform : 'linux';
+}
+function sentLogPath() {
+  return join3(configDir(), 'sent.log');
+}
+async function readSentLog() {
+  try {
+    return await readFile2(sentLogPath(), 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') return '';
+    throw err;
+  }
+}
+async function logSent(method, path, bytes, label) {
+  await mkdir3(configDir(), { recursive: true, mode: 448 });
+  const line = [new Date().toISOString(), method, path, String(bytes), label].join('\t');
+  await appendFile(
+    sentLogPath(),
+    `${line}
+`,
+    { mode: 384 },
+  );
+}
+function parseIdentifier(identifier) {
+  const match = /^([A-Za-z][A-Za-z0-9]*)-(\d+)$/.exec(identifier.trim());
+  if (!match) throw new Error(`${identifier} is not a ticket identifier like CON-158`);
+  return { key: match[1].toUpperCase(), number: Number(match[2]) };
+}
+
+class PlanClient {
+  url;
+  apiKey;
+  fetch;
+  backoffMs;
+  constructor(url, apiKey, options = {}) {
+    this.url = url;
+    this.apiKey = apiKey;
+    this.fetch = options.fetch ?? fetch;
+    this.backoffMs = options.backoffMs ?? BACKOFF_MS;
+  }
+  async request(method, path, label, payload = { bytes: 0 }) {
+    let lastError = new Error('no attempt made');
+    for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
+      if (attempt > 0) await sleep(this.backoffMs * 2 ** (attempt - 1));
+      await logSent(method, path, payload.bytes, label);
+      const headers = { 'x-api-key': this.apiKey };
+      if (payload.contentType) headers['content-type'] = payload.contentType;
+      let res;
+      try {
+        res = await this.fetch(`${this.url}${path}`, {
+          method,
+          headers,
+          body: payload.body,
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        });
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        continue;
+      }
+      if (res.status === 401) throw new AuthError();
+      if (res.ok) return await res.json();
+      const text = (await res.text()).slice(0, 200);
+      lastError = new RequestError(
+        res.status,
+        `${method} ${path} failed with ${res.status}: ${text}`,
+      );
+      if (res.status < 500) throw lastError;
+    }
+    throw lastError;
+  }
+  send(method, path, label, json) {
+    const body = JSON.stringify(json);
+    return this.request(method, path, label, {
+      body,
+      contentType: 'application/json',
+      bytes: Buffer.byteLength(body),
+    });
+  }
+  async heartbeat(beat) {
+    await this.send('POST', '/time/agent/heartbeat', 'heartbeat', beat);
+  }
+  async uploadBlocks(device, blocks) {
+    const total = { inserted: 0, updated: 0, skipped: 0 };
+    for (let i = 0; i < blocks.length; i += CHUNK_SIZE) {
+      const chunk = blocks.slice(i, i + CHUNK_SIZE);
+      const result = await this.send('POST', '/time/agent/blocks', `${chunk.length} time blocks`, {
+        device,
+        blocks: chunk,
+      });
+      total.inserted += result.inserted ?? 0;
+      total.updated += result.updated ?? 0;
+      total.skipped += result.skipped ?? 0;
+    }
+    return total;
+  }
+  async me() {
+    const res = await this.request('GET', '/me', 'read: who am I');
+    return res.authenticated && res.user ? res.user : null;
+  }
+  async issue(identifier) {
+    const { key, number } = parseIdentifier(identifier);
+    return this.request(
+      'GET',
+      `/projects/${encodeURIComponent(key)}/issues/${number}`,
+      `read: ticket ${key}-${number}`,
+    );
+  }
+  async columns(projectKey) {
+    const res = await this.request(
+      'GET',
+      `/projects/${encodeURIComponent(projectKey)}`,
+      `read: columns of ${projectKey}`,
+    );
+    return [...res.columns].sort((a, b) => a.position - b.position);
+  }
+  async moveIssue(issue, column) {
+    await this.send('PATCH', `/issues/${issue.id}`, `move ${issue.identifier} to ${column.name}`, {
+      columnId: column.id,
+    });
+  }
+  async uploadAttachment(issue, filename, contentType, bytes) {
+    const form = new FormData();
+    form.append('file', new Blob([bytes], { type: contentType }), filename);
+    const encoded = new Response(form);
+    const body = new Uint8Array(await encoded.arrayBuffer());
+    return this.request(
+      'POST',
+      `/issues/${issue.id}/attachments`,
+      `file ${filename} for ${issue.identifier}`,
+      {
+        body,
+        contentType: encoded.headers.get('content-type') ?? 'multipart/form-data',
+        bytes: body.byteLength,
+      },
+    );
+  }
+  async comment(issue, body) {
+    await this.send(
+      'POST',
+      `/issues/${issue.id}/comments`,
+      `docket comment on ${issue.identifier}`,
+      {
+        body,
+      },
+    );
+  }
+}
+
 // src/credentials.ts
-import { execFile as execFile2 } from 'node:child_process';
+import { execFile as execFile3 } from 'node:child_process';
 import {
   chmod,
-  readFile as readFile2,
-  mkdir as mkdir3,
+  readFile as readFile3,
+  mkdir as mkdir4,
   writeFile as writeFile3,
 } from 'node:fs/promises';
 import { userInfo } from 'node:os';
-import { join as join3 } from 'node:path';
-import { promisify as promisify2 } from 'node:util';
-var run2 = promisify2(execFile2);
+import { join as join4 } from 'node:path';
+import { promisify as promisify3 } from 'node:util';
+var run3 = promisify3(execFile3);
 var KEYCHAIN_SERVICE = 'itsaplan_time_key';
 function useKeychain() {
   return process.platform === 'darwin' && !process.env.PLAN_TIME_HOME;
 }
 function credentialsPath() {
-  return join3(configDir(), 'credentials');
+  return join4(configDir(), 'credentials');
 }
 function account() {
   return userInfo().username;
 }
 async function saveApiKey(key) {
   if (useKeychain()) {
-    await run2('security', [
+    await run3('security', [
       'add-generic-password',
       '-U',
       '-s',
@@ -391,7 +538,7 @@ async function saveApiKey(key) {
     ]);
     return;
   }
-  await mkdir3(configDir(), { recursive: true, mode: 448 });
+  await mkdir4(configDir(), { recursive: true, mode: 448 });
   await writeFile3(
     credentialsPath(),
     `${key}
@@ -403,7 +550,7 @@ async function saveApiKey(key) {
 async function loadApiKey() {
   if (useKeychain()) {
     try {
-      const { stdout } = await run2('security', [
+      const { stdout } = await run3('security', [
         'find-generic-password',
         '-s',
         KEYCHAIN_SERVICE,
@@ -417,7 +564,7 @@ async function loadApiKey() {
     }
   }
   try {
-    return (await readFile2(credentialsPath(), 'utf8')).trim() || null;
+    return (await readFile3(credentialsPath(), 'utf8')).trim() || null;
   } catch (err) {
     if (err.code === 'ENOENT') return null;
     throw err;
@@ -476,37 +623,340 @@ function askHidden(question) {
   });
 }
 
-// src/calls.ts
-import { access as access2 } from 'node:fs/promises';
-import { homedir as homedir3 } from 'node:os';
-import { join as join4 } from 'node:path';
+// src/session.ts
+import { readFile as readFile6, rm as rm2 } from 'node:fs/promises';
+import { join as join6 } from 'node:path';
 
-// src/sqlite.ts
-import { execFile as execFile3 } from 'node:child_process';
-import { promisify as promisify3 } from 'node:util';
-var run3 = promisify3(execFile3);
-async function nodeSqlite() {
+// src/review.ts
+import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { readFile as readFile4 } from 'node:fs/promises';
+import { createServer } from 'node:http';
+var REVIEW_TIMEOUT_MS = 30 * 60000;
+var MAX_BODY_BYTES = 1024 * 1024;
+var DONE_HEADERS = { 'content-type': 'application/json', connection: 'close' };
+function esc(value) {
+  return value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+function hhmm(iso) {
+  return iso.slice(11, 16);
+}
+function minutes(block) {
+  return Math.round((Date.parse(block.endedAt) - Date.parse(block.startedAt)) / 60000);
+}
+function page(input, token) {
+  const docket = input.docket;
+  const button = docket ? 'Attach' : 'Send';
+  const rows = input.blocks
+    .map(
+      (b) =>
+        `<tr><td><input type="checkbox" class="block" value="${esc(b.sourceKey)}" checked></td>` +
+        `<td>${esc(b.startedAt.slice(0, 10))} ${hhmm(b.startedAt)}–${hhmm(b.endedAt)}</td>` +
+        `<td>${minutes(b)}m</td><td>${esc(b.app)}</td><td>${esc(b.domain ?? '')}</td>` +
+        `<td>${esc(b.title)}</td></tr>`,
+    )
+    .join('');
+  const shots = input.shots
+    .map(
+      (s) =>
+        `<label class="shot"><img src="shot?name=${encodeURIComponent(s.name)}&token=${token}" alt="${esc(s.name)}">` +
+        `<span><input type="checkbox" class="shot-box" value="${esc(s.name)}" checked> ${esc(s.name)}` +
+        ` (${s.bytes.toLocaleString('en-GB')} bytes)</span></label>`,
+    )
+    .join('');
+  const data = JSON.stringify({
+    docket: docket ?? null,
+    shots: input.shots.map((s) => ({ name: s.name, bytes: s.bytes })),
+  }).replace(/</g, '\\u003c');
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>plan-time review</title>
+<style>
+body{font:14px/1.45 system-ui,sans-serif;margin:0 auto;max-width:1100px;padding:16px;color:#1b1b1b;background:#fff}
+.banner{background:#e7f6ec;border:1px solid #86c99b;padding:10px 14px;border-radius:6px;font-weight:600}
+table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border-bottom:1px solid #ddd;padding:4px 6px;text-align:left;vertical-align:top}
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.shot img{width:100%;border:1px solid #ccc;display:block}
+textarea{width:100%;min-height:90px;font:inherit}
+.uploads{background:#f6f6f6;border:1px solid #ddd;padding:10px 14px;border-radius:6px}
+.note{color:#8a4b00}
+button{font:inherit;padding:8px 18px;margin-right:8px;cursor:pointer}
+</style></head><body>
+<p class="banner">Nothing has been sent from this computer.</p>
+<h1>${esc(input.heading)}</h1>
+<p>Untick anything you do not want to send. Unticked items are deleted from this computer and never sent.</p>
+<h2>Time blocks</h2>
+${rows ? `<table><tr><th></th><th>When (UTC)</th><th>Length</th><th>App</th><th>Site</th><th>Window</th></tr>${rows}</table>` : '<p>No time blocks.</p>'}
+${
+  docket
+    ? `<h2>Screenshots</h2><p class="note">A screenshot shows everything on the screen at that moment, including windows that were not in front and notifications. Untick a screenshot to keep it off the ticket; it is then deleted from this computer.</p>${shots ? `<div class="shots">${shots}</div>` : '<p>No screenshots.</p>'}
+<h2>Evidence this is complete, or the blocker</h2>
+<p><label><input type="radio" name="outcome" value="complete" checked> Complete</label> &nbsp; <label><input type="radio" name="outcome" value="blocked"> Blocked</label></p>
+<textarea id="evidence" placeholder="Complete: what shows the outcome is done (link, result, sign-off). Blocked: what is stopping it and who can unblock it."></textarea>
+<p class="note" id="need" hidden>Write the evidence or the blocker before attaching.</p>`
+    : ''
+}
+<h2>What ${button} will upload</h2>
+<div class="uploads"><ul id="uploads"></ul>
+${docket ? '<p class="note">Attached screenshots can be viewed by anyone who has their link.</p>' : ''}</div>
+<p><button id="go">${button}</button><button id="cancel">Cancel</button></p>
+<script>
+const DATA = ${data};
+const TOKEN = new URLSearchParams(location.search).get('token');
+const ticked = (cls) => [...document.querySelectorAll('.' + cls)].filter((b) => b.checked).map((b) => b.value);
+const evidence = () => (document.getElementById('evidence') || { value: '' }).value;
+const outcome = () => (document.querySelector('input[name=outcome]:checked') || { value: 'complete' }).value;
+function update() {
+  const items = [];
+  const shots = ticked('shot-box');
+  for (const s of DATA.shots) if (shots.includes(s.name)) items.push(s.name + ' — ' + s.bytes.toLocaleString('en-GB') + ' bytes, attached to ' + DATA.docket.identifier);
+  if (DATA.docket) {
+    const bytes = DATA.docket.baseBytes + new TextEncoder().encode(evidence()).length;
+    items.push(DATA.docket.filename + ' — about ' + bytes.toLocaleString('en-GB') + ' bytes, attached to ' + DATA.docket.identifier);
+    items.push('a comment on ' + DATA.docket.identifier + ' with the same docket');
+  }
+  const blocks = ticked('block').length;
+  items.push(blocks + ' time block' + (blocks === 1 ? '' : 's') + (DATA.docket ? ', logged against ' + DATA.docket.identifier : ''));
+  if (DATA.docket && outcome() === 'blocked') items.push(DATA.docket.identifier + ' stays open: you will not be asked to complete it');
+  document.getElementById('uploads').innerHTML = '';
+  for (const text of items) { const li = document.createElement('li'); li.textContent = text; document.getElementById('uploads').append(li); }
+}
+document.addEventListener('change', update);
+document.addEventListener('input', update);
+update();
+async function finish(path, body) {
+  const res = await fetch(path + '?token=' + encodeURIComponent(TOKEN), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  document.body.innerHTML = res.ok ? '<p class="banner">Done. The terminal shows what was sent. You can close this tab.</p>' : '<p>Failed: ' + res.status + '</p>';
+}
+document.getElementById('go').onclick = () => {
+  if (DATA.docket && !evidence().trim()) { document.getElementById('need').hidden = false; return; }
+  finish('approve', { blocks: ticked('block'), shots: ticked('shot-box'), outcome: outcome(), evidence: evidence() });
+};
+document.getElementById('cancel').onclick = () => finish('cancel', {});
+</script></body></html>`;
+}
+function tokenOk(given, token) {
+  if (!given) return false;
+  const a = Buffer.from(given);
+  const b = Buffer.from(token);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+function readBody(req) {
+  return new Promise((resolve2, reject) => {
+    const chunks = [];
+    let size = 0;
+    req.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > MAX_BODY_BYTES) {
+        reject(new Error('body too large'));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', () => resolve2(Buffer.concat(chunks).toString('utf8')));
+    req.on('error', reject);
+  });
+}
+function strings(value) {
+  return Array.isArray(value) ? value.filter((v) => typeof v === 'string') : [];
+}
+async function startReview(input) {
+  const token = randomBytes(24).toString('hex');
+  const shots = new Map(input.shots.map((s) => [s.name, s]));
+  const keys = new Set(input.blocks.map((b) => b.sourceKey));
+  let decide = () => {};
+  const decision = new Promise((resolve2) => {
+    decide = resolve2;
+  });
+  const handle = async (req, res) => {
+    const url = new URL(req.url ?? '/', 'http://127.0.0.1');
+    if (!tokenOk(url.searchParams.get('token'), token)) {
+      res.writeHead(403).end('forbidden');
+      return;
+    }
+    if (req.method === 'GET' && url.pathname === '/') {
+      res.writeHead(200, {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'no-store',
+        'referrer-policy': 'no-referrer',
+      });
+      res.end(page(input, token));
+      return;
+    }
+    if (req.method === 'GET' && url.pathname === '/shot') {
+      const shot = shots.get(url.searchParams.get('name') ?? '');
+      if (!shot) {
+        res.writeHead(404).end('not found');
+        return;
+      }
+      res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'no-store' });
+      res.end(await readFile4(shot.path));
+      return;
+    }
+    if (req.method === 'POST' && url.pathname === '/approve') {
+      const body = JSON.parse((await readBody(req)) || '{}');
+      const evidence = typeof body.evidence === 'string' ? body.evidence.slice(0, 20000) : '';
+      if (input.docket && !evidence.trim()) {
+        res.writeHead(400, DONE_HEADERS).end('{"error":"evidence required"}');
+        return;
+      }
+      res.writeHead(200, DONE_HEADERS).end('{"ok":true}');
+      decide({
+        approved: true,
+        blocks: strings(body.blocks).filter((k) => keys.has(k)),
+        shots: strings(body.shots).filter((n) => shots.has(n)),
+        outcome: body.outcome === 'blocked' ? 'blocked' : 'complete',
+        evidence,
+      });
+      return;
+    }
+    if (req.method === 'POST' && url.pathname === '/cancel') {
+      res.writeHead(200, DONE_HEADERS).end('{"ok":true}');
+      decide({ approved: false, reason: 'cancelled' });
+      return;
+    }
+    res.writeHead(404).end('not found');
+  };
+  const server = createServer((req, res) => {
+    handle(req, res).catch(() => {
+      if (!res.headersSent) res.writeHead(400);
+      res.end();
+    });
+  });
+  await new Promise((resolve2, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve2);
+  });
+  const timer = setTimeout(
+    () => decide({ approved: false, reason: 'timeout' }),
+    input.timeoutMs ?? REVIEW_TIMEOUT_MS,
+  );
+  decision.then(() => {
+    clearTimeout(timer);
+    server.close();
+    server.closeIdleConnections();
+  });
+  const address = server.address();
+  const port = typeof address === 'object' && address ? address.port : 0;
+  return { url: `http://127.0.0.1:${port}/?token=${token}`, port, token, decision };
+}
+
+// src/store.ts
+import {
+  mkdir as mkdir5,
+  readdir,
+  readFile as readFile5,
+  rm,
+  stat,
+  writeFile as writeFile4,
+} from 'node:fs/promises';
+import { homedir as homedir3 } from 'node:os';
+import { join as join5 } from 'node:path';
+function dataDir() {
+  const home = process.env.PLAN_TIME_HOME;
+  return home ? join5(home, 'data') : join5(homedir3(), '.local', 'share', 'plan-time');
+}
+async function ensureDir(path) {
+  await mkdir5(path, { recursive: true, mode: 448 });
+  return path;
+}
+async function readJson(path) {
   try {
-    const mod = await import('node:sqlite');
-    return typeof mod.DatabaseSync === 'function' ? mod : null;
-  } catch {
-    return null;
+    return JSON.parse(await readFile5(path, 'utf8'));
+  } catch (err) {
+    if (err.code === 'ENOENT') return null;
+    throw err;
   }
 }
-async function queryRows(path, sql) {
-  const lib = await nodeSqlite();
-  if (lib) {
-    const db = new lib.DatabaseSync(path, { readOnly: true });
-    try {
-      return db.prepare(sql).all();
-    } finally {
-      db.close();
-    }
+async function writeJson(path, value) {
+  await writeFile4(
+    path,
+    `${JSON.stringify(value, null, 2)}
+`,
+    { mode: 384 },
+  );
+}
+async function listDir(path) {
+  try {
+    return (await readdir(path)).sort();
+  } catch (err) {
+    if (err.code === 'ENOENT') return [];
+    throw err;
   }
-  const { stdout: stdout2 } = await run3('sqlite3', ['-readonly', '-json', path, sql], {
-    maxBuffer: 67108864,
-  });
-  return stdout2.trim() ? JSON.parse(stdout2) : [];
+}
+function outboxDir() {
+  return join5(dataDir(), 'outbox');
+}
+async function addToOutbox(blocks) {
+  const byDay = new Map();
+  for (const block of blocks) {
+    const day = block.startedAt.slice(0, 10);
+    byDay.set(day, [...(byDay.get(day) ?? []), block]);
+  }
+  const dir = await ensureDir(outboxDir());
+  for (const [day, added] of byDay) {
+    const path = join5(dir, `${day}.json`);
+    const merged = new Map(((await readJson(path)) ?? []).map((b) => [b.sourceKey, b]));
+    for (const block of added) merged.set(block.sourceKey, block);
+    await writeJson(
+      path,
+      [...merged.values()].sort((a, b) => a.startedAt.localeCompare(b.startedAt)),
+    );
+  }
+  return blocks.length;
+}
+async function readOutbox() {
+  const out = [];
+  for (const name of await listDir(outboxDir())) {
+    if (name.endsWith('.json')) out.push(...((await readJson(join5(outboxDir(), name))) ?? []));
+  }
+  return out;
+}
+async function removeFromOutbox(blocks) {
+  const gone = new Map(blocks.map((b) => [b.sourceKey, b.endedAt]));
+  for (const name of await listDir(outboxDir())) {
+    if (!name.endsWith('.json')) continue;
+    const path = join5(outboxDir(), name);
+    const kept = ((await readJson(path)) ?? []).filter((b) => gone.get(b.sourceKey) !== b.endedAt);
+    if (kept.length === 0) await rm(path, { force: true });
+    else await writeJson(path, kept);
+  }
+}
+function sessionsDir() {
+  return join5(dataDir(), 'sessions');
+}
+function sessionDir(id) {
+  return join5(sessionsDir(), id);
+}
+function shotsDir(id) {
+  return join5(sessionDir(id), 'shots');
+}
+function isPaused(session) {
+  return session.pauses.some((p) => p.to === null);
+}
+async function openSession() {
+  for (const id of await listDir(sessionsDir())) {
+    const session = await readJson(join5(sessionDir(id), 'session.json'));
+    if (session) return session;
+  }
+  return null;
+}
+async function saveSession(session) {
+  await ensureDir(shotsDir(session.id));
+  await writeJson(join5(sessionDir(session.id), 'session.json'), session);
+}
+async function deleteSession(id) {
+  await rm(sessionDir(id), { recursive: true, force: true });
+}
+async function listShots(id) {
+  const shots = [];
+  for (const name of await listDir(shotsDir(id))) {
+    if (!name.endsWith('.png')) continue;
+    const path = join5(shotsDir(id), name);
+    const info = await stat(path);
+    shots.push({ name, path, bytes: info.size });
+  }
+  return shots;
 }
 
 // src/transform.ts
@@ -681,13 +1131,458 @@ function buildBlocks(input) {
   return pieces.map((piece) => blockOf(input.device, piece));
 }
 
+// src/session.ts
+var SHOT_INTERVAL_MS = 5 * 60000;
+var FRONT_LOOKBACK_MS = 2 * 60000;
+var AFK_LOOKBACK_MS = 10 * 60000;
+var AFK_STALE_MS = 3 * 60000;
+function latest(events) {
+  return events.reduce(
+    (best, e) => (!best || Date.parse(e.timestamp) > Date.parse(best.timestamp) ? e : best),
+    null,
+  );
+}
+function text2(value) {
+  return typeof value === 'string' ? value : '';
+}
+async function frontStatus(aw, config, now) {
+  if (!(await aw.ok())) return 'unknown';
+  const buckets = await aw.buckets();
+  const windowBucket = buckets.find((b) => isWindowBucket(b.id));
+  if (!windowBucket) return 'unknown';
+  const afk = afkBucketFor(windowBucket.id, buckets);
+  if (!afk) return 'unknown';
+  const state = latest(await aw.events(afk.id, new Date(now.getTime() - AFK_LOOKBACK_MS), now));
+  if (!state) return 'unknown';
+  if (state.data.status !== 'not-afk') return 'afk';
+  if (now.getTime() - (Date.parse(state.timestamp) + state.duration * 1000) > AFK_STALE_MS) {
+    return 'unknown';
+  }
+  const since = new Date(now.getTime() - FRONT_LOOKBACK_MS);
+  const front = latest(await aw.events(windowBucket.id, since, now));
+  if (!front) return 'unknown';
+  const app = text2(front.data.app);
+  let domain = null;
+  if (isBrowser(app)) {
+    const web = await Promise.all(
+      buckets.filter((b) => isWebBucket(b.id)).map((b) => aw.events(b.id, since, now)),
+    );
+    const tab = latest(web.flat());
+    domain = tab ? domainOf(text2(tab.data.url)) : null;
+  }
+  return isPrivate({ app, title: text2(front.data.title), domain }, config.private)
+    ? 'private'
+    : 'ok';
+}
+function shotName(at) {
+  return `shot-${at.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')}.png`;
+}
+function shotTime(name) {
+  const m = /^shot-(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z\.png$/.exec(name);
+  return m ? Date.parse(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`) : NaN;
+}
+function screenshotter(deps) {
+  let disabled = false;
+  return async (config) => {
+    const session = await openSession();
+    if (!session) return 'no-session';
+    if (isPaused(session)) return 'paused';
+    if (disabled) return 'unavailable';
+    const now = deps.now();
+    const shots = await listShots(session.id);
+    const last = shots.length ? shotTime(shots[shots.length - 1].name) : NaN;
+    if (now.getTime() - last < deps.minGapMs) return 'recent';
+    const status = await frontStatus(deps.aw, config, now);
+    if (status !== 'ok') return status;
+    const file = join6(shotsDir(session.id), shotName(now));
+    try {
+      await deps.capture(file);
+    } catch (err) {
+      disabled = true;
+      await rm2(file, { force: true });
+      deps.log(
+        `screenshots are off for this run: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return 'unavailable';
+    }
+    return 'taken';
+  };
+}
+async function startSession(deps, identifier, agent) {
+  const open = await openSession();
+  if (open) {
+    throw new Error(
+      `a session for ${open.identifier} is already open — finish or discard it first`,
+    );
+  }
+  const issue = await deps.client.issue(identifier);
+  const { key, number } = parseIdentifier(issue.identifier);
+  issue.identifier = `${key}-${number}`;
+  const columns = await deps.client.columns(key);
+  const current = columns.find((c) => c.id === issue.columnId);
+  const started = columns.find((c) => c.stateType === 'started');
+  if (
+    started &&
+    current?.stateType !== 'started' &&
+    (await deps.confirm(`Move ${issue.identifier} to "${started.name}"? (y/N)`))
+  ) {
+    await deps.client.moveIssue(issue, started);
+  }
+  const now = deps.now();
+  const session = {
+    id: `${issue.identifier}-${now.getTime()}`,
+    identifier: issue.identifier,
+    issueId: issue.id,
+    projectId: issue.projectId,
+    title: issue.title,
+    agent,
+    startedAt: now.toISOString(),
+    pauses: [],
+  };
+  await saveSession(session);
+  deps.log(`session started for ${issue.identifier} ${issue.title}`);
+  return session;
+}
+function activeWindow(session, end) {
+  const out = [];
+  let from = Date.parse(session.startedAt);
+  for (const pause of session.pauses) {
+    const at = Date.parse(pause.from);
+    if (at > from) out.push({ start: from, end: Math.min(at, end.getTime()) });
+    from = pause.to ? Date.parse(pause.to) : Infinity;
+  }
+  if (from < end.getTime()) out.push({ start: from, end: end.getTime() });
+  return out;
+}
+function intersectLength(a, b) {
+  let total = 0;
+  for (const x of a) {
+    for (const y of b) total += Math.max(0, Math.min(x.end, y.end) - Math.max(x.start, y.start));
+  }
+  return total;
+}
+async function buildDocket(aw, config, session, end) {
+  const window = activeWindow(session, end);
+  const total = window.reduce((sum, i) => sum + i.end - i.start, 0);
+  const start = new Date(session.startedAt);
+  const blocks = [];
+  let activeMs = total;
+  if (await aw.ok()) {
+    const buckets = await aw.buckets();
+    const webIds = buckets.filter((b) => isWebBucket(b.id)).map((b) => b.id);
+    const web = (await Promise.all(webIds.map((id) => aw.events(id, start, end)))).flat();
+    for (const bucket of buckets.filter((b) => isWindowBucket(b.id))) {
+      const afk = afkBucketFor(bucket.id, buckets);
+      let pieces = clipToIntervals(piecesOf(await aw.events(bucket.id, start, end)), window);
+      if (afk) {
+        const notAfk = notAfkIntervals(await aw.events(afk.id, start, end));
+        pieces = clipToIntervals(pieces, notAfk);
+        activeMs = intersectLength(notAfk, window);
+      }
+      pieces = dropShort(splitLong(mergePieces(attachDomains(pieces, web))));
+      blocks.push(...applyPrivate(pieces, config.private).map((p) => blockOf(config.device, p)));
+    }
+  }
+  return {
+    session,
+    endedAt: end.toISOString(),
+    blocks,
+    activeMs,
+    idleMs: Math.max(0, total - activeMs),
+  };
+}
+function utc(iso) {
+  return `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
+}
+function duration(ms) {
+  const m = Math.round(ms / 60000);
+  return m >= 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m` : `${m}m`;
+}
+function inert(value) {
+  return value
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/[\\`*_[\]()!<>|#~:]/g, '\\$&')
+    .replace(/www\./gi, (m) => `${m.slice(0, 3)}\\.`)
+    .replace(/@/g, '@​');
+}
+function blockMs(b) {
+  return Date.parse(b.endedAt) - Date.parse(b.startedAt);
+}
+async function trimOutbox(device, window) {
+  const overlapping = [];
+  const pieces = [];
+  for (const block of await readOutbox()) {
+    const span = { start: Date.parse(block.startedAt), end: Date.parse(block.endedAt) };
+    if (intersectLength([span], window) === 0) continue;
+    overlapping.push(block);
+    let parts = [span];
+    for (const cut of window) {
+      parts = parts.flatMap((p) =>
+        [
+          { start: p.start, end: Math.min(p.end, cut.start) },
+          { start: Math.max(p.start, cut.end), end: p.end },
+        ].filter((q) => q.end > q.start),
+      );
+    }
+    const piece = { app: block.app, title: block.title, domain: block.domain };
+    for (const part of dropShort(parts.map((q) => ({ ...piece, ...q })))) {
+      pieces.push(blockOf(device, part, block.source, block.detail));
+    }
+  }
+  await addToOutbox(pieces);
+  await removeFromOutbox(overlapping);
+}
+function docketMarkdown(docket, t) {
+  const s = docket.session;
+  const lines = [
+    `## Evidence docket: ${s.identifier}${t.outcome === 'blocked' ? ' (blocked)' : ''}`,
+    '',
+    `- Who: ${inert(t.who)} (device ${inert(t.device)})`,
+    ...(s.agent ? [`- Agent: ${inert(s.agent)}`] : []),
+    `- Session: ${utc(s.startedAt)} – ${utc(docket.endedAt)}`,
+    `- Active: ${duration(docket.activeMs)} (idle ${duration(docket.idleMs)})`,
+    '',
+    '### Timeline',
+    '',
+  ];
+  if (t.blocks.length) {
+    lines.push(
+      '| Start | End | Length | App | Site | Window |',
+      '| --- | --- | --- | --- | --- | --- |',
+    );
+    for (const b of t.blocks) {
+      lines.push(
+        `| ${b.startedAt.slice(11, 16)} | ${b.endedAt.slice(11, 16)} | ${duration(blockMs(b))} | ` +
+          `${inert(b.app)} | ${inert(b.domain ?? '')} | ${inert(b.title)} |`,
+      );
+    }
+  } else {
+    lines.push('No activity blocks.');
+  }
+  const totals = new Map();
+  for (const b of t.blocks)
+    totals.set(b.domain ?? b.app, (totals.get(b.domain ?? b.app) ?? 0) + blockMs(b));
+  lines.push('', '### Apps and sites', '');
+  if (totals.size) {
+    lines.push('| App or site | Time |', '| --- | --- |');
+    for (const [name, ms] of [...totals].sort((a, b) => b[1] - a[1])) {
+      lines.push(`| ${inert(name)} | ${duration(ms)} |`);
+    }
+  } else {
+    lines.push('None.');
+  }
+  if (t.evidence.trim()) {
+    const heading = t.outcome === 'blocked' ? 'Blocker' : 'Evidence this is complete';
+    lines.push('', `### ${heading}`, '', t.evidence.trim());
+  }
+  if (t.shots.length) {
+    lines.push('', '### Screenshots', '');
+    for (const shot of t.shots) lines.push(`![${inert(shot.name)}](${shot.url})`);
+  }
+  return `${lines.join(`
+`)}
+`;
+}
+var ATTACHMENT_URL = /^\/attachments\/[0-9a-f-]{36}\/raw$/i;
+function embedUrl(url) {
+  if (!ATTACHMENT_URL.test(url)) throw new Error(`unexpected attachment URL from Plan: ${url}`);
+  return `/media${url}`;
+}
+async function approve(deps, config, session) {
+  const end = deps.now();
+  const docket = await buildDocket(deps.aw, config, session, end);
+  const shots = await listShots(session.id);
+  const who = (await deps.client.me())?.name ?? config.device;
+  const sample = embedUrl('/attachments/00000000-0000-0000-0000-000000000000/raw');
+  const baseBytes = Buffer.byteLength(
+    docketMarkdown(docket, {
+      who,
+      device: config.device,
+      blocks: docket.blocks,
+      outcome: 'complete',
+      evidence: '',
+      shots: shots.map((s) => ({ name: s.name, url: sample })),
+    }),
+  );
+  const review = await startReview({
+    heading: `Evidence docket for ${session.identifier} ${session.title}`,
+    blocks: docket.blocks,
+    shots,
+    docket: {
+      identifier: session.identifier,
+      filename: docketFilename(session, end.toISOString()),
+      baseBytes,
+    },
+    timeoutMs: deps.reviewTimeoutMs,
+  });
+  deps.log(`review the docket in your browser: ${review.url}`);
+  deps.openUrl(review.url);
+  const decision = await review.decision;
+  if (!decision.approved) return { decision, attach: null };
+  const keys = new Set(decision.blocks);
+  const ticked = new Set(decision.shots);
+  const attach = {
+    endedAt: docket.endedAt,
+    who,
+    outcome: decision.outcome,
+    evidence: decision.evidence,
+    activeMs: docket.activeMs,
+    idleMs: docket.idleMs,
+    blocks: docket.blocks.filter((b) => keys.has(b.sourceKey)),
+    shots: shots.filter((s) => ticked.has(s.name)).map((s) => s.name),
+    uploaded: {},
+    docketFile: false,
+    commented: false,
+    blocksSent: false,
+    outboxTrimmed: false,
+  };
+  session.attach = attach;
+  await saveSession(session);
+  for (const shot of shots) if (!ticked.has(shot.name)) await rm2(shot.path, { force: true });
+  return { decision, attach };
+}
+function docketFilename(session, endedAt) {
+  return `docket-${session.identifier}-${endedAt.slice(0, 10)}.md`;
+}
+async function finishSession(deps, config, identifier, options) {
+  const session = await openSession();
+  if (!session || session.identifier.toUpperCase() !== identifier.trim().toUpperCase()) {
+    throw new Error(`no open session for ${identifier} — run: plan-time status`);
+  }
+  let decision = null;
+  let attach = session.attach ?? null;
+  if (attach) {
+    deps.log('resuming the attach you approved earlier; steps already done are skipped');
+  } else {
+    ({ decision, attach } = await approve(deps, config, session));
+    if (!attach) {
+      deps.log(
+        `nothing sent (${decision.approved ? '' : decision.reason}); the session is still open`,
+      );
+      return { decision, sentShots: [], sentBlocks: 0 };
+    }
+  }
+  const issue = { id: session.issueId, identifier: session.identifier };
+  const step = async (done) => {
+    done();
+    await saveSession(session);
+  };
+  for (const name of attach.shots) {
+    if (attach.uploaded[name]) continue;
+    const bytes = await readFile6(join6(shotsDir(session.id), name));
+    const uploaded = await deps.client.uploadAttachment(issue, name, 'image/png', bytes);
+    await step(() => {
+      attach.uploaded[name] = { id: uploaded.id, url: embedUrl(uploaded.url) };
+    });
+    deps.log(`attached ${name}`);
+  }
+  const docket = {
+    session,
+    endedAt: attach.endedAt,
+    blocks: attach.blocks,
+    activeMs: attach.activeMs,
+    idleMs: attach.idleMs,
+  };
+  const markdown = docketMarkdown(docket, {
+    who: attach.who,
+    device: config.device,
+    blocks: attach.blocks,
+    outcome: attach.outcome,
+    evidence: attach.evidence,
+    shots: attach.shots.map((name) => ({ name, url: attach.uploaded[name].url })),
+  });
+  const filename = docketFilename(session, attach.endedAt);
+  if (!attach.docketFile) {
+    await deps.client.uploadAttachment(issue, filename, 'text/markdown', Buffer.from(markdown));
+    await step(() => (attach.docketFile = true));
+    deps.log(`attached ${filename}`);
+  }
+  if (!attach.commented) {
+    await deps.client.comment(issue, markdown);
+    await step(() => (attach.commented = true));
+    deps.log('posted the docket as a comment');
+  }
+  if (!attach.blocksSent) {
+    if (attach.blocks.length) {
+      await deps.client.uploadBlocks(
+        config.device,
+        attach.blocks.map((b) => ({ ...b, issueId: session.issueId })),
+      );
+      deps.log(`sent ${attach.blocks.length} time blocks against ${session.identifier}`);
+    }
+    await step(() => (attach.blocksSent = true));
+  }
+  if (!attach.outboxTrimmed) {
+    await trimOutbox(config.device, activeWindow(session, new Date(attach.endedAt)));
+    await step(() => (attach.outboxTrimmed = true));
+  }
+  if (attach.outcome === 'blocked') {
+    deps.log(`${session.identifier} stays open: the docket records the blocker`);
+  } else if (await deps.confirm(`Complete ${session.identifier}? (y/N)`)) {
+    const columns = await deps.client.columns(parseIdentifier(session.identifier).key);
+    const done = columns.find((c) => c.stateType === 'completed');
+    if (done) {
+      await deps.client.moveIssue(issue, done);
+      deps.log(`${session.identifier} moved to "${done.name}"`);
+    } else {
+      deps.log('this project has no completed column');
+    }
+  }
+  if (options.keep) deps.log(`session kept in ${shotsDir(session.id)}`);
+  else await deleteSession(session.id);
+  return { decision, sentShots: attach.shots, sentBlocks: attach.blocks.length };
+}
+async function pauseSession(paused, now) {
+  const session = await openSession();
+  if (!session) throw new Error('no open session');
+  if (paused === isPaused(session)) return session;
+  if (paused) session.pauses.push({ from: now.toISOString(), to: null });
+  else session.pauses[session.pauses.length - 1].to = now.toISOString();
+  await saveSession(session);
+  return session;
+}
+
+// src/calls.ts
+import { access as access2 } from 'node:fs/promises';
+import { homedir as homedir4 } from 'node:os';
+import { join as join7 } from 'node:path';
+
+// src/sqlite.ts
+import { execFile as execFile4 } from 'node:child_process';
+import { promisify as promisify4 } from 'node:util';
+var run4 = promisify4(execFile4);
+async function nodeSqlite() {
+  try {
+    const mod = await import('node:sqlite');
+    return typeof mod.DatabaseSync === 'function' ? mod : null;
+  } catch {
+    return null;
+  }
+}
+async function queryRows(path, sql) {
+  const lib = await nodeSqlite();
+  if (lib) {
+    const db = new lib.DatabaseSync(path, { readOnly: true });
+    try {
+      return db.prepare(sql).all();
+    } finally {
+      db.close();
+    }
+  }
+  const { stdout: stdout2 } = await run4('sqlite3', ['-readonly', '-json', path, sql], {
+    maxBuffer: 67108864,
+  });
+  return stdout2.trim() ? JSON.parse(stdout2) : [];
+}
+
 // src/calls.ts
 var APPLE_EPOCH_MS = Date.UTC(2001, 0, 1);
-var CALL_HISTORY_PATH = join4(
-  homedir3(),
+var CALL_HISTORY_PATH = join7(
+  homedir4(),
   'Library/Application Support/CallHistoryDB/CallHistory.storedata',
 );
-var ADDRESS_BOOK_DIR = join4(homedir3(), 'Library/Application Support/AddressBook');
+var ADDRESS_BOOK_DIR = join7(homedir4(), 'Library/Application Support/AddressBook');
 var FULL_DISK_ACCESS_HINT =
   'Call history is not readable: give your terminal (or node) Full Disk Access in ' +
   'System Settings → Privacy & Security → Full Disk Access.';
@@ -746,16 +1641,16 @@ var CONTACTS_SQL =
   'SELECT p.ZFULLNUMBER AS number, r.ZFIRSTNAME AS first, r.ZLASTNAME AS last, ' +
   'r.ZORGANIZATION AS org FROM ZABCDPHONENUMBER p JOIN ZABCDRECORD r ON p.ZOWNER = r.Z_PK';
 async function addressBooks() {
-  const { readdir } = await import('node:fs/promises');
+  const { readdir: readdir2 } = await import('node:fs/promises');
   const paths = [];
-  const main = join4(ADDRESS_BOOK_DIR, 'AddressBook-v22.abcddb');
+  const main = join7(ADDRESS_BOOK_DIR, 'AddressBook-v22.abcddb');
   await access2(main)
     .then(() => paths.push(main))
     .catch(() => {});
-  const sources = join4(ADDRESS_BOOK_DIR, 'Sources');
-  const entries = await readdir(sources).catch(() => []);
+  const sources = join7(ADDRESS_BOOK_DIR, 'Sources');
+  const entries = await readdir2(sources).catch(() => []);
   for (const entry of entries) {
-    const path = join4(sources, entry, 'AddressBook-v22.abcddb');
+    const path = join7(sources, entry, 'AddressBook-v22.abcddb');
     await access2(path)
       .then(() => paths.push(path))
       .catch(() => {});
@@ -885,14 +1780,20 @@ async function phoneBlocks(config, now) {
   const [rows, contacts] = await Promise.all([readCalls(since), readContacts()]);
   return applyPrivate(callBlocks(config.device, rows, contacts), config.private);
 }
+function describe(block) {
+  const minutes2 = Math.round((Date.parse(block.endedAt) - Date.parse(block.startedAt)) / 60000);
+  return (
+    `${block.startedAt.slice(0, 16)} ${String(minutes2).padStart(4)}m ${block.app}` +
+    `${block.domain ? ` (${block.domain})` : ''} — ${block.title}`
+  );
+}
 async function sync(config, apiKey, options) {
   const { log } = options;
   const now = options.now ?? new Date();
   const aw = options.aw ?? new ActivityWatch();
-  const client = new PlanClient(config.url, apiKey, { fetch: options.fetch });
   const awOk = await aw.ok();
-  if (!options.dryRun) {
-    await client.heartbeat({
+  if (!options.dryRun && apiKey) {
+    await new PlanClient(config.url, apiKey, { fetch: options.fetch }).heartbeat({
       device: config.device,
       platform: platformOf(process.platform),
       version: VERSION,
@@ -914,50 +1815,102 @@ async function sync(config, apiKey, options) {
   }
   const all = [...perSource.values()].flat();
   if (options.dryRun) {
-    for (const block of all) {
-      const minutes = Math.round((Date.parse(block.endedAt) - Date.parse(block.startedAt)) / 60000);
-      log(
-        `${block.startedAt.slice(0, 16)} ${String(minutes).padStart(4)}m ${block.app}` +
-          `${block.domain ? ` (${block.domain})` : ''} — ${block.title}`,
-      );
-    }
-    log(`dry run: ${all.length} blocks, nothing sent`);
-    return { awOk, blocks: all.length, uploaded: 0 };
+    for (const block of all) log(describe(block));
+    log(`dry run: ${all.length} blocks, nothing stored or sent`);
+    return { awOk, blocks: all.length, queued: 0 };
   }
-  let uploaded = 0;
-  if (all.length > 0) {
-    const result = await client.uploadBlocks(config.device, all);
-    uploaded = result.inserted + result.updated;
-    log(
-      `sent ${all.length} blocks: ${result.inserted} new, ${result.updated} updated, ` +
-        `${result.skipped} skipped`,
-    );
-  } else {
-    log('nothing new to send');
-  }
+  await addToOutbox(all);
+  const waiting = (await readOutbox()).length;
+  log(
+    all.length
+      ? `${all.length} blocks held on this computer, ${waiting} waiting — run: plan-time review`
+      : 'nothing new',
+  );
   for (const id of perSource.keys()) config.cursor[id] = now.toISOString();
   await saveConfig(config);
-  return { awOk, blocks: all.length, uploaded };
+  return { awOk, blocks: all.length, queued: all.length };
+}
+async function reviewOutbox(config, client, options) {
+  const { log } = options;
+  const blocks = await readOutbox();
+  if (blocks.length === 0) {
+    log('nothing waiting for review');
+    return 0;
+  }
+  let approved = blocks;
+  if (options.yes) {
+    for (const block of blocks) log(describe(block));
+    if (options.confirm && !(await options.confirm(`Send these ${blocks.length} blocks? (y/N)`))) {
+      log('nothing sent; the blocks are still waiting');
+      return 0;
+    }
+  } else {
+    const review = await startReview({
+      heading: `Time blocks waiting on ${config.device}`,
+      blocks,
+      shots: [],
+      timeoutMs: options.reviewTimeoutMs,
+    });
+    log(`review your time in your browser: ${review.url}`);
+    options.openUrl(review.url);
+    const decision = await review.decision;
+    if (!decision.approved) {
+      log(`nothing sent (${decision.reason}); the blocks are still waiting`);
+      return 0;
+    }
+    const keys = new Set(decision.blocks);
+    approved = blocks.filter((b) => keys.has(b.sourceKey));
+  }
+  if (approved.length) {
+    const result = await client.uploadBlocks(config.device, approved);
+    log(
+      `sent ${approved.length} blocks: ${result.inserted} new, ${result.updated} updated, ` +
+        `${result.skipped} skipped`,
+    );
+  }
+  const deleted = blocks.length - approved.length;
+  if (deleted) log(`deleted ${deleted} blocks from this computer`);
+  await removeFromOutbox(blocks);
+  return approved.length;
 }
 
 // src/cli.ts
 var WATCH_INTERVAL_MS = 15 * 60000;
-var USAGE = `plan-time ${VERSION} — sends your activity to Plan as time blocks
+var USAGE = `plan-time ${VERSION} — records your activity as time blocks and sends to Plan
+only what you approve
 
 Usage: plan-time <command> [options]
 
   setup [api-url]           ask for the Plan API URL, API key and device name
   sync [--calls] [--dry-run]
-                            send everything since the last sync (at most 7 days)
-  watch [--calls]           sync every 15 minutes, in the foreground
+                            read activity since the last sync (at most 7 days) into the
+                            outbox on this computer; nothing is sent
+  watch [--calls]           sync every 15 minutes, in the foreground; takes the session's
+                            screenshots while a session is open
+  review [--yes]            open the review page for the outbox and send what you tick;
+                            --yes lists the blocks here and sends all of them
+  start <TICKET> [--agent <name>]
+                            open a work session on a ticket and take a screenshot every
+                            5 minutes, in the foreground
+  pause | resume            stop and restart the session's screenshots and time
+  finish <TICKET> [--keep]  build the session's evidence docket and open the review page;
+                            Attach uploads only what you tick
+  discard                   delete the open session and its screenshots
+  sent                      every request this computer has made to Plan
   install-autostart [--calls]
                             start 'watch' at login (opt-in: launchd / Startup folder / systemd)
-  status                    what is configured and when each source last synced
-  private list              show the private list (never sent to Plan)
+  status                    configuration, open session, outbox and last sync per source
+  private list              show the private list (never recorded)
   private add <apps|domains|titles> <value>
   private remove <apps|domains|titles> <value>
 
 --calls also reads iPhone calls synced to this Mac (needs Full Disk Access).`;
+var FLAGS = new Set(['--calls', '--dry-run', '--keep', '--yes']);
+var SKIPPED = {
+  afk: 'you are away',
+  private: 'a private app, title or site is in front',
+  unknown: 'ActivityWatch cannot say what is in front or whether you are away',
+};
 function log(message) {
   console.log(`[plan-time] ${message}`);
 }
@@ -1003,12 +1956,10 @@ async function setup(urlArg) {
 async function runSync(flags) {
   const config = await requireConfig();
   const dryRun = flags.has('--dry-run');
-  const apiKey = dryRun ? '' : await requireApiKey();
+  const apiKey = dryRun ? null : await requireApiKey();
   await sync(config, apiKey, { calls: flags.has('--calls'), dryRun, log });
 }
-async function watch(flags) {
-  await requireConfig();
-  const apiKey = await requireApiKey();
+function stopSignal() {
   const stopped = new AbortController();
   const stop = () => {
     log('stopping');
@@ -1016,17 +1967,126 @@ async function watch(flags) {
   };
   process.once('SIGINT', stop);
   process.once('SIGTERM', stop);
-  log(`syncing every ${WATCH_INTERVAL_MS / 60000} minutes`);
-  while (!stopped.signal.aborted) {
-    try {
-      const config = await requireConfig();
-      await sync(config, apiKey, { calls: flags.has('--calls'), dryRun: false, log });
-    } catch (err) {
-      if (err instanceof AuthError) throw err;
-      log(`sync failed: ${err instanceof Error ? err.message : String(err)}`);
+  return stopped.signal;
+}
+function errorText(err) {
+  return err instanceof Error ? err.message : String(err);
+}
+function shooter() {
+  return screenshotter({
+    aw: new ActivityWatch(),
+    capture: systemCapturer(),
+    now: () => new Date(),
+    log,
+    minGapMs: SHOT_INTERVAL_MS / 2,
+  });
+}
+async function watch(flags) {
+  await requireConfig();
+  const apiKey = await requireApiKey();
+  const signal = stopSignal();
+  const shoot = shooter();
+  let lastSync = 0;
+  log(
+    `reading activity every ${WATCH_INTERVAL_MS / 60000} minutes; nothing is sent until you run: plan-time review`,
+  );
+  while (!signal.aborted) {
+    const config = await requireConfig();
+    if (Date.now() - lastSync >= WATCH_INTERVAL_MS) {
+      lastSync = Date.now();
+      try {
+        await sync(config, apiKey, { calls: flags.has('--calls'), dryRun: false, log });
+      } catch (err) {
+        if (err instanceof AuthError) throw err;
+        log(`sync failed: ${errorText(err)}`);
+      }
     }
-    await sleep2(WATCH_INTERVAL_MS, undefined, { signal: stopped.signal }).catch(() => {});
+    try {
+      if ((await shoot(config)) === 'taken') log('screenshot taken for the open session');
+    } catch (err) {
+      log(`screenshot failed: ${errorText(err)}`);
+    }
+    await sleep2(SHOT_INTERVAL_MS, undefined, { signal }).catch(() => {});
   }
+}
+function openUrl(url) {
+  const [cmd, args] =
+    process.platform === 'darwin'
+      ? ['open', [url]]
+      : process.platform === 'win32'
+        ? ['cmd', ['/c', 'start', '', url]]
+        : ['xdg-open', [url]];
+  const child = spawn(cmd, args, { stdio: 'ignore', detached: true });
+  child.on('error', () => log('could not open a browser; open the URL above yourself'));
+  child.unref();
+}
+async function confirm(question) {
+  return /^y(es)?$/i.test(await ask(question));
+}
+async function sessionDeps() {
+  const config = await requireConfig();
+  const client = new PlanClient(config.url, await requireApiKey());
+  const deps = {
+    client,
+    aw: new ActivityWatch(),
+    now: () => new Date(),
+    confirm,
+    openUrl,
+    log,
+  };
+  return { config, deps };
+}
+async function review(flags) {
+  const config = await requireConfig();
+  const client = new PlanClient(config.url, await requireApiKey());
+  await reviewOutbox(config, client, {
+    yes: flags.has('--yes'),
+    log,
+    openUrl,
+    confirm: process.stdin.isTTY ? confirm : undefined,
+  });
+}
+async function start(identifier, agent) {
+  if (!identifier) throw new Error('usage: plan-time start <TICKET> [--agent <name>]');
+  const { deps } = await sessionDeps();
+  await startSession(deps, identifier, agent);
+  const signal = stopSignal();
+  const shoot = shooter();
+  log(
+    `a screenshot every ${SHOT_INTERVAL_MS / 60000} minutes, kept on this computer, ` +
+      'skipped when you are away or a private app is in front. Ctrl-C stops screenshots; ' +
+      'the session stays open until: plan-time finish',
+  );
+  while (!signal.aborted) {
+    try {
+      const result = await shoot(await requireConfig());
+      if (result === 'no-session') {
+        log('the session was closed');
+        return;
+      }
+      if (result === 'taken') log('screenshot taken');
+      else if (result in SKIPPED) log(`screenshot skipped: ${SKIPPED[result]}`);
+    } catch (err) {
+      log(`screenshot failed: ${errorText(err)}`);
+    }
+    await sleep2(SHOT_INTERVAL_MS, undefined, { signal }).catch(() => {});
+  }
+}
+async function finish(identifier, flags) {
+  if (!identifier) throw new Error('usage: plan-time finish <TICKET> [--keep]');
+  const { config, deps } = await sessionDeps();
+  await finishSession(deps, config, identifier, { keep: flags.has('--keep') });
+}
+async function discard() {
+  const session = await openSession();
+  if (!session) throw new Error('no open session');
+  await deleteSession(session.id);
+  log(`discarded the session for ${session.identifier}; nothing was sent`);
+}
+async function sent() {
+  const text3 = await readSentLog();
+  if (!text3) log(`nothing sent yet (${sentLogPath()})`);
+  else process.stdout.write(text3);
 }
 async function status() {
   const config = await loadConfig();
@@ -1048,6 +2108,17 @@ async function status() {
   for (const [id, at] of sources) log(`last sync ${id}: ${at}`);
   const { apps, domains, titles } = config.private;
   log(`private  ${apps.length} apps, ${domains.length} domains, ${titles.length} title words`);
+  log(`outbox   ${(await readOutbox()).length} blocks waiting for review (${dataDir()})`);
+  const session = await openSession();
+  if (!session) {
+    log('session  none open');
+    return;
+  }
+  const shots = await listShots(session.id);
+  log(
+    `session  ${session.identifier} ${session.title}${session.agent ? ` (agent ${session.agent})` : ''}, ` +
+      `since ${session.startedAt}, ${shots.length} screenshots${isPaused(session) ? ', paused' : ''}`,
+  );
 }
 async function privateCommand(args) {
   const config = await requireConfig();
@@ -1071,10 +2142,20 @@ async function privateCommand(args) {
 }
 async function main(argv) {
   const [command, ...rest] = argv;
-  const flags = new Set(rest.filter((a) => a.startsWith('--')));
-  const args = rest.filter((a) => !a.startsWith('--'));
-  for (const flag of flags) {
-    if (flag !== '--calls' && flag !== '--dry-run') throw new Error(`unknown option ${flag}`);
+  const flags = new Set();
+  const args = [];
+  let agent = null;
+  for (let i = 0; i < rest.length; i++) {
+    const arg = rest[i];
+    if (arg === '--agent' || arg.startsWith('--agent=')) {
+      agent = (arg === '--agent' ? rest[++i] : arg.slice('--agent='.length))?.trim() || null;
+      if (!agent) throw new Error('--agent needs a name');
+    } else if (arg.startsWith('--')) {
+      if (!FLAGS.has(arg)) throw new Error(`unknown option ${arg}`);
+      flags.add(arg);
+    } else {
+      args.push(arg);
+    }
   }
   switch (command) {
     case 'setup':
@@ -1088,6 +2169,22 @@ async function main(argv) {
       log(`installed: ${path}`);
       return;
     }
+    case 'review':
+      return review(flags);
+    case 'start':
+      return start(args[0], agent);
+    case 'pause':
+    case 'resume': {
+      const session = await pauseSession(command === 'pause', new Date());
+      log(`${session.identifier} ${command === 'pause' ? 'paused' : 'resumed'}`);
+      return;
+    }
+    case 'finish':
+      return finish(args[0], flags);
+    case 'discard':
+      return discard();
+    case 'sent':
+      return sent();
     case 'status':
       return status();
     case 'private':

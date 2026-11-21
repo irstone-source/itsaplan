@@ -263,6 +263,8 @@ export const qk = {
   agentToolLinks: (teamId: number, agentId: number) =>
     ['aiAgents', teamId, agentId, 'tool-configs'] as const,
   issue: (id: number) => ['issue', id] as const,
+  // Under the issue prefix, so the issue's live refresh picks up a new draft.
+  issueDockets: (id: number) => ['issue', id, 'dockets'] as const,
   issueDevelopmentRepositories: (id: number) =>
     ['issue', id, 'development', 'repositories'] as const,
   issueDevelopmentPullRequests: (id: number, repositoryId: number, state: 'open' | 'all') =>

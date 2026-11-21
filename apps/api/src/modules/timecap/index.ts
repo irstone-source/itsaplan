@@ -58,7 +58,7 @@ export const timecapRoutes = new Elysia({ name: 'timecap', detail: { tags: ['Tim
   })
   .post(
     '/time/agent/blocks',
-    ({ user, body }) => uploadBlocks(requireUser(user).id, body.device, body.blocks),
+    ({ user, body }) => uploadBlocks(requireUser(user), body.device, body.blocks),
     {
       body: uploadBlocksBody,
       response: { 200: UploadResponse, ...errors(400, 401) },
@@ -66,7 +66,9 @@ export const timecapRoutes = new Elysia({ name: 'timecap', detail: { tags: ['Tim
         summary: 'Upload activity blocks',
         description:
           'Upserts by sourceKey. A confirmed or ignored block is never changed; a pending ' +
-          'one takes the new facts and a fresh suggestion.',
+          'one takes the new facts and a fresh suggestion. A block with issueId is stored ' +
+          'confirmed to that ticket and logged on it; it is skipped when the caller cannot ' +
+          'edit the ticket, and stored pending when its week has closed.',
       },
     },
   )
@@ -83,7 +85,10 @@ export const timecapRoutes = new Elysia({ name: 'timecap', detail: { tags: ['Tim
   })
   .get('/me/time/status', ({ user }) => getMyStatus(requireUser(user).id), {
     response: { 200: MyStatusResponse, ...errors(401) },
-    detail: { summary: 'Whether a device of the viewer was seen in the last 24 hours' },
+    detail: {
+      summary: 'Whether a device of the viewer was seen in the last 24 hours',
+      description: 'Also when the newest block arrived.',
+    },
   })
   .post(
     '/me/time/blocks/:blockId',

@@ -276,12 +276,28 @@ async function listDevices(userIds: string[]): Promise<Map<string, DeviceDto[]>>
   return devices;
 }
 
-export async function getMyStatus(
-  userId: string,
-): Promise<{ active: boolean; devices: DeviceDto[] }> {
+export async function getMyStatus(userId: string): Promise<{
+  active: boolean;
+  devices: DeviceDto[];
+  lastBlockAt: string | null;
+  firstDeviceAt: string | null;
+}> {
   const devices = (await listDevices([userId])).get(userId) ?? [];
   const since = Date.now() - DAY_MS;
-  return { active: devices.some((d) => Date.parse(d.lastSeenAt) >= since), devices };
+  const [last] = await db
+    .select({ at: sql<Date | null>`max(${timeBlock.createdAt})`.mapWith(timeBlock.createdAt) })
+    .from(timeBlock)
+    .where(eq(timeBlock.userId, userId));
+  const [first] = await db
+    .select({ at: sql<Date | null>`min(${timeDevice.createdAt})`.mapWith(timeDevice.createdAt) })
+    .from(timeDevice)
+    .where(eq(timeDevice.userId, userId));
+  return {
+    active: devices.some((d) => Date.parse(d.lastSeenAt) >= since),
+    devices,
+    lastBlockAt: last?.at ? iso(last.at) : null,
+    firstDeviceAt: first?.at ? iso(first.at) : null,
+  };
 }
 
 // ── Suggestions ────────────────────────────────────────────────────────────
@@ -462,15 +478,19 @@ export interface UploadBlock {
   title: string;
   domain: string | null;
   detail?: Record<string, unknown>;
+  issueId?: number;
 }
 
 // Upserts by (user, sourceKey). A confirmed or ignored block is never changed; a
-// pending one takes the new facts and a fresh suggestion.
+// pending one takes the new facts and a fresh suggestion. A block the agent sends with
+// a ticket is confirmed to it, unless the person cannot edit the ticket (skipped) or
+// its week has closed (left pending, as the person could not confirm it either).
 export async function uploadBlocks(
-  userId: string,
+  user: AuthUser,
   device: string,
   blocks: UploadBlock[],
 ): Promise<{ inserted: number; updated: number; skipped: number }> {
+  const userId = user.id;
   const parsed = blocks.map((b) => {
     const startedAt = new Date(b.startedAt);
     const endedAt = new Date(b.endedAt);
@@ -518,9 +538,28 @@ export async function uploadBlocks(
         )
     ).map((r) => r.parent),
   );
+  const weekStart = londonWeekStart(new Date());
+  const targets = new Map<number, Target | null>();
+  const allocation = async (issueId: number): Promise<Target | null> => {
+    if (!targets.has(issueId)) {
+      try {
+        const found = await issueTarget(user, issueId);
+        targets.set(issueId, { issueId, initiativeId: found.initiativeId });
+      } catch (err) {
+        if (!(err instanceof HttpError)) throw err;
+        targets.set(issueId, null);
+      }
+    }
+    return targets.get(issueId)!;
+  };
   for (const b of parsed) {
     const found = existing.get(b.sourceKey);
     if (split.has(b.sourceKey) || (found && found.status !== 'pending')) {
+      counts.skipped++;
+      continue;
+    }
+    const target = b.issueId == null ? null : await allocation(b.issueId);
+    if (b.issueId != null && !target) {
       counts.skipped++;
       continue;
     }
@@ -536,13 +575,22 @@ export async function uploadBlocks(
       detail: b.detail,
     };
     const values = { ...facts, ...suggestionColumns(await suggestFor(userId, facts, ctx)) };
+    let row: BlockRow;
     if (found) {
-      await db.update(timeBlock).set(values).where(eq(timeBlock.id, found.id));
+      [row] = (await db
+        .update(timeBlock)
+        .set(values)
+        .where(eq(timeBlock.id, found.id))
+        .returning()) as [BlockRow];
       counts.updated++;
     } else {
-      await db.insert(timeBlock).values({ ...values, userId, sourceKey: b.sourceKey });
+      [row] = (await db
+        .insert(timeBlock)
+        .values({ ...values, userId, sourceKey: b.sourceKey })
+        .returning()) as [BlockRow];
       counts.inserted++;
     }
+    if (target && !isLocked(row, weekStart, user)) await confirmBlock(row, target);
   }
   return counts;
 }

@@ -91,13 +91,13 @@
   },
   "setup": {
     "title": "Time capture setup",
-    "description": "Four steps on the computer you work from. Each one is checked as it is done.",
+    "description": "Five steps on the computer you work from. Each one is checked as it is done.",
     "done": "Done",
     "waiting": "Waiting",
     "steps": {
       "activitywatch": {
         "title": "Install ActivityWatch",
-        "body": "Download ActivityWatch and keep it running. It stores what you do on this computer only; the agent sends blocks of app, window title, domain and time, nothing else.",
+        "body": "Download ActivityWatch and keep it running. It stores what you do on this computer only; the agent sends only the blocks you approve: app, window title, domain and time.",
         "link": "activitywatch.net",
         "check": "The agent reports that ActivityWatch answers."
       },
@@ -113,11 +113,21 @@
         "check": "A computer has registered."
       },
       "sync": {
-        "title": "First sync",
-        "body": "Leave watch running. It syncs every 15 minutes, and yesterday's blocks appear in My time.",
-        "check": "A sync arrived in the last 24 hours.",
+        "title": "Run watch",
+        "body": "Leave watch running. It reads activity every 15 minutes and keeps the blocks on this computer until you review them. On its own it sends only a heartbeat: this computer's name, platform, agent version and whether ActivityWatch is running.",
+        "check": "This computer was seen in the last 24 hours."
+      },
+      "review": {
+        "title": "First review",
+        "body": "Activity and screenshots are held on this computer until you approve them. Run review to see the blocks, untick any you do not want sent, and send the rest. Approved blocks appear in My time.",
+        "ticket": "Working on one ticket: start records the session, and finish builds its docket for you to review and attach.",
+        "check": "Approved blocks have arrived.",
         "open": "Open My time"
       }
+    },
+    "screenRecording": {
+      "title": "Screen Recording (Mac)",
+      "body": "During a ticket session the agent takes a screenshot every 5 minutes, kept on this computer. On a Mac, allow it in System Settings → Privacy & Security → Screen Recording: switch on your terminal app, or Node if it is listed. macOS asks the first time a session starts."
     },
     "calls": {
       "title": "Calls (Mac)",
@@ -128,7 +138,9 @@
   "banner": {
     "title": "Set up time capture",
     "body": "No computer has sent time in the last 24 hours. Set the agent up to log yesterday in three minutes a day.",
-    "dismiss": "Not now"
+    "dismiss": "Not now",
+    "reviewTitle": "Time is waiting on your computer",
+    "reviewBody": "No time has arrived for two working days. Run plan-time review on your computer to approve and send it."
   },
   "team": {
     "title": "Team setup",

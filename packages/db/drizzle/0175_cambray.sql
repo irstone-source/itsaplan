@@ -440,3 +440,38 @@ DO $$ BEGIN
   ALTER TABLE "issue_worklog" ADD CONSTRAINT "issue_worklog_time_block_id_unique" UNIQUE("time_block_id");
 EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL;
 END $$;
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "issue_docket" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"issue_id" integer NOT NULL,
+	"agent_run_id" integer,
+	"status" text DEFAULT 'draft' NOT NULL,
+	"body" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"decided_by" text,
+	"decided_at" timestamp with time zone,
+	CONSTRAINT "issue_docket_status_check" CHECK ("issue_docket"."status" IN ('draft', 'attached', 'discarded'))
+);
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "issue_docket" ADD CONSTRAINT "issue_docket_issue_id_issue_id_fk" FOREIGN KEY ("issue_id") REFERENCES "public"."issue"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "issue_docket" ADD CONSTRAINT "issue_docket_agent_run_id_agent_run_id_fk" FOREIGN KEY ("agent_run_id") REFERENCES "public"."agent_run"("id") ON DELETE set null ON UPDATE no action;
+EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "issue_docket" ADD CONSTRAINT "issue_docket_decided_by_user_id_fk" FOREIGN KEY ("decided_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;
+EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL;
+END $$;
+--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "issue_docket_issue_idx" ON "issue_docket" USING btree ("issue_id","id" DESC NULLS LAST);
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TRIGGER issue_docket_rev AFTER INSERT OR UPDATE OR DELETE ON issue_docket
+    FOR EACH ROW EXECUTE FUNCTION rev_issue_child('issue_id', 'detail');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

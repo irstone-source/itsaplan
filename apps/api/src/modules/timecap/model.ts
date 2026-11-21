@@ -32,6 +32,8 @@ export const uploadBlocksBody = t.Object({
       domain: t.Nullable(t.String({ maxLength: 253 })),
       // Call blocks: { direction: 'in' | 'out', contact: string | null, number: string }.
       detail: t.Optional(t.Record(t.String(), t.Any())),
+      // The ticket the person already chose for this block: it is stored confirmed.
+      issueId: t.Optional(t.Integer()),
     }),
     { maxItems: 2000 },
   ),
@@ -158,6 +160,10 @@ export const MyStatusResponse = t.Object({
   // A device seen in the last 24 hours.
   active: t.Boolean(),
   devices: t.Array(DeviceResponse),
+  // When the newest block arrived from the agent; null before the first.
+  lastBlockAt: t.Nullable(t.String()),
+  // When the person's first device was set up: the review prompt waits from here until the first block.
+  firstDeviceAt: t.Nullable(t.String()),
 });
 
 // ── The team ───────────────────────────────────────────────────────────────

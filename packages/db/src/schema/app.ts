@@ -2375,6 +2375,28 @@ export const issueWorklog = pgTable(
   ],
 );
 
+// A record of an agent run on an issue, drafted when the run ends. It reaches the
+// issue as a comment only when a person attaches it.
+export const issueDocket = pgTable(
+  'issue_docket',
+  {
+    id: serial('id').primaryKey(),
+    issueId: integer('issue_id')
+      .notNull()
+      .references(() => issue.id, { onDelete: 'cascade' }),
+    agentRunId: integer('agent_run_id').references(() => agentRun.id, { onDelete: 'set null' }),
+    status: text('status').notNull().default('draft'),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    decidedBy: text('decided_by').references(() => user.id, { onDelete: 'set null' }),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+  },
+  (t) => [
+    check('issue_docket_status_check', sql`${t.status} IN ('draft', 'attached', 'discarded')`),
+    index('issue_docket_issue_idx').on(t.issueId, t.id.desc()),
+  ],
+);
+
 // One side of a change: the text the feed shows, and the id of the row behind it
 // when the side names one. The text is a snapshot, so an entry still reads
 // correctly after that row is renamed or deleted; the id is what makes the entry

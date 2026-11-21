@@ -28,6 +28,7 @@ interface BlockOptions {
   // Minutes from `base`; negative is in the past.
   offset?: number;
   minutes?: number;
+  issueId?: number;
 }
 
 function block(sourceKey: string, options: BlockOptions = {}) {
@@ -41,6 +42,7 @@ function block(sourceKey: string, options: BlockOptions = {}) {
     title: options.title ?? 'Campaigns - Google Ads',
     domain: options.domain === undefined ? 'ads.google.com' : options.domain,
     detail: options.detail,
+    issueId: options.issueId,
   };
 }
 
@@ -655,6 +657,84 @@ describe('Time capture', () => {
     expect((await con.playbook.get()).data).toMatchObject([
       { initiativeId: fge.id, trackedMinutes: 180, timeState: 'flag' },
     ]);
+  });
+
+  it('confirms a block sent with a ticket, and skips one the person cannot edit', async () => {
+    const { god } = await setup();
+    const { con, todo, fge } = await scaffold(god);
+    const ticket = (
+      await con.issues.post({ columnId: todo.id, title: 'Ads', initiativeId: fge.id })
+    ).data!;
+    const old = -14 * 24 * 60;
+    const member = await addUser({ name: 'Jo' });
+    await joinProject(god, member, 'CON', 'member');
+
+    expect(
+      await upload(member.api, [
+        block('a1', { issueId: ticket.id, minutes: 20 }),
+        block('a2', { offset: 20 }),
+        block('a3', { offset: old, issueId: ticket.id }),
+      ]),
+    ).toEqual({ inserted: 3, updated: 0, skipped: 0 });
+    const [allocated, loose] = (await myDay(member.api)).blocks;
+    expect(allocated).toMatchObject({
+      status: 'confirmed',
+      issue: { id: ticket.id },
+      initiative: { id: fge.id },
+    });
+    expect(loose).toMatchObject({ status: 'pending', issue: null });
+    // A block of a closed week is stored pending, as the person could not confirm it.
+    expect((await myDay(member.api, dayOf(old))).blocks[0]).toMatchObject({
+      status: 'pending',
+      locked: true,
+    });
+    const worklogs = (await god.api.issues({ issueId: ticket.id }).worklogs.get()).data!;
+    expect(worklogs).toMatchObject([{ minutes: 20, note: 'Time capture: Google Chrome' }]);
+
+    // A confirmed block keeps its ticket when it is sent again.
+    expect(await upload(member.api, [block('a1', { issueId: ticket.id, minutes: 20 })])).toEqual({
+      inserted: 0,
+      updated: 0,
+      skipped: 1,
+    });
+
+    const reader = await createRole(god.api, 'CON', {
+      name: 'Reader',
+      permissions: { work_items: { read: true } },
+    });
+    const readOnly = await addProjectMember(god.api, 'CON', reader.data!.id);
+    const stranger = await addUser({ name: 'Sam' });
+    for (const api of [readOnly, stranger.api]) {
+      expect(
+        await upload(api, [block('r1', { issueId: ticket.id }), block('r2', { offset: 30 })]),
+      ).toEqual({ inserted: 1, updated: 0, skipped: 1 });
+      expect((await myDay(api)).blocks).toMatchObject([{ status: 'pending' }]);
+    }
+    expect(await upload(god.api, [block('g1', { issueId: ticket.id + 1000 })])).toEqual({
+      inserted: 0,
+      updated: 0,
+      skipped: 1,
+    });
+    expect((await god.api.issues({ issueId: ticket.id }).worklogs.get()).data).toHaveLength(1);
+  });
+
+  it('reports when the newest block arrived and when the first device was set up', async () => {
+    const { god } = await setup();
+    expect((await god.api.me.time.status.get()).data).toMatchObject({
+      lastBlockAt: null,
+      firstDeviceAt: null,
+    });
+    await god.api.time.agent.heartbeat.post({
+      device: 'mac',
+      platform: 'darwin',
+      version: '0.1.0',
+      awOk: true,
+    });
+    expect((await god.api.me.time.status.get()).data!.firstDeviceAt).toBeInstanceOf(Date);
+    await upload(god.api, [block('k1')]);
+    const status = (await god.api.me.time.status.get()).data!;
+    expect(status.lastBlockAt).toBeInstanceOf(Date);
+    expect(Date.now() - new Date(status.lastBlockAt!).getTime()).toBeLessThan(60_000);
   });
 
   it('prunes pending blocks after 30 days and ignored ones after 7', async () => {

@@ -3,6 +3,7 @@ import { eq, inArray } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import type { ActivityActor } from '#modules/issues/activity';
 import { emitWebhookEvents } from '#modules/webhooks/emit';
+import { draftRunDockets } from '#modules/dockets/draft';
 
 // 'agent_run.finished', for the webhooks and the api's extensions: one event per project
 // and actor with a payload per run, once the run is success, failed or canceled. A run deleted
@@ -10,9 +11,11 @@ import { emitWebhookEvents } from '#modules/webhooks/emit';
 // returned: whoever sets up a webhook may not read the agents, and the run's trace is
 // served to those who do.
 
-// Runs their agent ended, which is also the event's actor.
-export function emitRunsFinished(runIds: number[]): Promise<void> {
-  return emitEnded(runIds, (agentUserId) => agentUserId);
+// Runs their agent ended, which is also the event's actor. Each run of an issue also
+// gets a draft docket for a person to attach or discard.
+export async function emitRunsFinished(runIds: number[]): Promise<void> {
+  await draftRunDockets(runIds);
+  await emitEnded(runIds, (agentUserId) => agentUserId);
 }
 
 // Runs someone ended before their agent did.

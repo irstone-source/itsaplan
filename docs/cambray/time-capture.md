@@ -1,6 +1,7 @@
 # Time capture: automatic tracking, daily review, tickets
 
-Status: built 2 Nov 2026, released as v1.5.0-cambray.3.
+Status: built 2 Nov 2026, released as v1.5.0-cambray.3. Approval-gated sending, ticket
+sessions and evidence dockets: v1.10.0-cambray.2, pending.
 
 ## 1. What it is for
 
@@ -14,23 +15,60 @@ day each.
    calls that iCloud syncs to the Mac.
 2. The agent merges the raw activity into **blocks**, for example "09:10–10:25 Chrome,
    Google Ads, FGE account". It drops idle time and anything on the person's private
-   list, then sends the blocks to Plan.
+   list, and keeps the blocks on the computer. The person approves them with
+   `plan-time review`; only approved blocks are sent to Plan.
 3. Plan suggests a ticket or a client for each block.
 4. Each person reviews yesterday's blocks in Plan → My time, or in Claude through MCP.
    For each block they can accept the suggestion, change it, split it, ignore it, or
    capture it as a new task. Corrections become rules.
 5. Confirmed time becomes logged time on the ticket, counts toward the client's limit on
    the Time page, and locks when its week has passed.
+6. Working on one ticket, a person (or a coding agent on their computer) runs
+   `plan-time start CON-12` and `plan-time finish CON-12`. The session records activity
+   and a screenshot every 5 minutes on the computer, and finish builds an **evidence
+   docket**: timeline, apps and sites, screenshots, and either the evidence that the work is
+   complete or the blocker. The person reviews it and attaches it to the ticket; a blocked
+   ticket is not offered for completion. The session's blocks are sent already allocated to the
+   ticket.
+7. An AI agent's run on an issue gets a draft docket on the server when it ends. A person
+   attaches it to the issue as a comment or discards it.
 
 The Rize sync (`modules/rize`) stays in the code but is dormant; time capture replaces it
 as the source of time.
 
 ## 2. Privacy
 
-- Raw ActivityWatch data never leaves the machine. The agent sends blocks only: app,
-  window title, website domain, start and end. It sends no screenshots, no keystrokes,
-  no full URLs and no document contents.
-- The private list is applied on the machine before anything is sent. Each person sets
+- Nothing leaves the machine without the person's approval. Raw ActivityWatch data is
+  never sent. Blocks (app, window title, website domain, start and end) are held in a
+  local outbox until the person approves them in `plan-time review`; a block they untick
+  is deleted on the computer and never sent.
+- The only thing sent without a review is the heartbeat: device name, platform, agent
+  version and whether ActivityWatch is running. It carries no activity.
+- Screenshots are taken only during a ticket session (`plan-time start`), every 5
+  minutes. One is skipped while the person is away, while an app, title or domain on the
+  private list is in front, and whenever ActivityWatch cannot tell what is in front or
+  whether the person is away.
+- A screenshot shows everything on the screen at that moment: windows behind the one in
+  front, other monitors and notifications. The private list stops a screenshot being
+  taken while a private app is in front; it does not hide a private app that is visible
+  elsewhere on the screen. The review page is where the person unticks any screenshot
+  they do not want sent.
+- On a Mac, a large screenshot is downscaled on the computer before review.
+- Screenshots are kept on the computer and sent only when the person attaches the docket,
+  and only the ones left ticked.
+- The docket comment contains the session's app names, window titles and sites, the
+  ticked screenshots and the evidence or blocker the person wrote. An `@` handle or markdown in a window title is
+  neutralised, so a title mentions nobody and adds no formatting.
+- An attached screenshot is a ticket attachment. Its raw link
+  (`/attachments/<id>/raw`) opens without signing in, so anyone who has the link can view
+  it. The id is random and is not listed anywhere outside the ticket.
+- No keystrokes, full URLs or document contents are read or sent.
+- `plan-time sent` lists every request the agent has attempted, including one that
+  failed to connect: time, method, path, size and what it was. Reads (looking up a
+  ticket, the board's columns) are listed too.
+- Draft agent dockets are visible only to people who can edit the ticket, until one of
+  them attaches it.
+- The private list is applied to blocks on the machine before review. Each person sets
   their own apps, domains and title words. Banking, health and personal messaging apps
   are on it by default.
 - A person's blocks are visible to that person only, including to the instance owner
@@ -44,7 +82,7 @@ as the source of time.
   anyone installs.
 - Retention: unconfirmed blocks are deleted after 30 days, and ignored blocks after 7.
 
-## 3. Data (migration `0153_time_capture.sql`, re-runnable)
+## 3. Data (migration `0175_cambray.sql`, re-runnable)
 
 **`time_device`** — one row per computer of a person:
 - `id`, `user_id` (FK, cascade), `name`, `platform` (`darwin`, `win32` or `linux`)
@@ -73,6 +111,14 @@ as the source of time.
 
 **`issue_worklog.time_block_id`** (unique, FK cascade): a confirmed block that has a
 ticket mirrors as one worklog, in the same way as `rize_entry_id`.
+
+**`issue_docket`** — a draft record of an AI agent's run on an issue:
+- `id`, `issue_id` (FK, cascade), `agent_run_id` (FK, set null)
+- `status`: `draft` | `attached` | `discarded`
+- `body`: the markdown that becomes the comment
+- `created_at`, `decided_by` (user FK, set null), `decided_at`
+- index `(issue_id, id desc)`; a revision trigger moves the issue's detail scope, so an
+  open issue shows a new draft without a reload
 
 ## 4. Suggestions (deterministic, in this order)
 
@@ -104,9 +150,28 @@ a block offers "Always ignore". An owner can promote a personal rule to a team r
   - in the macOS Keychain as `itsaplan_time_key`
   - elsewhere in `~/.config/plan-time/credentials` with mode 0600
   - a device name
+- **Local store.** `~/.local/share/plan-time/` (or `$PLAN_TIME_HOME/data`), mode 0700:
+  `outbox/<date>.json` holds blocks waiting for review, `sessions/<id>/` a ticket
+  session and its screenshots. `~/.config/plan-time/sent.log` is the append-only log of
+  every request.
 - **Commands.**
-  - `sync`: send everything since the last cursor, at most the last 7 days.
-  - `watch`: sync every 15 minutes in the foreground.
+  - `sync`: read everything since the last cursor, at most the last 7 days, into the
+    outbox. Nothing is sent.
+  - `watch`: sync every 15 minutes in the foreground, and take a session's screenshots
+    while one is open.
+  - `review`: opens the local review page for the outbox. Approved blocks are sent to
+    `POST /time/agent/blocks`; unticked ones are deleted. `--yes` sends the printed list
+    from the terminal instead.
+  - `start CON-12 [--agent "<name>"]`: checks the ticket exists, records the session start
+    and asks before moving the ticket to its project's first started column.
+  - `pause`, `resume`, `discard` (deletes the session folder).
+  - `finish CON-12`: builds the docket from the session and opens the review page. On
+    **Attach** the ticked screenshots are uploaded as attachments, the docket is posted as
+    a comment and uploaded as `docket-CON-12-<date>.md`, and the session's blocks are sent
+    with `issueId`, so they are confirmed to the ticket. It then asks whether to move the
+    ticket to its completed column. The session folder is deleted afterwards (`--keep`
+    retains it).
+  - `sent`: prints the request log.
   - `install-autostart`: opt-in only, a launchd agent or a Windows Startup shortcut. Ian's
     Mac never uses it.
   - `status`; `private add|list|remove`.
@@ -125,7 +190,17 @@ a block offers "Always ignore". An owner can promote a personal rule to a team r
   - names from the AddressBook database (`ZABCDPHONENUMBER` → `ZABCDRECORD`: first, last, organisation)
   - unanswered calls are skipped
   - title "Call with <name or number>", with the contact as `detail.contact`
-- **Heartbeat.** Every sync posts the device, platform and version.
+- **Review page.** A `node:http` server on `127.0.0.1` with a random port and a one-time
+  token in the URL, opened in the browser. It closes after approve or cancel, or after 30
+  minutes. It shows "Nothing has been sent", every block and screenshot with a tick box,
+  a required "Evidence this is complete, or the blocker" box with a Complete / Blocked
+  choice, and the exact files and bytes that Attach will upload.
+- **Screenshots.** macOS `screencapture -x` (needs Screen Recording permission for the
+  terminal or Node; the Setup page explains), Windows PowerShell `CopyFromScreen`, Linux
+  `grim`, then `gnome-screenshot`, then `import`; with none of these, screenshots are off
+  and the agent says so.
+- **Heartbeat.** Every sync posts the device, platform, agent version and whether
+  ActivityWatch is running.
 - **Failure.** When ActivityWatch is down, the sync says so and sends a heartbeat with
   `awOk: false`, which Plan shows as "tracker not running".
 
@@ -133,12 +208,17 @@ a block offers "Always ignore". An owner can promote a personal rule to a team r
 
 **Agent** (the user's API key or session):
 - `POST /time/agent/heartbeat` `{ device, platform, version, awOk }`
-- `POST /time/agent/blocks` `{ device, blocks: [{ sourceKey, source, startedAt, endedAt, app, title, domain, detail }] }`
+- `POST /time/agent/blocks` `{ device, blocks: [{ sourceKey, source, startedAt, endedAt, app, title, domain, detail, issueId? }] }`
   - at most 2,000 blocks per call
   - upserts by `(user, sourceKey)`
   - never changes a confirmed or ignored block
   - suggests on insert
-  - answers the inserted and skipped counts
+  - a block with `issueId` (an allocated block, from a finished session) is stored
+    confirmed to that ticket, with its worklog, through the same path as a confirm in My
+    time. The caller must be able to edit the ticket (`work_items` edit); otherwise the
+    block is not stored and counts as skipped. A block of a closed week is stored pending,
+    as its person could not confirm it either
+  - answers the inserted, updated and skipped counts
 
 **The person**:
 - `GET /me/time?date=YYYY-MM-DD` returns:
@@ -150,7 +230,9 @@ a block offers "Always ignore". An owner can promote a personal rule to a team r
 - `POST /me/time/blocks/:id/capture` `{ projectKey, title, initiativeId? }`: creates the ticket assigned to the person and confirms the block to it
 - `POST /me/time/confirm-day` `{ date, minConfidence? }`
 - `GET /me/time/rules`, `POST /me/time/rules`, `DELETE /me/time/rules/:id`
-- `GET /me/time/status`: whether any device was seen in the last 24 hours (the Today banner)
+- `GET /me/time/status`: whether any device was seen in the last 24 hours, and
+  `lastBlockAt`, when the newest block arrived, and `firstDeviceAt`, when the person's
+  first device was set up (the Today banner)
 
 **The team** (project owners and God):
 - `GET /projects/:key/time/team`: each project member, their devices, last seen, and
@@ -166,9 +248,26 @@ read-only to its person. God can still change it.
 **Retention.** The api background loop deletes pending blocks older than 30 days and
 ignored blocks older than 7, once an hour.
 
+**Agent dockets** (`apps/api/src/modules/dockets`):
+- When an agent's run of an issue ends (success or failed, internal or external), the api
+  writes a draft docket: agent name, trigger, status, start, finish and duration, tokens,
+  the tool calls by name and count, the file paths named in the tool calls' arguments
+  (from `agent_run_trace`), and the output, cut at 4,000 characters. An `@` in the agent's
+  text is written so that it mentions nobody when the docket is attached. A failure to
+  draft is logged and never fails the run.
+- `GET /issues/:issueId/dockets`: the issue's dockets, newest first (`work_items` edit:
+  a draft holds agent output, tool and file names and errors nobody has approved, and an
+  attached docket is already a comment).
+- `POST /dockets/:id/attach`: adds the body to the issue as the caller's comment and marks
+  it attached (`work_items` edit).
+- `POST /dockets/:id/discard`: marks it discarded; nothing reaches the issue (`work_items`
+  edit).
+- Only a draft can be decided; a second decision is 409.
+
 **MCP tools**, generated from the routes:
 - `get_my_time`, `allocate_time_block`, `split_time_block`, `capture_task_from_time`
 - `confirm_my_day`, `list_time_rules`, `add_time_rule`
+- `list_issue_dockets`, `attach_docket`, `discard_docket`
 
 ## 7. Web
 
@@ -180,17 +279,26 @@ ignored blocks older than 7, once an hour.
   - "Confirm suggested (n)"
   - an "Always do this" toast after a change
   - a "Rules" tab
-- **Setup** (`/time/setup`): the four steps, each with a check:
+- **Setup** (`/time/setup`): five steps, each with a check:
   1. install ActivityWatch
   2. create an API key, linking to the account's API keys
   3. download and set up the agent, with commands to copy
-  4. the first sync seen
-  - plus Calls (Mac): Full Disk Access and `--calls`
-- **Today banner.** With no device seen in 24 hours: "Set up time capture" → Setup. It
+  4. run watch: checked by the device's heartbeat in the last 24 hours
+  5. first review (`plan-time review`, and `start` / `finish` for a ticket): checked by a
+     block having arrived
+  - plus Screen Recording (Mac): System Settings → Privacy & Security → Screen Recording,
+    allow the terminal app or Node; and Calls (Mac): Full Disk Access and `--calls`
+- **Today banner.** With no device seen in 24 hours: "Set up time capture" → Setup. With
+  a device seen but no new block for 2 working days: "Time is waiting on your
+  computer", asking the person to run `plan-time review`. The 2 working days are counted
+  from the last block, and from the first device setup when no block has arrived. Either
   can be dismissed for 7 days.
+- **Issue detail.** A draft agent docket shows above the activity feed as "Agent docket
+  waiting for approval", with a collapsed preview and **Attach** and **Discard**. Only
+  people who can edit the issue see it.
 - **Time page** (Consulting): a "Team setup" list (who has a device, last seen,
   confirmed this week) for owners, and the client totals now include captured time.
-- **i18n.** `timecap` namespace in all 10 locales.
+- **i18n.** `timecap` namespace, and `issue.dockets`, in every locale.
 
 ## 8. Tests
 
@@ -206,10 +314,18 @@ ignored blocks older than 7, once an hour.
   - confirm-day honours the confidence
   - team view is for owners only
   - Time page totals include captured time
+  - an allocated block is confirmed with a worklog; one for a ticket the person cannot
+    edit is skipped; one of a closed week is stored pending
+  - a run of an issue drafts a docket; attach writes one comment, discard none; a second
+    decision is 409; a reader and a non-member can neither list nor decide
 - **Agent unit**, against fixture data, with no ActivityWatch needed:
   - clipping to AFK, merging, minimum and maximum length
   - the private list and the stable `source_key`
   - call parsing from a fixture SQLite file
+  - no request leaves before approval, apart from the heartbeat and reads; after Attach
+    exactly the approved files and blocks are posted
+  - a screenshot is skipped when idle or when a private app is in front
+  - the review server binds 127.0.0.1 and refuses a request without the token
 - **Rendered check:** the local stack with a fake ActivityWatch server; screenshots of
   My time, Setup, the Today banner, and the Time page team list.
 

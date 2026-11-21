@@ -18,6 +18,7 @@ import IssueDocumentsPanel from './IssueDocumentsPanel';
 import IssueWorklogPanel from './IssueWorklogPanel';
 import IssueSubtasksPanel from './IssueSubtasksPanel';
 import IssueActivityFeed from './IssueActivityFeed';
+import IssueDocketsPanel from './IssueDocketsPanel';
 import LastCommentBubble from './LastCommentBubble';
 import IssueDetailSkeleton from './IssueDetailSkeleton';
 import IssueStatusTimeline from './IssueStatusTimeline';
@@ -282,6 +283,7 @@ export default function IssueDetailContent({
           imageByUserId={imageByUserId}
         />
       )}
+      <IssueDocketsPanel issueId={issue.id} canEdit={canEdit} />
       <div ref={feedRef}>
         <IssueActivityFeed
           issueId={issue.id}
